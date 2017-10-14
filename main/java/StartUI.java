@@ -10,7 +10,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.*;
 import javafx.stage.Stage;
 
-public class SignUp extends Application{
+public class StartUI extends Application{
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {

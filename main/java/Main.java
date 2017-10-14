@@ -16,9 +16,8 @@ public class Main{
 		imKing.getReviews(Long.parseLong(String.valueOf(1)));
 		review.updateReview(4, "good stuff.");
 		imKing.getReviews(Long.parseLong(String.valueOf(1)));
-		SignUp signupUI = new SignUp();
 
-        javafx.application.Application.launch(SignUp.class);
+        javafx.application.Application.launch(StartUI.class);
 	}
 
 }
