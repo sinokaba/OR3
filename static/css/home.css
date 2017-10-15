@@ -1,0 +1,24 @@
+.field.label .text{
+	-fx-fill: #ffffff;
+	-fx-font-weight: bold;
+	-fx-font-size: 17;
+}
+
+.title.label .text {
+    -fx-fill: white;
+    -fx-stroke: black;
+    -fx-stroke-width: .7px;
+}
+
+.button{
+	-fx-background-color: #3498db;
+	-fx-text-fill: #ffffff;
+	-fx-font-size: 14pt;
+	-fx-min-width: 30;
+	-fx-min-height: 18;
+}
+
+.searchButton{
+	-fx-background-color: #c0392b;
+	-fx-min-height: 15;
+}

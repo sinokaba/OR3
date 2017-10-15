@@ -16,8 +16,11 @@ public class Main{
 		imKing.getReviews(Long.parseLong(String.valueOf(1)));
 		review.updateReview(4, "good stuff.");
 		imKing.getReviews(Long.parseLong(String.valueOf(1)));
-
-        javafx.application.Application.launch(StartUI.class);
+		String additonal = "?profileSQL=true&autoReconnect=true&useSSL=false";
+		DBConnection db = new DBConnection("jdbc:mysql://localhost:3306/or3?autoReconnect=true&useSSL=false", "root", "allanK0_ph");
+        db.insertUser(imKing.name, imKing.password, imKing.birthdate, imKing.creationDate);
+        db.printTableData("user");
+		//javafx.application.Application.launch(StartUI.class);
 	}
 
 }

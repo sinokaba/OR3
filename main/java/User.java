@@ -12,15 +12,16 @@ public class User {
 	String name, password;
 	boolean admin;
 	int age = 0;
-	long creationDate;
+	long creationDate, birthdate;
 	HashMap<Long, Review> reviews = new HashMap<Long, Review>();
 	
-	public User(String name, String pw, boolean admin){
+	public User(String name, String pw, String birthdate, boolean admin){
 		this.name = name;
 		this.password = pw;
 		this.admin = admin;
 		ZonedDateTime startOfToday = LocalDate.now().atStartOfDay(ZoneId.systemDefault());
 		this.creationDate = startOfToday.toEpochSecond() * 1000;
+		formatBirthdate(birthdate);
 	}
 	
 	public void formatBirthdate(String date){
@@ -30,8 +31,8 @@ public class User {
 			Date d = formatter.parse(date);
 		    Calendar c = Calendar.getInstance();
 		    c.setTime(d);
-		    long time = c.getTimeInMillis();
-			System.out.println("utc: " + time);
+		    this.birthdate = c.getTimeInMillis();
+			//System.out.println("utc: " + time);
 		}
 		catch(Exception ex){
 			System.out.println("Error! Exception message: " + ex);
