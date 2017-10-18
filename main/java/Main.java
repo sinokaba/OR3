@@ -18,10 +18,10 @@ public class Main{
 		review.updateReview(4, "good stuff.");
 		imKing.getReviews(Long.parseLong(String.valueOf(1)));
 		String additonal = "?profileSQL=true&autoReconnect=true&useSSL=false";
-		DBConnection db = new DBConnection("jdbc:mysql://localhost:3306/or3?autoReconnect=true&useSSL=false", "root", "allanK0_ph");
-        db.insertUser(imKing.name, imKing.password, imKing.birthdate);
-        db.insertaRestaurant("UCONN Dairy Bar", "Storrs CT");
-        db.insertReview("Is gucci mang.", 1, 1, 4.5);
+		DBConnection db = new DBConnection("jdbc:mysql://localhost:3306/2102_or3?autoReconnect=true&useSSL=false", "root", "allanK0_ph");
+        //db.insertUser(imKing.name, imKing.password, imKing.birthdate);
+        //db.insertaRestaurant("UCONN Dairy Bar", "Storrs CT");
+        //db.insertReview("Is gucci mang.", 1, 1, 4.5);
         //db.printTableData("user");
 		//db.clearTable("users");
 		javafx.application.Application.launch(StartUI.class);

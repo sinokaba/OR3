@@ -1,6 +1,7 @@
 package main.java;
 
 import javafx.application.Application;
+import javafx.collections.*;
 import javafx.event.*;
 import javafx.geometry.*;
 import javafx.scene.*;
@@ -34,7 +35,7 @@ public class StartUI extends Application{
 		GridPane grid = new GridPane();
 
 		Label sceneTitle = new Label("OR3");
-		System.out.println(sceneTitle.getFont().getFamilies());
+		//System.out.println(sceneTitle.getFont().getFamilies());
 		
 		sceneTitle.setFont(Font.font("Lucida Handwriting", FontWeight.EXTRA_BOLD, 50));
 		sceneTitle.getStyleClass().add("title");
@@ -141,17 +142,19 @@ public class StartUI extends Application{
 	public void login(GridPane grid, Stage stage){
 		stage.setTitle("OR3 - Login");
 		
-		Label userName = new Label("User Name or Email:");
+		Label userName = new Label("User Name/Email:");
 		userName.getStyleClass().add("field");
 		grid.add(userName, 0, 2);
 		TextField userTextField = new TextField();
 		userTextField.setPrefWidth(inputFieldWidth);
+		userTextField.setPromptText("Enter your Username or email...");
 		grid.add(userTextField, 1, 2);
 		
 		Label pw = new Label("Password:");
 		pw.getStyleClass().add("field");
 		grid.add(pw, 0, 3);
 		PasswordField pwBox = new PasswordField();
+		pwBox.setPromptText("Enter your password...");
 		pwBox.setPrefWidth(inputFieldWidth);
 		grid.add(pwBox, 1, 3);
 
@@ -225,13 +228,15 @@ public class StartUI extends Application{
 		userName.getStyleClass().add("field");
 		grid.add(userName, 0, 2);
 		TextField userTextField = new TextField();
+		userTextField.setPromptText("Choose a unique username...");
 		userTextField.setPrefWidth(inputFieldWidth);
 		grid.add(userTextField, 1, 2);
-
+		
 		Label pw = new Label("Password:");
 		pw.getStyleClass().add("field");
 		grid.add(pw, 0, 3);
 		PasswordField pwBox = new PasswordField();
+		pwBox.setPromptText("Choose a unique password...");
 		pwBox.setPrefWidth(inputFieldWidth);
 		grid.add(pwBox, 1, 3);
 
@@ -239,15 +244,94 @@ public class StartUI extends Application{
 		email.getStyleClass().add("field");
 		grid.add(email, 0, 4);
 		TextField emailTextField = new TextField();
+		emailTextField.setPromptText("Enter your email address...");
 		emailTextField.setPrefWidth(inputFieldWidth);
 		grid.add(emailTextField, 1, 4);
+
+		Label zipcode = new Label("Zipcode:");
+		zipcode.getStyleClass().add("field");
+		grid.add(zipcode, 0, 5);
+		TextField zipTextField = new TextField();
+		zipTextField.setPromptText("Enter your zipcode...");
+		zipTextField.setPrefWidth(60);
+		grid.add(zipTextField, 1, 5);	
 		
-		Button btn = new Button("Sign up");
+	
+		HBox birthdayWrapper = new HBox(10);
+		
+		Label birthday = new Label("Birthday:");
+		birthday.getStyleClass().add("field");
+		grid.add(birthday, 0, 6);
+		
+		/*
+		TextField month = new TextField();
+		month.setPromptText("Month");
+		month.setPrefWidth(75);
+				
+		TextField day = new TextField();
+		day.setPromptText("Day");
+		day.setPrefWidth(75);
+		
+		TextField year = new TextField();
+		year.setPromptText("Year");
+		year.setPrefWidth(75);
+		*/
+		
+		ObservableList<String> months = 
+			    FXCollections.observableArrayList(
+			        "01",
+			        "02",
+			        "03",
+			        "04",
+			        "05",
+			        "06",
+			        "07",
+			        "08",
+			        "09",
+			        "10",
+			        "11",
+			        "12"			        
+			    );
+		ObservableList<String> years = FXCollections.observableArrayList();
+		for(int i = 1920; i < 2017; i++){
+			years.add(String.valueOf(i));
+		}
+		
+		ObservableList<String> days = FXCollections.observableArrayList();
+		for(int i = 1; i < 32; i++){
+			days.add(String.valueOf(i));
+		}
+		final ComboBox monthsDropdown = new ComboBox(months);
+		monthsDropdown.setValue("Month");
+		monthsDropdown.setVisibleRowCount(7);
+        
+		final ComboBox daysDropdown = new ComboBox(days);
+		daysDropdown.setValue("Day");
+		daysDropdown.setVisibleRowCount(7);
+		
+		final ComboBox yearsDropdown = new ComboBox(years);
+		yearsDropdown.setValue("Year");
+		yearsDropdown.setVisibleRowCount(7);
+        		
+        /*
+		birthdayWrapper.getChildren().add(month);
+		birthdayWrapper.getChildren().add(day);
+		birthdayWrapper.getChildren().add(year);
+		grid.add(birthdayWrapper, 1, 6);
+		*/
+		
+		birthdayWrapper.getChildren().add(monthsDropdown);
+		birthdayWrapper.getChildren().add(daysDropdown);
+		birthdayWrapper.getChildren().add(yearsDropdown);
+		
+		grid.add(birthdayWrapper, 1, 6);
+		
+		Button signUpBtn = new Button("Sign up!");
 		HBox hbBtn = new HBox(10);
-		btn.setMinHeight(35);
-		btn.setMinWidth(50);
+		signUpBtn.setMinHeight(35);
+		signUpBtn.setMinWidth(100);
 		hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
-		hbBtn.getChildren().add(btn);
+		hbBtn.getChildren().add(signUpBtn);
 		grid.add(hbBtn, 1, 7);
 	
 		Button backBtn = new Button("Back");
@@ -262,22 +346,44 @@ public class StartUI extends Application{
 		actionTarget.setStyle("-fx-font-size: 13pt");
         grid.add(actionTarget, 1, 9, 7, 1);
         
-        numGridChildren += 9;
-        btn.setOnAction(new EventHandler<ActionEvent>() {
+        numGridChildren += 13;
+        
+        signUpBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
-            	actionTarget.setFill(Color.FIREBRICK);
-                String enteredName = userTextField.getText();
-                if(enteredName.equals("")){
-                	actionTarget.setText("Please enter a valid username!");
-                }
-                else if(pwBox.getText().equals("")){
-                	actionTarget.setText("Please enter a valid password.");
-                }
-                else{
-                	actionTarget.setText("Sign in button pressed");                	
-                }
-                System.out.println(pwBox);
+            	boolean formComplete = true;
+            	for (Node child : grid.getChildren()) {
+            	    Integer column = GridPane.getColumnIndex(child);
+            	    Integer row = GridPane.getRowIndex(child);
+            	    if(child instanceof TextField){
+            	    	if(((TextField)child).getText().equals("")){
+            	    		formComplete = false;
+                        	break;
+            	    	}
+            	    }
+            	    else if(child instanceof HBox){
+            	    	for(Node n : ((HBox)child).getChildren()){
+            	    		if(n instanceof ComboBox){
+	                	    	String selectedVal = ((ComboBox)n).getSelectionModel().getSelectedItem().toString();
+	                	    	if(selectedVal.equals("Month") || selectedVal.equals("Day") || selectedVal.equals("Year")){
+	                	    		formComplete = false;
+	                	    		break;
+	                	    	}
+	                	    	else{
+	                	    		System.out.println("cb selected value: " + selectedVal);
+	                	    	}          
+            	    		}
+            	    	}
+            	    }
+            	}
+            	if(formComplete){
+            		actionTarget.setFill(Color.LIMEGREEN);
+                	actionTarget.setText("We gucci.");                	            		
+            	}
+            	else{
+                	actionTarget.setFill(Color.FIREBRICK);
+                	actionTarget.setText("Please complete the form.");
+            	}
             }
         });
         
