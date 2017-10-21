@@ -293,7 +293,7 @@ public class StartUI extends Application{
 			        "12"			        
 			    );
 		ObservableList<String> years = FXCollections.observableArrayList();
-		for(int i = 1920; i < 2017; i++){
+		for(int i = 2012; i > 1910; i--){
 			years.add(String.valueOf(i));
 		}
 		
@@ -303,15 +303,15 @@ public class StartUI extends Application{
 		}
 		final ComboBox monthsDropdown = new ComboBox(months);
 		monthsDropdown.setValue("Month");
-		monthsDropdown.setVisibleRowCount(7);
+		monthsDropdown.setVisibleRowCount(9);
         
 		final ComboBox daysDropdown = new ComboBox(days);
 		daysDropdown.setValue("Day");
-		daysDropdown.setVisibleRowCount(7);
+		daysDropdown.setVisibleRowCount(9);
 		
 		final ComboBox yearsDropdown = new ComboBox(years);
 		yearsDropdown.setValue("Year");
-		yearsDropdown.setVisibleRowCount(7);
+		yearsDropdown.setVisibleRowCount(9);
         		
         /*
 		birthdayWrapper.getChildren().add(month);

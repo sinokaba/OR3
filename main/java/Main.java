@@ -24,7 +24,15 @@ public class Main{
         //db.insertReview("Is gucci mang.", 1, 1, 4.5);
         //db.printTableData("user");
 		//db.clearTable("users");
-		javafx.application.Application.launch(StartUI.class);
+		GoogleMapsRequest mapsAPI = new GoogleMapsRequest("AIzaSyCP-qr7umfKFSrmnbOB-cl-djIhD5p1mJ8");
+		String zip = "10118";
+		//String loc[] = mapsAPI.getGeolocation(zip);
+		//db.clearTable("locations");
+		//if(loc[0] != null){
+			//db.insertLocation(zip, loc[0], loc[1]);
+		//}
+		db.insertUser("al", "e@uconn.edu", "97", "19971128", zip);
+		//javafx.application.Application.launch(StartUI.class);
 	}
 
 }

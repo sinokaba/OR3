@@ -1,12 +1,16 @@
 package main.java;
 import java.sql.*;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 public class DBConnection {
     private Connection connection;	
-    private Statement statements;
+    private Statement statement;
+    private GoogleMapsRequest mapsAPI;
 
 	/**
 	* The constructor of the DBConnection class
@@ -16,10 +20,12 @@ public class DBConnection {
 	* @return no return value
 	*/
     public DBConnection(String dbURL, String user, String pw){
+		mapsAPI = new GoogleMapsRequest("AIzaSyCP-qr7umfKFSrmnbOB-cl-djIhD5p1mJ8");
     	try{
     		Class.forName("com.mysql.jdbc.Driver");
 	        connection = DriverManager.getConnection(dbURL, user, pw);
-	        statements = connection.createStatement();
+	        
+	        statement = connection.createStatement();
     	}
     	catch(SQLException ex){
     		System.out.println("Something went wrong with sql! Error message: " + ex);
@@ -51,11 +57,57 @@ public class DBConnection {
 	* @param takes 3 input arguments, the name of the user, their associated password, and their birthdate
 	* @return no return value
 	*/    
-    public void insertUser(String name, String pw, long birthdate){
-		String sqlQ = "insert into users "
-					+ " (username, birthdate, password)"
-					+ " values ('" + name + "', '" + birthdate + "', '" + pw +"')";
-		executeQuery(sqlQ, "User: " + name + " added");
+    
+    public void insertLocation(String zipcode, String city, String state){
+    	String sqlQ = "INSERT INTO locations \n"
+				+ " (country, state, city, zipcode) "
+    			+ " values ('USA', '" + state + "', '" + city + "', '" + zipcode + "')";
+    	System.out.println("location q: " + sqlQ);
+    	executeQuery(sqlQ, "Added location infor for " + zipcode);
+    }
+    
+    public boolean rowExists(String tableName, String arg, String input){
+    	String sqlQ = "SELECT EXISTS(SELECT 1 FROM " + tableName + " WHERE " + arg + " = "+input+")";
+    	return executeQuery(sqlQ);
+    }
+    
+    public void insertUser(String name, String email, String pw, String bd, String zipcode){
+    	java.sql.Date birthday = null;
+    	boolean validZipcode = true;
+    	//boolean locationInDB = executeQuery("SELECT EXISTS(SELECT 1 FROM locations WHERE zipcode = "+zipcode+")");
+    	try{
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+            java.util.Date parsed = format.parse(bd);
+            System.out.println(parsed);
+            birthday = new java.sql.Date(parsed.getTime());
+    	}
+    	catch(ParseException e){
+    		System.out.println("Something wrong with date. Stack trace:");
+    		e.printStackTrace();
+    	}
+    	if(!rowExists("locations", "zipcode", zipcode)){
+    		String loc[] = mapsAPI.getGeolocation(zipcode);
+    		if(loc[0] != null){
+    			insertLocation(zipcode, loc[0], loc[1]);
+    		}
+    		else{
+    			validZipcode = false;
+    		}
+    	}
+    	if(validZipcode){
+	    	System.out.println("birthday: " + birthday);
+			String sqlQ = "INSERT INTO users \n"
+						+ " SET username = '" + name + "',\n"
+						+ "  email = '" + email + "',\n"
+						+ "  birthdate = '" + birthday + "',\n"
+						+ "  password = '" + pw + "',\n"
+						+ "  fk_location = (SELECT idlocations FROM locations WHERE zipcode = '" + zipcode + "')";	
+			System.out.println(sqlQ);
+			executeQuery(sqlQ, "User: " + name + " added");
+    	}
+    	else{
+    		System.out.println("User could not be added because entered zipcode is not supported.");
+    	}
     }
    
 	/**
@@ -115,7 +167,7 @@ public class DBConnection {
 	*/    
     public void printTableData(String tableName){
         try{
-        		ResultSet res = statements.executeQuery("select * from " + tableName);
+        		ResultSet res = statement.executeQuery("select * from " + tableName);
             	//List<User> personList = new ArrayList<>();
                 while (res.next()) {
                     String name = res.getString("username");
@@ -139,12 +191,27 @@ public class DBConnection {
 	*/    
     public void executeQuery(String query, String queryMessage){
     	try{
-    		statements.execute(query);
+    		statement.executeUpdate(query);
     		System.out.println(queryMessage + " successfully.");
     	}
     	catch(SQLException ex){
     		System.out.println("SQl exception erro: " + ex);
     	}      	
+    }
+
+    public boolean executeQuery(String query){
+    	boolean queryRes = false;
+    	try{
+    		//System.out.println(statements.executeUpdate(query));
+    		int rs = statement.executeUpdate(query);
+    		if(rs == 1){
+    			queryRes = true;
+    		}
+    	}
+    	catch(SQLException ex){
+    		System.out.println("SQl exception erro: " + ex);
+    	}      	
+    	return queryRes;
     }
     
 }
