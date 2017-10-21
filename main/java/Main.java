@@ -28,9 +28,7 @@ public class Main{
 		String zip = "10118";
 		//String loc[] = mapsAPI.getGeolocation(zip);
 		//db.clearTable("locations");
-		//if(loc[0] != null){
-			//db.insertLocation(zip, loc[0], loc[1]);
-		//}
+		//db.insertLocation(zip, loc[0], loc[1]);
 		db.insertUser("al", "e@uconn.edu", "97", "19971128", zip);
 		//javafx.application.Application.launch(StartUI.class);
 	}
