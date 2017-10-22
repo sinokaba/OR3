@@ -7,6 +7,8 @@ import javafx.geometry.*;
 import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.*;
@@ -34,11 +36,43 @@ public class StartUI extends Application{
 		
 		GridPane grid = new GridPane();
 
+        MenuBar rightMenu = new MenuBar();
+        MenuBar	leftMenu = new MenuBar();
+        
+        Image userIcon = new Image(getClass().getResourceAsStream("/static/images/user.png"));
+        ImageView userView = new ImageView(userIcon);
+        userView.setFitWidth(44);
+        userView.setFitHeight(44);
+
+        Image brandIcon = new Image(getClass().getResourceAsStream("/static/images/brand.png"));
+        ImageView brandView = new ImageView(brandIcon);
+        brandView.setFitWidth(44);
+        brandView.setFitHeight(44);
+        
+        // --- Menu Home page link
+        Menu menuHome = new Menu("Home");
+        menuHome.setGraphic(brandView);
+        
+        // --- Menu User page
+        Menu menuUser = new Menu("User");
+        menuUser.setGraphic(userView);
+        
+        leftMenu.getMenus().addAll(menuHome);
+        rightMenu.getMenus().addAll(menuUser);
+
+        leftMenu.getStyleClass().add("menu-bar");
+        rightMenu.getStyleClass().add("menu-bar");
+     
+        Region spacer = new Region();
+        spacer.getStyleClass().add("menu-bar");
+        HBox.setHgrow(spacer, Priority.SOMETIMES);
+        HBox menubars = new HBox(leftMenu, spacer, rightMenu);
+        
+        BorderPane root = new BorderPane();
+        root.setTop(menubars);
 		Label sceneTitle = new Label("OR3");
-		//System.out.println(sceneTitle.getFont().getFamilies());
-		
-		sceneTitle.setFont(Font.font("Lucida Handwriting", FontWeight.EXTRA_BOLD, 50));
 		sceneTitle.getStyleClass().add("title");
+		
 		grid.add(sceneTitle, 1, 0);
 		sceneTitle.setAlignment(Pos.TOP_CENTER);
 		
@@ -52,8 +86,9 @@ public class StartUI extends Application{
 		//old image used
         //https://mir-s3-cdn-cf.behance.net/project_modules/1400/4df1ee33482977.56acb21f80216.jpg
 		String backgroundUrl = "https://cdn.vox-cdn.com/uploads/chorus_asset/file/8712449/gbb_food.jpg";
-        grid.setStyle("-fx-background-image: url('"+backgroundUrl+"');");
-		Scene scene = new Scene(grid, gridWidth, gridHeight);	
+        root.setStyle("-fx-background-image: url('"+backgroundUrl+"');");
+        root.setCenter(grid);
+        Scene scene = new Scene(root, gridWidth, gridHeight);	
 		//links the css for styling the different views		
         scene.getStylesheets().addAll(getClass().getResource(	
                 "/static/css/home.css"
@@ -79,8 +114,7 @@ public class StartUI extends Application{
 		stage.setTitle("OR3 - Welcome!");
 		
 		TextField searchField = new TextField();
-		searchField.setPrefWidth(gridWidth*.6);
-		searchField.setPrefHeight(35);
+		searchField.getStyleClass().add("mainSearchField");
 
 		Button goBtn = new Button("Search");
 		goBtn.getStyleClass().add("searchButton");
@@ -94,13 +128,11 @@ public class StartUI extends Application{
 		grid.add(searchWrap, 1, 1);
 				
 		Button loginBtn = new Button("Login");
-		HBox hbBtn = new HBox(30);
-		loginBtn.setMinHeight(40);
-		loginBtn.setMinWidth(85);
+		Button signUpBtn = new Button("Sign Up");
+		
+		HBox hbBtn = new HBox(30);		
 		hbBtn.setAlignment(Pos.CENTER);
 		hbBtn.getChildren().add(loginBtn);
-	
-		Button signUpBtn = new Button("Sign Up");
 		hbBtn.getChildren().add(signUpBtn);
 		
 		grid.add(hbBtn, 1, 6);
@@ -142,34 +174,31 @@ public class StartUI extends Application{
 	public void login(GridPane grid, Stage stage){
 		stage.setTitle("OR3 - Login");
 		
-		Label userName = new Label("User Name/Email:");
+		Label userName = new Label("Username");
 		userName.getStyleClass().add("field");
 		grid.add(userName, 0, 2);
 		TextField userTextField = new TextField();
-		userTextField.setPrefWidth(inputFieldWidth);
-		userTextField.setPromptText("Enter your Username or email...");
+		userTextField.setPromptText("Enter your Username");
+		userTextField.getStyleClass().add("formField");
+		userTextField.addEventFilter(KeyEvent.KEY_TYPED, maxLength(16));
 		grid.add(userTextField, 1, 2);
 		
 		Label pw = new Label("Password:");
 		pw.getStyleClass().add("field");
 		grid.add(pw, 0, 3);
 		PasswordField pwBox = new PasswordField();
-		pwBox.setPromptText("Enter your password...");
-		pwBox.setPrefWidth(inputFieldWidth);
+		pwBox.setPromptText("Enter your password.");
+		pwBox.getStyleClass().add("formField");
 		grid.add(pwBox, 1, 3);
 
 		Button loginBtn = new Button("Login");
 		HBox hbBtn = new HBox(10);
-		loginBtn.setMinHeight(35);
-		loginBtn.setMinWidth(50);
 		hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
 		hbBtn.getChildren().add(loginBtn);
 		grid.add(hbBtn, 1, 7);
 	
 		Button backBtn = new Button("Back");
 		HBox hbBackBtn = new HBox(10);
-		backBtn.setMinHeight(35);
-		backBtn.setMinWidth(50);
 		hbBackBtn.setAlignment(Pos.BOTTOM_LEFT);
 		hbBackBtn.getChildren().add(backBtn);
 		grid.add(hbBackBtn, 0, 7);
@@ -228,40 +257,50 @@ public class StartUI extends Application{
 		userName.getStyleClass().add("field");
 		grid.add(userName, 0, 2);
 		TextField userTextField = new TextField();
-		userTextField.setPromptText("Choose a unique username...");
-		userTextField.setPrefWidth(inputFieldWidth);
+		userTextField.setPromptText("Your unique username.");
+		userTextField.getStyleClass().add("formField");
+		userTextField.addEventFilter(KeyEvent.KEY_TYPED, maxLength(16));
 		grid.add(userTextField, 1, 2);
 		
 		Label pw = new Label("Password:");
 		pw.getStyleClass().add("field");
 		grid.add(pw, 0, 3);
 		PasswordField pwBox = new PasswordField();
-		pwBox.setPromptText("Choose a unique password...");
-		pwBox.setPrefWidth(inputFieldWidth);
+		pwBox.setPromptText("Your unique password.");
+		pwBox.getStyleClass().add("formField");
 		grid.add(pwBox, 1, 3);
+		
+		Label pwVerify = new Label("Password:");
+		pwVerify.getStyleClass().add("field");
+		grid.add(pwVerify, 0, 4);
+		PasswordField pwBoxV = new PasswordField();
+		pwBoxV.setPromptText("Verify and re-enter your password.");
+		pwBoxV.getStyleClass().add("formField");
+		grid.add(pwBoxV, 1, 4);
 
 		Label email = new Label("Email:");
 		email.getStyleClass().add("field");
-		grid.add(email, 0, 4);
+		grid.add(email, 0, 5);
 		TextField emailTextField = new TextField();
-		emailTextField.setPromptText("Enter your email address...");
-		emailTextField.setPrefWidth(inputFieldWidth);
-		grid.add(emailTextField, 1, 4);
+		emailTextField.setPromptText("Enter your email address.");
+		emailTextField.getStyleClass().add("formField");
+		grid.add(emailTextField, 1, 5);
 
 		Label zipcode = new Label("Zipcode:");
 		zipcode.getStyleClass().add("field");
-		grid.add(zipcode, 0, 5);
+		grid.add(zipcode, 0, 6);
 		TextField zipTextField = new TextField();
-		zipTextField.setPromptText("Enter your zipcode...");
-		zipTextField.setPrefWidth(60);
-		grid.add(zipTextField, 1, 5);	
+		zipTextField.setPromptText("Enter your 5 digit zipcode.");
+		zipTextField.getStyleClass().add("formField");
+		zipTextField.addEventFilter(KeyEvent.KEY_TYPED, maxLength(5));
+		grid.add(zipTextField, 1, 6);	
 		
 	
 		HBox birthdayWrapper = new HBox(10);
 		
 		Label birthday = new Label("Birthday:");
 		birthday.getStyleClass().add("field");
-		grid.add(birthday, 0, 6);
+		grid.add(birthday, 0, 7);
 		
 		/*
 		TextField month = new TextField();
@@ -324,29 +363,25 @@ public class StartUI extends Application{
 		birthdayWrapper.getChildren().add(daysDropdown);
 		birthdayWrapper.getChildren().add(yearsDropdown);
 		
-		grid.add(birthdayWrapper, 1, 6);
+		grid.add(birthdayWrapper, 1, 7);
 		
 		Button signUpBtn = new Button("Sign up!");
 		HBox hbBtn = new HBox(10);
-		signUpBtn.setMinHeight(35);
-		signUpBtn.setMinWidth(100);
 		hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
 		hbBtn.getChildren().add(signUpBtn);
-		grid.add(hbBtn, 1, 7);
+		grid.add(hbBtn, 1, 8);
 	
 		Button backBtn = new Button("Back");
 		HBox hbBackBtn = new HBox(10);
-		backBtn.setMinHeight(35);
-		backBtn.setMinWidth(50);
 		hbBackBtn.setAlignment(Pos.BOTTOM_LEFT);
 		hbBackBtn.getChildren().add(backBtn);
-		grid.add(hbBackBtn, 0, 7);
+		grid.add(hbBackBtn, 0, 8);
 		
 		final Text actionTarget = new Text();
 		actionTarget.setStyle("-fx-font-size: 13pt");
-        grid.add(actionTarget, 1, 9, 7, 1);
+        grid.add(actionTarget, 1, 10, 7, 1);
         
-        numGridChildren += 13;
+        numGridChildren += 15;
         
         signUpBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -396,6 +431,23 @@ public class StartUI extends Application{
         	}
         });
 	}
+
+	public EventHandler<KeyEvent> maxLength(final Integer i) {
+        return new EventHandler<KeyEvent>() {
+
+            @Override
+            public void handle(KeyEvent arg0) {
+
+                TextField tx = (TextField) arg0.getSource();
+                if (tx.getText().length() >= i) {
+                    arg0.consume();
+                }
+
+            }
+
+        };
+
+    }
 	
 	/**
 	* This method starts the application, the main method
