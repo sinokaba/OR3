@@ -2,11 +2,16 @@ package main.java;
 
 import java.io.*;
 import java.net.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.json.*;
 
 public class GoogleMapsRequest {
 	  private String apiBase = "https://maps.googleapis.com/maps/api/";
 	  private String apiKey = null;
+	  private Pattern VALID_ADDRESS =
+				Pattern.compile("^(?=.*[0-9])$");
 	  
 	  GoogleMapsRequest(String apiKey){
 		  this.apiKey = apiKey;
@@ -37,7 +42,7 @@ public class GoogleMapsRequest {
 		  String line;
 		  try{
 			  while((line = data.readLine()) != null){
-				  //System.out.println(line);
+				  System.out.println(line);
 				  if(line.contains("formatted_address")){
 					 if(line.contains("USA")){
 						  String[] sp = line.split(":");
@@ -45,9 +50,15 @@ public class GoogleMapsRequest {
 						  String[] sp3 = sp2[1].split(" ");
 						  String city = sp2[0].substring(2);
 						  System.out.println("City: " + city + ", State: " + sp3[1]);
-						  loc[0] = city;
-						  loc[1] = sp3[1];
-						  return loc;
+						  Matcher matcher = VALID_ADDRESS.matcher(sp3[1]);
+						  if(!matcher.find()){
+							  return loc;
+						  }
+						  else{
+							  loc[0] = city;
+							  loc[1] = sp3[1];
+							  return loc;
+						  }
 					  }
 					  else{
 						  System.out.println("Sorry only looking at USA based restaurants atm.");

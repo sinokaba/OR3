@@ -8,7 +8,7 @@ public class Admin extends User{
 	* @return no return value
 	*/
 	public Admin(String name, String pw){
-		super(name, pw, "01-26-1997", true);
+		super(name, pw, "1997-01-26", "l@rs.com", "06268", 0);
 	}
 
 }

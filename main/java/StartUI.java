@@ -1,5 +1,8 @@
 package main.java;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javafx.application.Application;
 import javafx.collections.*;
 import javafx.event.*;
@@ -14,6 +17,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.*;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 
 public class StartUI extends Application{
 	/**
@@ -23,7 +27,15 @@ public class StartUI extends Application{
 	int gridWidth = 800;					//sets the initial width of the window
 	int gridHeight = 600;					//sets the initial height of the window
 	double inputFieldWidth = gridWidth*.3;	//sets the size of the input field in relation to window size
-
+	final static Pattern VALID_EMAIL_ADDRESS_REGEX = 
+			Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+	final static Pattern VALID_PASSWORD_REGEX = 
+			Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{5,}$");
+	final static Pattern VALID_ZIPCODE_REGEX =
+			Pattern.compile("^(?=.*[0-9]).{5,5}$");			
+	final static DBConnection db =
+			new DBConnection("jdbc:mysql://localhost:3306/2102_or3?autoReconnect=true&useSSL=false", "root", "allanK0_ph");
+	//^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{5,}$
 	/**
 	* This method creates the primary stage and the scene of the UI.
 	* It uses a grid to structure everything, sets the title of the window, and its background image
@@ -47,11 +59,17 @@ public class StartUI extends Application{
         brandView.setFitWidth(44);
         brandView.setFitHeight(44);
         
-        Button homeBtn = new Button("Home", brandView);
+        Button homeBtn = new Button("OR3", brandView);
         homeBtn.getStyleClass().add("menuButton");
         Button userBtn = new Button("", userView);
         userBtn.getStyleClass().add("menuButton");
-
+        
+        /*
+        MenuButton userBtn = new MenuButton("", userView);
+        userBtn.getStyleClass().add("menuButton");
+        userBtn.getItems().addAll(new MenuItem("Account details"), new MenuItem("Messages"), new MenuItem("Logout"));
+        */
+        
         ToolBar leftBar = new ToolBar();
         leftBar.getItems().addAll(homeBtn);
         ToolBar rightBar = new ToolBar();
@@ -287,34 +305,34 @@ public class StartUI extends Application{
 		
 		stage.setTitle("OR3 - Create Account");
 		
-		Label userName = new Label("User Name:");
+		Label userName = new Label("Username:");
 		userName.getStyleClass().add("field");
 		grid.add(userName, 0, 2);
 		CustomTextField userTextField = new CustomTextField("Your unique username.", fieldH, fieldW);
 		userTextField.addCharLimit(16);
 		grid.add(userTextField, 1, 2);
 		
+		Label email = new Label("Email:");
+		email.getStyleClass().add("field");
+		grid.add(email, 0, 3);
+		CustomTextField emailTextField = new CustomTextField("Enter your email address.", fieldH, fieldW);
+		grid.add(emailTextField, 1, 3);
+		
 		Label pw = new Label("Password:");
 		pw.getStyleClass().add("field");
-		grid.add(pw, 0, 3);
+		grid.add(pw, 0, 4);
 		PasswordField pwBox = new PasswordField();
 		pwBox.setPromptText("Your unique password.");
 		pwBox.getStyleClass().add("formField");
-		grid.add(pwBox, 1, 3);
+		grid.add(pwBox, 1, 4);
 		
 		Label pwVerify = new Label("Password:");
 		pwVerify.getStyleClass().add("field");
-		grid.add(pwVerify, 0, 4);
+		grid.add(pwVerify, 0, 5);
 		PasswordField pwBoxV = new PasswordField();
 		pwBoxV.setPromptText("Verify and re-enter your password.");
 		pwBoxV.getStyleClass().add("formField");
-		grid.add(pwBoxV, 1, 4);
-
-		Label email = new Label("Email:");
-		email.getStyleClass().add("field");
-		grid.add(email, 0, 5);
-		CustomTextField emailTextField = new CustomTextField("Enter your email address.", fieldH, fieldW);
-		grid.add(emailTextField, 1, 5);
+		grid.add(pwBoxV, 1, 5);
 
 		Label zipcode = new Label("Zipcode:");
 		zipcode.getStyleClass().add("field");
@@ -353,43 +371,31 @@ public class StartUI extends Application{
 		
 		final Text actionTarget = new Text();
 		actionTarget.setStyle("-fx-font-size: 13pt");
-        grid.add(actionTarget, 1, 10, 7, 1);
+        grid.add(actionTarget, 1, 10, 4, 1);
         
         numGridChildren += 15;
         
         signUpBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
-            	boolean formComplete = true;
-            	for (Node child : grid.getChildren()) {
-            	    if(child instanceof TextField){
-            	    	if(((TextField)child).getText().equals("")){
-            	    		formComplete = false;
-                        	break;
-            	    	}
-            	    }
-            	    else if(child instanceof HBox){
-            	    	for(Node n : ((HBox)child).getChildren()){
-            	    		if(n instanceof ComboBox){
-	                	    	String selectedVal = ((ComboBox<String>)n).getSelectionModel().getSelectedItem().toString();
-	                	    	if(selectedVal.equals("Month") || selectedVal.equals("Day") || selectedVal.equals("Year")){
-	                	    		formComplete = false;
-	                	    		break;
-	                	    	}
-	                	    	else{
-	                	    		System.out.println("cb selected value: " + selectedVal);
-	                	    	}          
-            	    		}
-            	    	}
-            	    }
-            	}
-            	if(formComplete){
+            	String email = emailTextField.getText();
+            	String name = userTextField.getText();
+            	String pw = pwBox.getText();
+            	String pw2 = pwBoxV.getText();
+            	String zip = zipTextField.getText();
+            	boolean valid = validateForm(pw, pw2, name, email, zip, grid);
+            	if(valid){
             		actionTarget.setFill(Color.LIMEGREEN);
-                	actionTarget.setText("We gucci.");                	            		
+            		actionTarget.setText("We gucci");
+            		String bDay = yearsDropdown.getValue()
+            					+ "-" + monthsDropdown.getValue()
+            					+ "-" + daysDropdown.getValue();
+            		User newUser = new User(name, pw, bDay, email, zip, 0);
+            		db.insertUser(newUser);
             	}
             	else{
-                	actionTarget.setFill(Color.FIREBRICK);
-                	actionTarget.setText("Please complete the form.");
+            		actionTarget.setFill(Color.FIREBRICK);
+            		actionTarget.setText("Invalid Credentials Entered.");
             	}
             }
         });
@@ -404,12 +410,104 @@ public class StartUI extends Application{
         });
 	}
 
+	public static boolean validateForm(String pw, String pwRe, String name, String email, String zip, GridPane grid){
+    	//Tooltip tp = new Tooltip("Invalid password. Must be at least 6 chars long and have 1 number and uppercase letter.");;
+    	if(!noEmptyFields(grid)){
+    		return false;
+    	}
+		if(!validPassword(pw)){
+    		showAlert(Alert.AlertType.ERROR, grid.getScene().getWindow(), 
+    	            "Form Error!", "Invalid password. Password must have 6 or more characters, and have at least 1 capital letter and 1 digit.");;    
+    	    return false;
+    	}         
+    	else if(!pw.equals(pwRe)){
+    		showAlert(Alert.AlertType.ERROR, grid.getScene().getWindow(), 
+    	            "Form Error!", "Passwords don't match.");;    
+    	    return false;    		
+    	}
+    	else if(db.rowExists("users", "username", name)){
+    		showAlert(Alert.AlertType.ERROR, grid.getScene().getWindow(), 
+    	            "Form Error!", "Username: " + name + ", already taken. Please choose a different one.");;    
+    	    return false;       		
+    	}
+    	else if(!validEmail(email)){
+    		showAlert(Alert.AlertType.ERROR, grid.getScene().getWindow(), 
+    	            "Form Error!", "Email address: " + email + ", is invalid.");;
+    	    return false;
+    	}
+    	else if(db.rowExists("users", "email", email)){
+    		showAlert(Alert.AlertType.ERROR, grid.getScene().getWindow(), 
+    	            "Form Error!", "Email address: " + email + ", already associated with another account.");;
+    	    return false;    		
+    	}
+    	else if(!validZipcode(zip)){
+    		showAlert(Alert.AlertType.ERROR, grid.getScene().getWindow(), 
+    	            "Form Error!", "Invalid Zipcode. Zipcode entered must be within the USA.");;    
+	    	return false;
+		}
+    	return true;    
+	}
 	
+	public static boolean noEmptyFields(GridPane grid){
+		for (Node child : grid.getChildren()) {
+    	    if(child instanceof TextField){
+    	    	String userInput = ((TextField)child).getText();
+    	    	if(userInput.trim().length() <= 0){
+    	    		showAlert(Alert.AlertType.ERROR, grid.getScene().getWindow(), 
+    	    	            "Form Error!", "All form fields must be completed.");;     	    		
+                	return false;
+    	    	}
+    	    	else if(userInput.contains(" ")){
+    	    		showAlert(Alert.AlertType.ERROR, grid.getScene().getWindow(), 
+    	    	            "Form Error!", "No white spaces please.");;    
+    	    	    return false;            	    		
+    	    	}
+    	    }
+    	    else if(child instanceof HBox){
+    	    	for(Node n : ((HBox)child).getChildren()){
+    	    		if(n instanceof ComboBox){
+            	    	String selectedVal = ((ComboBox<String>)n).getSelectionModel().getSelectedItem().toString();
+            	    	if(selectedVal.equals("Month") || selectedVal.equals("Day") || selectedVal.equals("Year")){
+            	    		showAlert(Alert.AlertType.ERROR, grid.getScene().getWindow(), 
+            	    	            "Form Error!", "Please enter your birthday.");;     	    		
+            	    		return false;
+            	    	}   
+    	    		}
+    	    	}
+    	    }
+    	}
+		return true;
+	}
+	
+	public static boolean validEmail(String emailAddress) {
+        Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(emailAddress);
+        return matcher.find();
+	}
+
+	public static boolean validPassword(String pw) {
+        Matcher matcher = VALID_PASSWORD_REGEX.matcher(pw);
+        return matcher.find();
+	}
+	
+	public static boolean validZipcode(String zipcode){
+		Matcher matcher = VALID_ZIPCODE_REGEX.matcher(zipcode);
+		return matcher.find();
+	}
+	
+	private static void showAlert(Alert.AlertType alertType, Window owner, String title, String message) {
+	    Alert alert = new Alert(alertType);
+	    alert.setTitle(title);
+	    alert.setHeaderText(null);
+	    alert.setContentText(message);
+	    alert.initOwner(owner);
+	    alert.show();
+	}
 	/**
 	* This method starts the application, the main method
 	*/
 	public static void main(String[] args){
 		launch(args);
+		db.disconnect();
 	}
 	
 }

@@ -12,9 +12,8 @@ public class User {
 	/**
 	* Variables associated with this class declared
 	*/
-	String name, password;
-	boolean admin;
-	int age = 0;
+	String name, password, email, zipcode, birthday;
+	int age, privilege;
 	long creationDate, birthdate;
 	HashMap<Long, Review> reviews = new HashMap<Long, Review>();
 
@@ -24,45 +23,13 @@ public class User {
 	* @param takes 4 inputs, 3 string variables name, pw, birthdate, and a boolean value that specifies admin privileges
 	* @return no return value
 	*/
-	public User(String name, String pw, String birthdate, boolean admin){
-		this.name = name;
+	public User(String username, String pw, String birthdate, String email, String zipcode, int privilege){
+		this.name = username;
+		this.email = email;
 		this.password = pw;
-		this.admin = admin;
-		ZonedDateTime startOfToday = LocalDate.now().atStartOfDay(ZoneId.systemDefault());
-		this.creationDate = startOfToday.toEpochSecond() * 1000;
-		formatBirthdate(birthdate);
-	}
-	
-	/**
-	* This method transforms the birthdate of the user to milliseconds to better store it
-	*
-	* @param takes an input string date of the form "Month-day-year", which is the bday of the user
-	* @return will not return anything
-	*/
-	public void formatBirthdate(String date){
-		SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy");
-		try{
-			System.out.println("Entered date: " + date);
-			Date d = formatter.parse(date);
-		    Calendar c = Calendar.getInstance();
-		    c.setTime(d);
-		    this.birthdate = c.getTimeInMillis();
-			//System.out.println("utc: " + time);
-		}
-		catch(Exception ex){
-			System.out.println("Error! Exception message: " + ex);
-		}
-	}
-	
-	/**
-	* This method prints the time in milliseconds when the user's account was created
-	*
-	* @param takes no input
-	* @return not return anything
-	*/	
-	public void getAccountCreationDate(){
-		Date time = new Date(this.creationDate);
-		System.out.println(time);
+		this.privilege = privilege;
+		this.zipcode = zipcode;
+		this.birthday = birthdate; 
 	}
 	
 	/**
@@ -107,7 +74,15 @@ public class User {
 		
 	}
 	
-	public void addEmail(){
+	public void updateEmail(){
 		
+	}
+	
+	public void updatePassword(){
+		
+	}
+	
+	public int getAge(){
+		return 0;
 	}
 }

@@ -64,17 +64,19 @@ public class DBConnection {
     }
     
     public boolean rowExists(String tableName, String arg, String input){
-    	String sqlQ = "SELECT EXISTS(SELECT 1 FROM " + tableName + " WHERE " + arg + " = "+input+")";
+    	String sqlQ = "SELECT EXISTS(SELECT 1 FROM " + tableName + " WHERE " + arg + " = '"+input+"')";
+    	System.out.println("Checking if " + input + " already in table " + tableName);
     	return executeQuery(sqlQ);
     }
     
-    public void insertUser(String name, String email, String pw, String bd, String zipcode){
+    public void insertUser(User newUser){
     	java.sql.Date birthday = null;
     	boolean validZipcode = true;
     	//boolean locationInDB = executeQuery("SELECT EXISTS(SELECT 1 FROM locations WHERE zipcode = "+zipcode+")");
+    	String zip = newUser.zipcode;
     	try{
-            SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
-            java.util.Date parsed = format.parse(bd);
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            java.util.Date parsed = format.parse(newUser.birthday);
             System.out.println(parsed);
             birthday = new java.sql.Date(parsed.getTime());
     	}
@@ -82,10 +84,10 @@ public class DBConnection {
     		System.out.println("Something wrong with date. Stack trace:");
     		e.printStackTrace();
     	}
-    	if(!rowExists("locations", "zipcode", zipcode)){
-    		String loc[] = mapsAPI.getGeolocation(zipcode);
+    	if(!rowExists("locations", "zipcode", zip)){
+    		String loc[] = mapsAPI.getGeolocation(zip);
     		if(loc[0] != null){
-    			insertLocation(zipcode, loc[0], loc[1]);
+    			insertLocation(zip, loc[0], loc[1]);
     		}
     		else{
     			validZipcode = false;
@@ -94,13 +96,13 @@ public class DBConnection {
     	if(validZipcode){
 	    	System.out.println("birthday: " + birthday);
 			String sqlQ = "INSERT INTO users \n"
-						+ " SET username = '" + name + "',\n"
-						+ "  email = '" + email + "',\n"
+						+ " SET username = '" + newUser.name + "',\n"
+						+ "  email = '" + newUser.email + "',\n"
 						+ "  birthdate = '" + birthday + "',\n"
-						+ "  password = '" + pw + "',\n"
-						+ "  fk_location = (SELECT idlocations FROM locations WHERE zipcode = '" + zipcode + "')";	
+						+ "  password = '" + newUser.password + "',\n"
+						+ "  fk_location = (SELECT idlocations FROM locations WHERE zipcode = '" + zip + "')";	
 			System.out.println(sqlQ);
-			executeQuery(sqlQ, "User: " + name + " added");
+			executeQuery(sqlQ, "User: " + newUser.name + " added");
     	}
     	else{
     		System.out.println("User could not be added because entered zipcode is not supported.");
@@ -200,9 +202,12 @@ public class DBConnection {
     	boolean queryRes = false;
     	try{
     		//System.out.println(statements.executeUpdate(query));
-    		int rs = statement.executeUpdate(query);
-    		if(rs == 1){
-    			queryRes = true;
+    		ResultSet rs = statement.executeQuery(query);
+    		System.out.println("result of q: " + rs);
+    		if(rs.next()) {
+    		    if(rs.getInt(1) == 1){
+    		    	queryRes = true;
+    		    }
     		}
     	}
     	catch(SQLException ex){
