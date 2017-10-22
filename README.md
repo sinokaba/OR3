@@ -14,7 +14,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Installing
 
-Create a new Java Project on Eclipse, and name it whatever you want
+Create a new Java Project on Eclipse, the runtime I'm using is SE-1.8, and name it whatever you want
 
 Download or Fork the repository
 
