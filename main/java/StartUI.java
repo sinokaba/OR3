@@ -113,17 +113,50 @@ public class StartUI extends Application{
 		
 		stage.setTitle("OR3 - Welcome!");
 		
-		TextField searchField = new TextField();
-		searchField.getStyleClass().add("mainSearchField");
+		ObservableList<String> searchChoices = 
+			    FXCollections.observableArrayList(
+			        "Name",
+			        "Type",
+			        "Food",
+			        "Keyword"			        
+			    );
+		final ComboBox searchDropdown = new ComboBox(searchChoices);
+		searchDropdown.getSelectionModel().selectFirst();
+		searchDropdown.setVisibleRowCount(4);
+		searchDropdown.getStyleClass().add("mainSearchDropdown");
+		
+		TextField restaurantSearchField = new TextField();
+		restaurantSearchField.getStyleClass().add("mainSearchField");
+		restaurantSearchField.setPromptText("of Restaurant.");
 
+        searchDropdown.setOnAction((e) -> {
+        	String currentSelectedItem = searchDropdown.getSelectionModel().getSelectedItem().toString();
+            if(currentSelectedItem.equals("Name") || currentSelectedItem.equals("Type")){
+            	restaurantSearchField.setPromptText("of Restaurant.");
+            }
+            else if(currentSelectedItem.equals("Food")){
+            	restaurantSearchField.setPromptText("called or catgeory.");
+            }
+            else{
+            	restaurantSearchField.setPromptText("for whatever I feel like");            	
+            }
+            
+        });
+        
+		TextField locationSearchField = new TextField();
+		locationSearchField.getStyleClass().add("locationSearchField");
+		locationSearchField.setPromptText("US state, city, or zipcode.");
+	
 		Button goBtn = new Button("Search");
 		goBtn.getStyleClass().add("searchButton");
 		goBtn.setMinHeight(18);
 		goBtn.setMinWidth(30);
 		
 		//hbox lays out its children in a single row, for formatting
-		HBox searchWrap = new HBox(5);				
-		searchWrap.getChildren().add(searchField);
+		HBox searchWrap = new HBox(3);				
+		searchWrap.getChildren().add(searchDropdown);
+		searchWrap.getChildren().add(restaurantSearchField);
+		searchWrap.getChildren().add(locationSearchField);
 		searchWrap.getChildren().add(goBtn);
 		grid.add(searchWrap, 1, 1);
 				
@@ -446,7 +479,6 @@ public class StartUI extends Application{
             }
 
         };
-
     }
 	
 	/**
