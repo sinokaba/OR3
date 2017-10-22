@@ -5,7 +5,6 @@ import java.net.*;
 import org.json.*;
 
 public class GoogleMapsRequest {
-	  private HttpURLConnection connection = null;
 	  private String apiBase = "https://maps.googleapis.com/maps/api/";
 	  private String apiKey = null;
 	  

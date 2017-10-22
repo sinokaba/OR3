@@ -5,6 +5,10 @@
 	-fx-text-fill: #ffffff;
 }
 
+.menu .label{
+    -fx-text-fill: white;
+}
+
 .title .text{
 	-fx-font-family:"Lucida Handwriting";
 	-fx-font-weight: 900;
@@ -25,11 +29,25 @@
 	-fx-font-size: 15pt;
 	-fx-min-width: 35;
 	-fx-min-height: 50;
+	-fx-cursor: hand;
 }
 
-.searchButton{
-	-fx-background-color: #c0392b;
-	-fx-min-height: 15;
+.menuButton:hover{
+	-fx-background-color: #3498db !important;	
+}
+
+.menuButton{
+	-fx-background-color: transparent !important;
+}
+
+.text-field {
+    -fx-background-color: #3498db , white , white;
+    -fx-font-size: 13pt;
+}
+
+.text-field:focused {
+    -fx-background-color: #3498db , white , white;
+    -fx-background-insets: -3 -3 -3 -3, 0 0 0 0, 0 -1 3 -1;
 }
 
 .formField{
@@ -38,21 +56,14 @@
     -fx-font-size: 13pt;
 }
 
-.mainSearchField{
-	-fx-min-width: 330;
-	-fx-min-height: 42;
-	-fx-font-size: 13pt;
-}
-
-.locationSearchField{
-	-fx-min-wdith: 175;
-	-fx-min-height: 42;
-	-fx-font-size: 13pt;	
+.searchButton{
+	-fx-background-color: #c0392b;
+	-fx-min-height: 40 !important;
 }
 
 .mainSearchDropdown{
     -fx-pref-width: 100 !important;   	
-    -fx-pref-height: 44;	
+    -fx-pref-height: 42 !important;	
 }
 
 .mainSearchDropdown > .list-view{

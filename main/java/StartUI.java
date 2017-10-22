@@ -9,6 +9,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.*;
@@ -35,38 +36,34 @@ public class StartUI extends Application{
 		primaryStage.setTitle("OR3 - Review, Rate, Dine.");
 		
 		GridPane grid = new GridPane();
-
-        MenuBar rightMenu = new MenuBar();
-        MenuBar	leftMenu = new MenuBar();
         
         Image userIcon = new Image(getClass().getResourceAsStream("/static/images/user.png"));
         ImageView userView = new ImageView(userIcon);
         userView.setFitWidth(44);
         userView.setFitHeight(44);
-
+               
         Image brandIcon = new Image(getClass().getResourceAsStream("/static/images/brand.png"));
         ImageView brandView = new ImageView(brandIcon);
         brandView.setFitWidth(44);
         brandView.setFitHeight(44);
         
-        // --- Menu Home page link
-        Menu menuHome = new Menu("Home");
-        menuHome.setGraphic(brandView);
-        
-        // --- Menu User page
-        Menu menuUser = new Menu("User");
-        menuUser.setGraphic(userView);
-        
-        leftMenu.getMenus().addAll(menuHome);
-        rightMenu.getMenus().addAll(menuUser);
+        Button homeBtn = new Button("Home", brandView);
+        homeBtn.getStyleClass().add("menuButton");
+        Button userBtn = new Button("", userView);
+        userBtn.getStyleClass().add("menuButton");
 
-        leftMenu.getStyleClass().add("menu-bar");
-        rightMenu.getStyleClass().add("menu-bar");
-     
+        ToolBar leftBar = new ToolBar();
+        leftBar.getItems().addAll(homeBtn);
+        ToolBar rightBar = new ToolBar();
+        rightBar.getItems().addAll(userBtn);
+        
+        leftBar.getStyleClass().add("menu-bar");
+        rightBar.getStyleClass().add("menu-bar");
+        
         Region spacer = new Region();
         spacer.getStyleClass().add("menu-bar");
         HBox.setHgrow(spacer, Priority.SOMETIMES);
-        HBox menubars = new HBox(leftMenu, spacer, rightMenu);
+        HBox menubars = new HBox(leftBar, spacer, rightBar);
         
         BorderPane root = new BorderPane();
         root.setTop(menubars);
@@ -82,17 +79,30 @@ public class StartUI extends Application{
 		grid.setHgap(10);
 		grid.setVgap(10);
 
-		startPage(grid, primaryStage);		
+		startPage(grid, primaryStage);
+		
+		homeBtn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+            	System.out.println("go back home.");
+        		grid.getChildren().remove(1, numGridChildren);
+        		numGridChildren = 1;            	
+        		startPage(grid, primaryStage);		     
+            }
+        	
+        });
 		//old image used
         //https://mir-s3-cdn-cf.behance.net/project_modules/1400/4df1ee33482977.56acb21f80216.jpg
 		String backgroundUrl = "https://cdn.vox-cdn.com/uploads/chorus_asset/file/8712449/gbb_food.jpg";
         root.setStyle("-fx-background-image: url('"+backgroundUrl+"');");
         root.setCenter(grid);
         Scene scene = new Scene(root, gridWidth, gridHeight);	
-		//links the css for styling the different views		
+		
+        //links the css for styling the different views		
         scene.getStylesheets().addAll(getClass().getResource(	
                 "/static/css/home.css"
         ).toExternalForm());
+        
 		primaryStage.setScene(scene);
 		
 		primaryStage.show();	
@@ -106,12 +116,10 @@ public class StartUI extends Application{
 	* @return no return value
 	*/
 	public void startPage(GridPane grid, Stage stage){
-	
+		stage.setTitle("OR3 - Welcome!");	
 		//pane is empty, acts as buffer for layout other elements
 	    Pane buffer = new Pane();					
 		grid.add(buffer, 2, 0);
-		
-		stage.setTitle("OR3 - Welcome!");
 		
 		ObservableList<String> searchChoices = 
 			    FXCollections.observableArrayList(
@@ -120,37 +128,29 @@ public class StartUI extends Application{
 			        "Food",
 			        "Keyword"			        
 			    );
-		final ComboBox searchDropdown = new ComboBox(searchChoices);
-		searchDropdown.getSelectionModel().selectFirst();
-		searchDropdown.setVisibleRowCount(4);
-		searchDropdown.getStyleClass().add("mainSearchDropdown");
+		DropdownMenu searchDropdown = new DropdownMenu(null, 4, searchChoices, 0, 0, true);
+		searchDropdown.addClass("mainSearchDropdown");
 		
-		TextField restaurantSearchField = new TextField();
-		restaurantSearchField.getStyleClass().add("mainSearchField");
-		restaurantSearchField.setPromptText("of Restaurant.");
+		CustomTextField restaurantSearchField = new CustomTextField("of Restaurant...", 42, 315);
 
         searchDropdown.setOnAction((e) -> {
         	String currentSelectedItem = searchDropdown.getSelectionModel().getSelectedItem().toString();
             if(currentSelectedItem.equals("Name") || currentSelectedItem.equals("Type")){
-            	restaurantSearchField.setPromptText("of Restaurant.");
+            	restaurantSearchField.setPromptText("of Restaurant...");
             }
             else if(currentSelectedItem.equals("Food")){
-            	restaurantSearchField.setPromptText("called or catgeory.");
+            	restaurantSearchField.setPromptText("called or category...");
             }
             else{
-            	restaurantSearchField.setPromptText("for whatever I feel like");            	
+            	restaurantSearchField.setPromptText("for whatever I feel like...");            	
             }
             
         });
         
-		TextField locationSearchField = new TextField();
-		locationSearchField.getStyleClass().add("locationSearchField");
-		locationSearchField.setPromptText("US state, city, or zipcode.");
-	
+		CustomTextField locationSearchField = new CustomTextField("US state, city, or zipcode.", 42, 210);
+		
 		Button goBtn = new Button("Search");
 		goBtn.getStyleClass().add("searchButton");
-		goBtn.setMinHeight(18);
-		goBtn.setMinWidth(30);
 		
 		//hbox lays out its children in a single row, for formatting
 		HBox searchWrap = new HBox(3);				
@@ -210,10 +210,8 @@ public class StartUI extends Application{
 		Label userName = new Label("Username");
 		userName.getStyleClass().add("field");
 		grid.add(userName, 0, 2);
-		TextField userTextField = new TextField();
-		userTextField.setPromptText("Enter your Username");
-		userTextField.getStyleClass().add("formField");
-		userTextField.addEventFilter(KeyEvent.KEY_TYPED, maxLength(16));
+		CustomTextField userTextField = new CustomTextField("Enter your Username.", 38, 258);
+		userTextField.addCharLimit(16);
 		grid.add(userTextField, 1, 2);
 		
 		Label pw = new Label("Password:");
@@ -284,15 +282,16 @@ public class StartUI extends Application{
 	* @return no return value
 	*/
 	public void signUp(GridPane grid, Stage stage){
+		int fieldW = 258;
+		int fieldH = 38;
+		
 		stage.setTitle("OR3 - Create Account");
 		
 		Label userName = new Label("User Name:");
 		userName.getStyleClass().add("field");
 		grid.add(userName, 0, 2);
-		TextField userTextField = new TextField();
-		userTextField.setPromptText("Your unique username.");
-		userTextField.getStyleClass().add("formField");
-		userTextField.addEventFilter(KeyEvent.KEY_TYPED, maxLength(16));
+		CustomTextField userTextField = new CustomTextField("Your unique username.", fieldH, fieldW);
+		userTextField.addCharLimit(16);
 		grid.add(userTextField, 1, 2);
 		
 		Label pw = new Label("Password:");
@@ -314,20 +313,15 @@ public class StartUI extends Application{
 		Label email = new Label("Email:");
 		email.getStyleClass().add("field");
 		grid.add(email, 0, 5);
-		TextField emailTextField = new TextField();
-		emailTextField.setPromptText("Enter your email address.");
-		emailTextField.getStyleClass().add("formField");
+		CustomTextField emailTextField = new CustomTextField("Enter your email address.", fieldH, fieldW);
 		grid.add(emailTextField, 1, 5);
 
 		Label zipcode = new Label("Zipcode:");
 		zipcode.getStyleClass().add("field");
 		grid.add(zipcode, 0, 6);
-		TextField zipTextField = new TextField();
-		zipTextField.setPromptText("Enter your 5 digit zipcode.");
-		zipTextField.getStyleClass().add("formField");
-		zipTextField.addEventFilter(KeyEvent.KEY_TYPED, maxLength(5));
+		CustomTextField zipTextField = new CustomTextField("Enter your 5 digit zipcode.", fieldH, fieldW);
+		zipTextField.addCharLimit(5);
 		grid.add(zipTextField, 1, 6);	
-		
 	
 		HBox birthdayWrapper = new HBox(10);
 		
@@ -335,62 +329,9 @@ public class StartUI extends Application{
 		birthday.getStyleClass().add("field");
 		grid.add(birthday, 0, 7);
 		
-		/*
-		TextField month = new TextField();
-		month.setPromptText("Month");
-		month.setPrefWidth(75);
-				
-		TextField day = new TextField();
-		day.setPromptText("Day");
-		day.setPrefWidth(75);
-		
-		TextField year = new TextField();
-		year.setPromptText("Year");
-		year.setPrefWidth(75);
-		*/
-		
-		ObservableList<String> months = 
-			    FXCollections.observableArrayList(
-			        "01",
-			        "02",
-			        "03",
-			        "04",
-			        "05",
-			        "06",
-			        "07",
-			        "08",
-			        "09",
-			        "10",
-			        "11",
-			        "12"			        
-			    );
-		ObservableList<String> years = FXCollections.observableArrayList();
-		for(int i = 2012; i > 1910; i--){
-			years.add(String.valueOf(i));
-		}
-		
-		ObservableList<String> days = FXCollections.observableArrayList();
-		for(int i = 1; i < 32; i++){
-			days.add(String.valueOf(i));
-		}
-		final ComboBox monthsDropdown = new ComboBox(months);
-		monthsDropdown.setValue("Month");
-		monthsDropdown.setVisibleRowCount(9);
-        
-		final ComboBox daysDropdown = new ComboBox(days);
-		daysDropdown.setValue("Day");
-		daysDropdown.setVisibleRowCount(9);
-		
-		final ComboBox yearsDropdown = new ComboBox(years);
-		yearsDropdown.setValue("Year");
-		yearsDropdown.setVisibleRowCount(9);
-        		
-        /*
-		birthdayWrapper.getChildren().add(month);
-		birthdayWrapper.getChildren().add(day);
-		birthdayWrapper.getChildren().add(year);
-		grid.add(birthdayWrapper, 1, 6);
-		*/
+		DropdownMenu monthsDropdown = new DropdownMenu("Month", 9, null, 1, 12, true);
+		DropdownMenu daysDropdown = new DropdownMenu("Day", 9, null, 1, 31, true);
+		DropdownMenu yearsDropdown = new DropdownMenu("Year", 9, null, 1920, 2017, false);
 		
 		birthdayWrapper.getChildren().add(monthsDropdown);
 		birthdayWrapper.getChildren().add(daysDropdown);
@@ -421,8 +362,6 @@ public class StartUI extends Application{
             public void handle(ActionEvent e) {
             	boolean formComplete = true;
             	for (Node child : grid.getChildren()) {
-            	    Integer column = GridPane.getColumnIndex(child);
-            	    Integer row = GridPane.getRowIndex(child);
             	    if(child instanceof TextField){
             	    	if(((TextField)child).getText().equals("")){
             	    		formComplete = false;
@@ -432,7 +371,7 @@ public class StartUI extends Application{
             	    else if(child instanceof HBox){
             	    	for(Node n : ((HBox)child).getChildren()){
             	    		if(n instanceof ComboBox){
-	                	    	String selectedVal = ((ComboBox)n).getSelectionModel().getSelectedItem().toString();
+	                	    	String selectedVal = ((ComboBox<String>)n).getSelectionModel().getSelectedItem().toString();
 	                	    	if(selectedVal.equals("Month") || selectedVal.equals("Day") || selectedVal.equals("Year")){
 	                	    		formComplete = false;
 	                	    		break;
@@ -465,21 +404,6 @@ public class StartUI extends Application{
         });
 	}
 
-	public EventHandler<KeyEvent> maxLength(final Integer i) {
-        return new EventHandler<KeyEvent>() {
-
-            @Override
-            public void handle(KeyEvent arg0) {
-
-                TextField tx = (TextField) arg0.getSource();
-                if (tx.getText().length() >= i) {
-                    arg0.consume();
-                }
-
-            }
-
-        };
-    }
 	
 	/**
 	* This method starts the application, the main method

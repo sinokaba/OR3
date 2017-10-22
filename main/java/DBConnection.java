@@ -1,11 +1,8 @@
 package main.java;
+
 import java.sql.*;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 
 public class DBConnection {
     private Connection connection;	
