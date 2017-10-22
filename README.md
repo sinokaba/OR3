@@ -1,4 +1,4 @@
-# Project Title
+# OR3
 
 A native Java Application for the desktop. It is a restaurant review and rating system.
 Users can create accounts, look up restaurants, write reviews, and give restaurants scores for different fields.
