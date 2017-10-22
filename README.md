@@ -28,6 +28,8 @@ Go to Libraries tab and click the "Add External Jars" option.
 
 Look for where your downloaded java connector is located, and add the jar file to the external libary.
 
+Open the Main.java file and run the program.
+
 ## Still need to do
 
 * Add dummy restaurants for testing
