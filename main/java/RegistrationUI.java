@@ -41,7 +41,7 @@ public class RegistrationUI{
 		
 
 		Label zipcode = form.createLabel("Zipcode:");
-		zipcodeField = form.createTextField("Enter your 5 digit zipcode.", 6);
+		zipcodeField = form.createTextField("Enter your 5 digit zipcode.", 5);
 		createFieldLabelPair(win.layout, zipcodeField, zipcode, 6);
 		
 		HBox birthdayWrapper = new HBox(10);
@@ -72,42 +72,45 @@ public class RegistrationUI{
 		win.layout.add(actionTarget, 1, 10, 4, 1);
         
 		win.updateElementCount(15);
-        /*
-        signUpBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-            	String email = emailTextField.getText();
-            	String name = userTextField.getText();
-            	String pw = pwBox.getText();
-            	String pw2 = pwBoxV.getText();
-            	String zip = zipTextField.getText();
-            	boolean valid = validateForm(pw, pw2, name, email, zip, grid);
-            	if(valid){
-            		actionTarget.setFill(Color.LIMEGREEN);
-            		actionTarget.setText("We gucci");
-            		String bDay = yearsDropdown.getValue()
-            					+ "-" + monthsDropdown.getValue()
-            					+ "-" + daysDropdown.getValue();
-            		User newUser = new User(name, pw, bDay, email, zip, 0);
-            		db.insertUser(newUser);
-            	}
-            	else{
-            		actionTarget.setFill(Color.FIREBRICK);
-            		actionTarget.setText("Invalid Credentials Entered.");
-            	}
-            }
-        });
-        
-        backBtn.setOnAction(new EventHandler<ActionEvent>(){
-        	@Override
-        	public void handle(ActionEvent e){
-        		grid.getChildren().remove(1, numGridChildren);
-        		numGridChildren = 1;
-        		startPage(grid, stage);
-        	}
-        });
-        */
 	}
+	
+	public String getUsername(){
+		return usernameField.getText();
+	}
+	
+	public String getEmail(){
+		return emailField.getText();
+	}
+	
+	public String getPassword(){
+		return pwField.getText();
+	}
+	
+	public String getPasswordV(){
+		return pwFieldVerify.getText();
+	}
+
+	public String getZipcode(){
+		return zipcodeField.getText();
+	}
+	
+	public String getBirthday(){
+		return year.getValue() + "-" + month.getValue() + "-" + day.getValue();
+	}
+	
+	/*
+	public void checkForm(){
+    	String username = getUsername();
+    	String email = getEmail();
+    	String pw = getPassword();
+    	String pwV = getPasswordV();
+    	String zip = getZipcode();
+    	if(validRegistration(pw, pwV, username, email, zip)){
+    		User newUser = new User(username, pw, regView.getBirthday(), email, zip, 0);
+    		db.insertUser(newUser);
+    	}
+	}
+	*/
 	
 	public void createFieldLabelPair(GridPane grid, CustomTextField field, Label lbl, int row){		
 		grid.add(lbl, 0, row);

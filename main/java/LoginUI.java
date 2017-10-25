@@ -13,8 +13,8 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 public class LoginUI {
-	CustomTextField usernameField;
-	PasswordField passwordField;
+	private CustomTextField usernameField;
+	private PasswordField passwordField;
 	Button loginBtn, backBtn;
 	
 	public void buildStage(AppWindow win, int w, int h){
@@ -47,40 +47,6 @@ public class LoginUI {
 		win.layout.add(actionTarget, 1, 9, 7, 1);
         
 		win.updateElementCount(7);
-        /*
-        //increments numGridChildren based on number of children added in this method
-		//numGridChildren += 7;								
-		
-        loginBtn.setOnAction(new EventHandler<ActionEvent>() {
-        	//if login button is clicked several messages pop up depending on the input
-        	//will add verification and real functionality in the future
-            @Override
-            public void handle(ActionEvent e) {
-            	actionTarget.setFill(Color.FIREBRICK);
-                String enteredName = userTextField.getText();
-                if(enteredName.equals("")){
-                	actionTarget.setText("Please enter a valid username!");
-                }
-                else if(pwBox.getText().equals("")){
-                	actionTarget.setText("Please enter a valid password.");
-                }
-                else{
-                	actionTarget.setText("Sign in button pressed");                	
-                }
-                System.out.println(pwBox);
-            }
-        });
-        
-        backBtn.setOnAction(new EventHandler<ActionEvent>(){
-        	//if back button is clicked the screen will return to start page
-        	@Override
-        	public void handle(ActionEvent e){
-        		grid.getChildren().remove(1, numGridChildren);
-        		numGridChildren = 1;
-        		startPage(grid, stage);
-        	}
-        });		
-        */
 	}
 	
 	public void createFieldLabelPair(GridPane grid, CustomTextField field, Label lbl, int row){		
@@ -91,5 +57,13 @@ public class LoginUI {
 	public void createFieldLabelPair(GridPane grid, PasswordField field, Label lbl, int row){
 		grid.add(lbl, 0, row);
 		grid.add(field, 1, row);			
+	}
+	
+	public String getUsernameEntered(){
+		return usernameField.getText();
+	}
+	
+	public String getPasswordEntered(){
+		return passwordField.getText();
 	}
 }

@@ -9,25 +9,33 @@ import javafx.stage.Stage;
 
 public class UIMediator extends Application{
 
-	private Stage primaryStage;
-	private Scene scene;
 	final int WINDOW_HEIGHT = 600;
 	final int WINDOW_WIDTH = 800;
 	//private StartUI startPage;
+	private Stage primaryStage;
+	private Scene scene;
+	
 	private AppWindow window;	
 	private	HomepageUI homeView;
 	private RegistrationUI regView;
 	private LoginUI loginView;
+	private DBConnection db;
 	
 	private int formFieldWidth = 258;
 	private int formFieldHeight = 38;
-	
+	final private String dbURL = "jdbc:mysql://localhost:3306/2102_or3?autoReconnect=true&useSSL=false";
+	final private String dbUsername = "root";
+	final private String dbPassword = "allanK0_ph";
+
+	Popup err, confirm;
+	ValidateForm formValidation;
 	
 	public UIMediator(){
 		window = new AppWindow();
 		homeView = new HomepageUI();
 		regView = new RegistrationUI();
 		loginView = new LoginUI();
+		db = new DBConnection(dbURL, dbUsername, dbPassword);
 	}
 	
 	
@@ -38,6 +46,9 @@ public class UIMediator extends Application{
 	public void start(Stage stage) throws Exception{
 		loadHomePage();
 		scene = new AppScene(window.root, WINDOW_WIDTH, WINDOW_HEIGHT);
+		err = new Popup("err", window.layout.getScene().getWindow());
+		confirm = new Popup("conf", window.layout.getScene().getWindow());
+		formValidation = new ValidateForm(window.layout, db, err);
 		stage.setScene(scene);
 		
 		window.homeBtn.setOnAction(new EventHandler<ActionEvent>() {
@@ -80,7 +91,16 @@ public class UIMediator extends Application{
 		regView.registerBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
 	        public void handle(ActionEvent e) {
-	        	//
+	        	String username = regView.getUsername();
+	        	String email = regView.getEmail();
+	        	String pw = regView.getPassword();
+	        	String pwV = regView.getPasswordV();
+	        	String zip = regView.getZipcode();
+	        	if(formValidation.validRegistration(pw, pwV, username, email, zip)){
+            		User newUser = new User(username, pw, regView.getBirthday(), email, zip, 0);
+            		db.insertUser(newUser);
+	        	}
+	        	
 	        }
 	    });
 	}
@@ -96,7 +116,18 @@ public class UIMediator extends Application{
 		loginView.loginBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
 	        public void handle(ActionEvent e) {
-	        	//regView.buildStage(window, formFieldWidth, formFieldHeight);
+	        	String enteredUsername = loginView.getUsernameEntered();
+	        	String enteredPassword = loginView.getPasswordEntered();
+	        	//refactor this later
+	        	if(enteredUsername.trim().length() <= 0 || enteredPassword.trim().length() <= 0){
+	        		err.showAlert("Error form.", "Please fill out all the fields.");
+	        	}
+	        	if(db.verifyUser(enteredUsername, enteredPassword)){
+	        		
+	        	}
+	        	else{
+	        		err.showAlert("Error form.", "User not found with that password.");	        		
+	        	}
 	        }
 	    });
 	}

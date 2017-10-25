@@ -73,10 +73,10 @@ public class DBConnection {
     	java.sql.Date birthday = null;
     	boolean validZipcode = true;
     	//boolean locationInDB = executeQuery("SELECT EXISTS(SELECT 1 FROM locations WHERE zipcode = "+zipcode+")");
-    	String zip = newUser.zipcode;
+    	String zip = newUser.getZipcode();
     	try{
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-            java.util.Date parsed = format.parse(newUser.birthday);
+            java.util.Date parsed = format.parse(newUser.getBday());
             System.out.println(parsed);
             birthday = new java.sql.Date(parsed.getTime());
     	}
@@ -96,19 +96,30 @@ public class DBConnection {
     	if(validZipcode){
 	    	System.out.println("birthday: " + birthday);
 			String sqlQ = "INSERT INTO users \n"
-						+ " SET username = '" + newUser.name + "',\n"
-						+ "  email = '" + newUser.email + "',\n"
+						+ " SET username = '" + newUser.getUsername() + "',\n"
+						+ "  email = '" + newUser.getEmail() + "',\n"
 						+ "  birthdate = '" + birthday + "',\n"
-						+ "  password = '" + newUser.password + "',\n"
+						+ "  password = '" + newUser.getPassword() + "',\n"
 						+ "  fk_location = (SELECT idlocations FROM locations WHERE zipcode = '" + zip + "')";	
 			System.out.println(sqlQ);
-			executeQuery(sqlQ, "User: " + newUser.name + " added");
+			executeQuery(sqlQ, "User: " + newUser.getUsername() + " added");
     	}
     	else{
     		System.out.println("User could not be added because entered zipcode is not supported.");
     	}
     }
-   
+    
+    //very unsafe, but ok for now just for testing
+    public boolean verifyUser(String username, String pass){
+    	if(!rowExists("users", "username", username)){
+    		return false;
+    	}
+    	String sqlQ = "Select * from users Where username='" + username + "' and password='" + pass + "'";
+    	if(!executeQuery(sqlQ)){
+    		return false;
+    	}
+    	return true;
+    }
 	/**
 	* This method creates an sql query for inserting a new restaurant in the db
 	* 	 
@@ -116,7 +127,7 @@ public class DBConnection {
 	* More fields will soon be added, just testing right now
 	* @return no return value
 	*/    
-    public void insertaRestaurant(String name, String address){
+    public void insertRestaurant(String name, String address){
 		String sqlQ = "insert into restaurants "
 				+ " (name, address, rating)"
 				+ " values ('" + name + "', '" + address + "', '" + 3 +"')";

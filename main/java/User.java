@@ -12,10 +12,10 @@ public class User {
 	/**
 	* Variables associated with this class declared
 	*/
-	String name, password, email, zipcode, birthday;
-	int age, privilege;
-	long creationDate, birthdate;
-	HashMap<Long, Review> reviews = new HashMap<Long, Review>();
+	private String name, password, email, zipcode, birthday, status;
+	private int age, privilege;
+	private long creationDate, birthdate;
+	private HashMap<Long, Review> reviews = new HashMap<Long, Review>();
 
 	/**
 	* The User class constructor
@@ -84,5 +84,33 @@ public class User {
 	
 	public int getAge(){
 		return 0;
+	}
+	
+	public String getUsername(){
+		return name;
+	}
+	
+	public String getZipcode(){
+		return zipcode;
+	}
+	
+	public String getBday(){
+		return birthday;
+	}
+	
+	public String getEmail(){
+		return email;
+	}
+	
+	public String getPassword(){
+		return password;
+	}
+	
+	public void loggedIn(){
+		status = "online";
+	}
+	
+	public void loggedOff(){
+		status = "offline";
 	}
 }
