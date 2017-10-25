@@ -28,9 +28,9 @@ public class ValidateForm {
 		err = popup;
 	}
 	
-	public boolean validRegistration(String pw, String pwRe, String name, String email, String zip){
+	public boolean validUserRegistration(String pw, String pwRe, String name, String email, String zip){
     	//Tooltip tp = new Tooltip("Invalid password. Must be at least 6 chars long and have 1 number and uppercase letter.");;
-    	if(!noEmptyFields(grid)){
+    	if(!noEmptyFields(grid, true)){
     		return false;
     	}
     	else if(!checkUsername(name)){
@@ -47,6 +47,13 @@ public class ValidateForm {
 	    	return false;
 		}
     	return true;    
+	}
+	
+	public boolean validRestaurantReg(String name, String address, String zip, String phone){
+	   	if(!noEmptyFields(grid, false)){
+    		return false;
+    	}
+	   	return true;
 	}
 	
 	public boolean checkPassword(String pw, String pwRe){
@@ -85,7 +92,7 @@ public class ValidateForm {
 		return true;
 	}
 	
-	public boolean noEmptyFields(GridPane grid){
+	public boolean noEmptyFields(GridPane grid, boolean noWhitespace){
 		for (Node child : grid.getChildren()) {
     	    if(child instanceof TextField){
     	    	String userInput = ((TextField)child).getText();
@@ -93,9 +100,11 @@ public class ValidateForm {
     	    		err.showAlert("Form Error!", "All form fields must be completed.");;     	    		
                 	return false;
     	    	}
-    	    	else if(userInput.contains(" ")){
-    	    		err.showAlert("Form Error!", "No white spaces please.");;    
-    	    	    return false;            	    		
+    	    	if(noWhitespace){
+	    	    	if(userInput.contains(" ")){
+	    	    		err.showAlert("Form Error!", "No white spaces please.");;    
+	    	    	    return false;            	    		
+	    	    	}
     	    	}
     	    }
     	    else if(child instanceof HBox){

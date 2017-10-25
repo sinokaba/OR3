@@ -12,56 +12,31 @@ import javafx.stage.Stage;
 public class HomepageUI{
 	private CustomTextField restaurantSearchField, locationSearchField;
 	DropdownMenu searchDropdown;
-	Button searchBtn, loginBtn, signUpBtn;
+	Button searchBtn, loginBtn, signUpBtn, addRestaurantBtn;
 	
-	public void buildStage(AppWindow win){
-		//pane is empty, acts as buffer for layout other elements
+	public void buildStage(AppWindow win, boolean loggedInUser){
 		win.resetLayout();
 		HBox searchWrap = createSearchBar(win.layout);
 		win.layout.add(searchWrap, 1, 1);
-				
-		loginBtn = new Button("Login");
-		signUpBtn = new Button("Sign Up");
-		
 		HBox hbBtn = new HBox(30);		
 		hbBtn.setAlignment(Pos.CENTER);
-		hbBtn.getChildren().add(loginBtn);
-		hbBtn.getChildren().add(signUpBtn);
-		
+		if(!loggedInUser){
+			loginBtn = new Button("Login");
+			signUpBtn = new Button("Sign Up");
+			
+			hbBtn.getChildren().add(loginBtn);
+			hbBtn.getChildren().add(signUpBtn);
+		}
+		else{
+			addRestaurantBtn = new Button("Add Restaurant");
+			hbBtn.getChildren().add(addRestaurantBtn);
+		}
 		win.layout.add(hbBtn, 1, 6);
-		
 		win.updateElementCount(3);
-		/*
-		//gridEleCount += 3;
-		
-		//if the login button is clicked the view is switched to the login page
-		loginBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-            	//gets rid of all the elements in grid except for title
-        		grid.getChildren().remove(1, gridEleCount);
-        			//resets number of children to 1
-        			//gridEleCount = 1;						
-	            	//login(grid, stage);
-            }
-        });
-		
-		//if the sign up button is clicked the view is switched to the sign up page
-		signUpBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-            	//gets rid of all the elements in grid except for title
-        		grid.getChildren().remove(1, gridEleCount);	
-        		//resets the number of children to 1
-        		//gridEleCount = 1;							
-            	//signUp(grid, stage);
-            }
-        });
-        */
-		
 	}
 	
 	public HBox createSearchBar(GridPane grid){
+		//pane is empty, acts as buffer for layout other elements
 	    Pane buffer = new Pane();					
 		grid.add(buffer, 2, 0);
 		

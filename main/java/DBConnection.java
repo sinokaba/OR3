@@ -110,15 +110,14 @@ public class DBConnection {
     }
     
     //very unsafe, but ok for now just for testing
-    public boolean verifyUser(String username, String pass){
+    public User verifyUser(String username, String pass){
+    	/*
     	if(!rowExists("users", "username", username)){
     		return false;
     	}
+    	*/
     	String sqlQ = "Select * from users Where username='" + username + "' and password='" + pass + "'";
-    	if(!executeQuery(sqlQ)){
-    		return false;
-    	}
-    	return true;
+    	return getQueryResultSet(sqlQ);
     }
 	/**
 	* This method creates an sql query for inserting a new restaurant in the db
@@ -127,11 +126,27 @@ public class DBConnection {
 	* More fields will soon be added, just testing right now
 	* @return no return value
 	*/    
-    public void insertRestaurant(String name, String address){
-		String sqlQ = "insert into restaurants "
-				+ " (name, address, rating)"
-				+ " values ('" + name + "', '" + address + "', '" + 3 +"')";
-		executeQuery(sqlQ, "Restaurant: " + name + " added");    	
+    public void insertRestaurant(Restaurant restaurant){
+    	boolean validZip = true;
+    	String zip = restaurant.zip;
+    	if(!rowExists("locations", "zipcode", zip)){
+    		String loc[] = mapsAPI.getGeolocation(zip);
+    		if(loc[0] != null){
+    			insertLocation(zip, loc[0], loc[1]);
+    		}
+    		else{
+    			validZip = false;
+    		}
+    	}
+    	if(validZip){
+    		String sqlQ = "INSERT INTO restaurants \n"
+					+ " SET name = '" + restaurant.name + "',\n"
+					+ "  address = '" + restaurant.address + "', \n"
+					+ "  phone = '" + restaurant.phone + "',\n"
+					+ "  fk_location = (SELECT idlocations FROM locations WHERE zipcode = '" + zip + "')";	
+    		System.out.println(sqlQ);
+			executeQuery(sqlQ, "User: " + restaurant.name + " added");
+    	}
     }
     
 	/**
@@ -216,7 +231,7 @@ public class DBConnection {
     		ResultSet rs = statement.executeQuery(query);
     		System.out.println("result of q: " + rs);
     		if(rs.next()) {
-    		    if(rs.getInt(1) == 1){
+    		    if(rs.getInt(1) > 0){
     		    	queryRes = true;
     		    }
     		}
@@ -225,6 +240,30 @@ public class DBConnection {
     		System.out.println("SQl exception erro: " + ex);
     	}      	
     	return queryRes;
+    }
+    
+    public User getQueryResultSet(String query){
+		User usr = null;
+    	try{
+			ResultSet rs = statement.executeQuery(query);
+			System.out.println("result of q: " + rs);
+			if(rs.next()) {
+				System.out.println(rs.getInt(1));
+			    if(rs.getInt(1) > 0){
+			    	String name = rs.getString("username");
+			    	String pw = rs.getString("password");
+			    	String birthdate = rs.getString("birthdate");
+			    	String email = rs.getString("email");
+			    	String loc = rs.getString("fk_location");
+			    	int privilege = rs.getInt("privilege");
+			    	usr = new User(name, pw, birthdate, email, loc, privilege);
+			    }
+			}
+    	}
+    	catch(SQLException ex){
+    		ex.printStackTrace();
+    	}
+		return usr;
     }
     
 }

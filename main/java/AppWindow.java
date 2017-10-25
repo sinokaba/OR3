@@ -47,7 +47,7 @@ public class AppWindow{
 	public HBox createWindowMenu(){
         homeBtn = createMenuBtn("brand.png", "OR3", 44);
         userAccountBtn = createMenuBtn("user.png", "", 44);
-   
+
         ToolBar leftBar = new ToolBar();
         leftBar.getItems().addAll(homeBtn);
         ToolBar rightBar = new ToolBar();

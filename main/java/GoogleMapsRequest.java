@@ -51,7 +51,7 @@ public class GoogleMapsRequest {
 						  String city = sp2[0].substring(2);
 						  System.out.println("City: " + city + ", State: " + sp3[1]);
 						  Matcher matcher = VALID_ADDRESS.matcher(sp3[1]);
-						  if(!matcher.find()){
+						  if(matcher.find()){
 							  return loc;
 						  }
 						  else{

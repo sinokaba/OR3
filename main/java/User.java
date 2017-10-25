@@ -108,9 +108,14 @@ public class User {
 	
 	public void loggedIn(){
 		status = "online";
+		System.out.println("Logged in.");
 	}
 	
 	public void loggedOff(){
 		status = "offline";
+	}
+	
+	public int getPrivilege(){
+		return privilege;
 	}
 }

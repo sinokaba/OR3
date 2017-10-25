@@ -4,6 +4,8 @@ import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
@@ -19,14 +21,18 @@ public class UIMediator extends Application{
 	private	HomepageUI homeView;
 	private RegistrationUI regView;
 	private LoginUI loginView;
+	private RestaurantRegistrationUI restaurantRegView;
+	private RestaurantUI resView;
 	private DBConnection db;
 	
 	private int formFieldWidth = 258;
 	private int formFieldHeight = 38;
+	private boolean loggedIn = false;
 	final private String dbURL = "jdbc:mysql://localhost:3306/2102_or3?autoReconnect=true&useSSL=false";
 	final private String dbUsername = "root";
 	final private String dbPassword = "allanK0_ph";
 
+	private Restaurant currentRes;
 	Popup err, confirm;
 	ValidateForm formValidation;
 	
@@ -35,6 +41,8 @@ public class UIMediator extends Application{
 		homeView = new HomepageUI();
 		regView = new RegistrationUI();
 		loginView = new LoginUI();
+		restaurantRegView = new RestaurantRegistrationUI();
+		resView = new RestaurantUI();
 		db = new DBConnection(dbURL, dbUsername, dbPassword);
 	}
 	
@@ -63,7 +71,7 @@ public class UIMediator extends Application{
 	}
 	
 	public void loadHomePage(){
-		homeView.buildStage(window);
+		homeView.buildStage(window, loggedIn);
 		//if the login button is clicked the view is switched to the login page
 		homeView.loginBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
@@ -78,6 +86,14 @@ public class UIMediator extends Application{
 	        	loadRegistrationPage();
 	        }
 	    });
+		if(loggedIn){
+			homeView.addRestaurantBtn.setOnAction(new EventHandler<ActionEvent>(){
+		        @Override
+		        public void handle(ActionEvent e) {
+		        	loadAddRestaurantPage();
+		        }
+			});
+		}
 	}
 	
 	public void loadRegistrationPage(){
@@ -96,15 +112,46 @@ public class UIMediator extends Application{
 	        	String pw = regView.getPassword();
 	        	String pwV = regView.getPasswordV();
 	        	String zip = regView.getZipcode();
-	        	if(formValidation.validRegistration(pw, pwV, username, email, zip)){
+	        	if(formValidation.validUserRegistration(pw, pwV, username, email, zip)){
             		User newUser = new User(username, pw, regView.getBirthday(), email, zip, 0);
             		db.insertUser(newUser);
+        
+	        		loginUser(username, newUser);
 	        	}
-	        	
 	        }
 	    });
 	}
 	
+	public void loadAddRestaurantPage(){
+		restaurantRegView.buildStage(window, formFieldWidth, formFieldHeight);
+		restaurantRegView.registerBtn.setOnAction(new EventHandler<ActionEvent>() {
+	        @Override
+	        public void handle(ActionEvent e) {
+	        	String name = restaurantRegView.nameField.getText();
+	        	String phone = restaurantRegView.phoneField.getText();
+	        	String addrs = restaurantRegView.addressField.getText();
+	        	String zip = restaurantRegView.zipcodeField.getText();
+	    		if(formValidation.validRestaurantReg(name, addrs, zip, phone)){
+	    			currentRes = new Restaurant(name, phone);
+	    			currentRes.addAddress(addrs, zip);
+	    			db.insertRestaurant(currentRes);
+	    			loadRestaurantPage();
+	    		}
+	        }
+		});
+	}
+	
+	public void loadRestaurantPage(){
+		resView.buildStage(currentRes, window);
+		resView.addRatingBtn.setOnAction(new EventHandler<ActionEvent>() {
+	        @Override
+	        public void handle(ActionEvent e) {
+	    		String rating = resView.ratingField.getText();
+	    		currentRes.addRating(Integer.parseInt(rating));
+	    		loadRestaurantPage();
+	        }		
+		});
+	}
 	public void loadLoginPage(){
 		loginView.buildStage(window, formFieldWidth, formFieldHeight);
 		loginView.backBtn.setOnAction(new EventHandler<ActionEvent>() {
@@ -122,14 +169,26 @@ public class UIMediator extends Application{
 	        	if(enteredUsername.trim().length() <= 0 || enteredPassword.trim().length() <= 0){
 	        		err.showAlert("Error form.", "Please fill out all the fields.");
 	        	}
-	        	if(db.verifyUser(enteredUsername, enteredPassword)){
-	        		
+	        	User returnedUser = db.verifyUser(enteredUsername, enteredPassword);
+	        	if(returnedUser != null){
+	        		loginUser(enteredUsername, returnedUser);
 	        	}
 	        	else{
 	        		err.showAlert("Error form.", "User not found with that password.");	        		
 	        	}
 	        }
 	    });
+	}
+	
+	public void loginUser(String name, User account){
+		account.loggedIn();
+		loggedIn = true;
+		String userCreds = name;
+		if(account.getPrivilege() == 0){
+			userCreds = name + "(Admin)";
+		}
+		window.userAccountBtn.setText(userCreds);
+		loadHomePage();		
 	}
 
 }
