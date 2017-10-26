@@ -117,8 +117,18 @@ public class DBConnection {
     	}
     	*/
     	String sqlQ = "Select * from users Where username='" + username + "' and password='" + pass + "'";
+    	return getUserFromDB(sqlQ);
+    }
+    
+    public ResultSet getQueryResult(String username, String pass){
+    	String sqlQ = "Select * from users Where username='" + username + "' and password='" + pass + "'";
     	return getQueryResultSet(sqlQ);
     }
+    
+    public ResultSet getQueryResultRst(String name, String address){
+    	String sqlQ = "Select * from restaurants Where name='" + name + "' and address='" + address + "'";
+    	return getQueryResultSet(sqlQ);
+    }  
 	/**
 	* This method creates an sql query for inserting a new restaurant in the db
 	* 	 
@@ -242,7 +252,7 @@ public class DBConnection {
     	return queryRes;
     }
     
-    public User getQueryResultSet(String query){
+    public User getUserFromDB(String query){
 		User usr = null;
     	try{
 			ResultSet rs = statement.executeQuery(query);
@@ -264,6 +274,24 @@ public class DBConnection {
     		ex.printStackTrace();
     	}
 		return usr;
+    }
+    
+    public ResultSet getQueryResultSet(String query){
+		ResultSet res = null;
+    	try{
+			ResultSet rs = statement.executeQuery(query);
+			System.out.println("result of q: " + rs);
+			if(rs.next()) {
+				System.out.println(rs.getInt(1));
+			    if(rs.getInt(1) > 0){
+			    	res = rs;
+			    }
+			}
+    	}
+    	catch(SQLException ex){
+    		ex.printStackTrace();
+    	}
+		return res;
     }
     
 }

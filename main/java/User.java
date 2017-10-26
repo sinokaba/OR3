@@ -12,9 +12,9 @@ public class User {
 	/**
 	* Variables associated with this class declared
 	*/
-	private String name, password, email, zipcode, birthday, status;
+	private String name, password, email, zipcode, birthday;
+	private String status = "offline";
 	private int age, privilege;
-	private long creationDate, birthdate;
 	private HashMap<Long, Review> reviews = new HashMap<Long, Review>();
 
 	/**
@@ -66,24 +66,12 @@ public class User {
 		System.out.println(this.reviews.get(restaurantId));
 	}
 	
-	public void addRestaurantLike(){
-		
+	public void updateEmail(String newEmail){
+		email = newEmail;
 	}
 	
-	public void changeEmail(){
-		
-	}
-	
-	public void updateEmail(){
-		
-	}
-	
-	public void updatePassword(){
-		
-	}
-	
-	public int getAge(){
-		return 0;
+	public void updatePassword(String newPass){
+		password = newPass;
 	}
 	
 	public String getUsername(){
@@ -117,5 +105,9 @@ public class User {
 	
 	public int getPrivilege(){
 		return privilege;
+	}
+	
+	public String getStatus(){
+		return status;
 	}
 }
