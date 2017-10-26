@@ -4,12 +4,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.stage.Window;
 
 public class ValidateForm {
 	final Pattern VALID_EMAIL_ADDRESS_REGEX = 
@@ -17,7 +15,10 @@ public class ValidateForm {
 	final Pattern VALID_PASSWORD_REGEX = 
 			Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{5,}$");
 	final Pattern VALID_ZIPCODE_REGEX =
-			Pattern.compile("^(?=.*[0-9]).{5,5}$");		
+			Pattern.compile("^(?=.*[0-9]).{5,5}$");	
+	final Pattern VALID_PHONE_REGEX = 
+			Pattern.compile("^(?=.*[0-9]).{10,10}$");	
+	
 	private DBConnection db;
 	Popup err;
 	GridPane grid;
@@ -52,6 +53,14 @@ public class ValidateForm {
 	public boolean validRestaurantReg(String name, String address, String zip, String phone){
 	   	if(!noEmptyFields(grid, false)){
     		return false;
+    	}
+    	else if(!validZipcode(zip)){
+    		err.showAlert("Form Error!", "Invalid Zipcode. Zipcode entered must be within the USA.");;    
+	    	return false;
+		}
+    	else if(!validPhone(phone)){
+    		err.showAlert("Form Error!", "Invalid phone number entered.");    
+	    	return false;   		
     	}
 	   	return true;
 	}
@@ -138,4 +147,8 @@ public class ValidateForm {
 		return matcher.find();
 	}
 	
+	public boolean validPhone(String phoneNumber){
+		Matcher matcher = VALID_PHONE_REGEX.matcher(phoneNumber);
+		return matcher.find();
+	}	
 }

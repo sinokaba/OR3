@@ -27,11 +27,13 @@ public class UIMediator extends Application{
 	
 	private int formFieldWidth = 258;
 	private int formFieldHeight = 38;
-	private boolean loggedIn = false;
 	final private String dbURL = "jdbc:mysql://localhost:3306/2102_or3?autoReconnect=true&useSSL=false";
 	final private String dbUsername = "root";
 	final private String dbPassword = "allanK0_ph";
 
+	private boolean loggedIn = false;
+	private User currentUser;
+	
 	private Restaurant currentRes;
 	Popup err, confirm;
 	ValidateForm formValidation;
@@ -64,9 +66,16 @@ public class UIMediator extends Application{
             public void handle(ActionEvent e) {
             	loadHomePage();	     
             }
-        	
         });
-		
+		window.logoutBtn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+            	loggedIn = false;
+            	currentUser.loggedOff();
+            	window.userLogout();
+            	loadHomePage();
+            }
+        });
 		stage.show();
 	}
 	
@@ -113,10 +122,9 @@ public class UIMediator extends Application{
 	        	String pwV = regView.getPasswordV();
 	        	String zip = regView.getZipcode();
 	        	if(formValidation.validUserRegistration(pw, pwV, username, email, zip)){
-            		User newUser = new User(username, pw, regView.getBirthday(), email, zip, 0);
-            		db.insertUser(newUser);
-        
-	        		loginUser(username, newUser);
+            		currentUser = new User(username, pw, regView.getBirthday(), email, zip, 0);
+            		db.insertUser(currentUser);
+	        		loginUser(username);
 	        	}
 	        }
 	    });
@@ -169,9 +177,9 @@ public class UIMediator extends Application{
 	        	if(enteredUsername.trim().length() <= 0 || enteredPassword.trim().length() <= 0){
 	        		err.showAlert("Error form.", "Please fill out all the fields.");
 	        	}
-	        	User returnedUser = db.verifyUser(enteredUsername, enteredPassword);
-	        	if(returnedUser != null){
-	        		loginUser(enteredUsername, returnedUser);
+	        	currentUser = db.verifyUser(enteredUsername, enteredPassword);
+	        	if(currentUser != null){
+	        		loginUser(enteredUsername);
 	        	}
 	        	else{
 	        		err.showAlert("Error form.", "User not found with that password.");	        		
@@ -180,14 +188,14 @@ public class UIMediator extends Application{
 	    });
 	}
 	
-	public void loginUser(String name, User account){
-		account.loggedIn();
+	public void loginUser(String name){
+		currentUser.loggedIn();
 		loggedIn = true;
 		String userCreds = name;
-		if(account.getPrivilege() == 0){
+		if(currentUser.getPrivilege() == 1){
 			userCreds = name + "(Admin)";
 		}
-		window.userAccountBtn.setText(userCreds);
+		window.userLogin(userCreds);
 		loadHomePage();		
 	}
 

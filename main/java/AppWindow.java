@@ -15,11 +15,12 @@ import javafx.stage.Stage;
 
 public class AppWindow{
 	private int numElements = 1;
-	Button homeBtn, userAccountBtn;
+	Button homeBtn, userAccountBtn, logoutBtn;
 	GridPane layout;
 	BorderPane root;
 	Stage primaryStage;
 	String defaultTitle = "OR3 - Review, Rate, Dine.";
+	ToolBar leftBar, rightBar;
 		
 	public AppWindow(){
 		primaryStage = new Stage();
@@ -47,11 +48,15 @@ public class AppWindow{
 	public HBox createWindowMenu(){
         homeBtn = createMenuBtn("brand.png", "OR3", 44);
         userAccountBtn = createMenuBtn("user.png", "", 44);
-
-        ToolBar leftBar = new ToolBar();
-        leftBar.getItems().addAll(homeBtn);
-        ToolBar rightBar = new ToolBar();
-        rightBar.getItems().addAll(userAccountBtn);
+		logoutBtn = new Button("Logout");
+		logoutBtn.setVisible(false);
+        //DropdownMenu userMenu = new DropdownMenu(homeBtn, numElements, null, numElements, numElements, false);
+        
+        leftBar = new ToolBar();
+        leftBar.getItems().add(homeBtn);
+        rightBar = new ToolBar();
+        rightBar.getItems().add(userAccountBtn);
+        rightBar.getItems().add(logoutBtn);
         
         leftBar.getStyleClass().add("menu-bar");
         rightBar.getStyleClass().add("menu-bar");
@@ -61,6 +66,16 @@ public class AppWindow{
         HBox.setHgrow(spacer, Priority.SOMETIMES);
         HBox menubars = new HBox(leftBar, spacer, rightBar);
         return menubars;
+	}
+	
+	public void userLogin(String newTitle){
+		userAccountBtn.setText(newTitle);
+		logoutBtn.setVisible(true);
+	}
+	
+	public void userLogout(){
+		userAccountBtn.setText("");
+		logoutBtn.setVisible(false);
 	}
 	
 	public Button createMenuBtn(String iconName, String iconTitle, int iconWidth){
