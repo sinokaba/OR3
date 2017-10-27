@@ -1,19 +1,11 @@
-<<<<<<< HEAD
 
-=======
-package main.java;
->>>>>>> 236a6548d6f5e6ea026942fdef416a8e06ba3122
 
 import java.io.*;
 import java.net.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-<<<<<<< HEAD
 ///import org.json.*;
-=======
-import org.json.*;
->>>>>>> 236a6548d6f5e6ea026942fdef416a8e06ba3122
 
 public class GoogleMapsRequest {
 	  private String apiBase = "https://maps.googleapis.com/maps/api/";
@@ -82,9 +74,6 @@ public class GoogleMapsRequest {
 		  }
 		  return loc;
 	  }
-<<<<<<< HEAD
 	  
 	  
-=======
->>>>>>> 236a6548d6f5e6ea026942fdef416a8e06ba3122
 }
