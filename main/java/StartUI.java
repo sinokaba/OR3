@@ -1,8 +1,6 @@
 
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javafx.application.Application;
 import javafx.collections.*;
 import javafx.event.*;
@@ -11,8 +9,6 @@ import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.*;

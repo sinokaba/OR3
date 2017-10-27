@@ -1,5 +1,4 @@
 
-
 public class Review {
 	String review;
 	double rating;

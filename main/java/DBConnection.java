@@ -7,7 +7,7 @@ import java.text.SimpleDateFormat;
 public class DBConnection {
     private Connection connection;	
     private Statement statement;
-    private GoogleMapsRequest mapsAPI;
+    private GoogleMapsService mapsAPI;
 
 	/**
 	* The constructor of the DBConnection class
@@ -17,7 +17,7 @@ public class DBConnection {
 	* @return no return value
 	*/
     public DBConnection(String dbURL, String user, String pw){
-		mapsAPI = new GoogleMapsRequest("AIzaSyCP-qr7umfKFSrmnbOB-cl-djIhD5p1mJ8");
+		mapsAPI = new GoogleMapsService("AIzaSyCP-qr7umfKFSrmnbOB-cl-djIhD5p1mJ8");
     	try{
     		Class.forName("com.mysql.jdbc.Driver");
 	        connection = DriverManager.getConnection(dbURL, user, pw);
@@ -55,10 +55,10 @@ public class DBConnection {
 	* @return no return value
 	*/    
     
-    public void insertLocation(String zipcode, String city, String state){
+    public void insertLocation(String zipcode, String[] location){
     	String sqlQ = "INSERT INTO locations \n"
 				+ " (country, state, city, zipcode) "
-    			+ " values ('USA', '" + state + "', '" + city + "', '" + zipcode + "')";
+    			+ " values ('"+location[2] +"', '" + location[1] + "', '" + location[0] + "', '" + zipcode + "')";
     	System.out.println("location q: " + sqlQ);
     	executeQuery(sqlQ, "Added location infor for " + zipcode);
     }
@@ -85,9 +85,9 @@ public class DBConnection {
     		e.printStackTrace();
     	}
     	if(!rowExists("locations", "zipcode", zip)){
-    		String loc[] = mapsAPI.getGeolocation(zip);
+    		String loc[] = mapsAPI.getLocation(zip);
     		if(loc[0] != null){
-    			insertLocation(zip, loc[0], loc[1]);
+    			insertLocation(zip, loc);
     		}
     		else{
     			validZipcode = false;
@@ -140,9 +140,9 @@ public class DBConnection {
     	boolean validZip = true;
     	String zip = restaurant.zip;
     	if(!rowExists("locations", "zipcode", zip)){
-    		String loc[] = mapsAPI.getGeolocation(zip);
+    		String loc[] = mapsAPI.getLocation(zip);
     		if(loc[0] != null){
-    			insertLocation(zip, loc[0], loc[1]);
+    			insertLocation(zip, loc);
     		}
     		else{
     			validZip = false;

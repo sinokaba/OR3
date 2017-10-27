@@ -1,8 +1,6 @@
 
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;

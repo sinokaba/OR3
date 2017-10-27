@@ -2,12 +2,11 @@
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-public class DropdownMenu extends ComboBox{
+public class DropdownMenu extends ComboBox<String>{
 	
 	public DropdownMenu(String defVal, int numVis, ObservableList<String> l, int s, int end, boolean asc){
 		super(addElements(l, s, end, asc));
@@ -22,7 +21,7 @@ public class DropdownMenu extends ComboBox{
 	}
 
 	public DropdownMenu(ImageView def){
-        final ObservableList<Image> data = FXCollections.observableArrayList();
+		final ObservableList<Image> data = FXCollections.observableArrayList();
 		
 		
 	}

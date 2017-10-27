@@ -1,9 +1,6 @@
 
-
-import javafx.event.EventHandler;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.scene.input.KeyEvent;
 
 public class CustomTextField extends TextField{
 	

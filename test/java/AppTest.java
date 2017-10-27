@@ -1,4 +1,3 @@
-package or3.OR3Project;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

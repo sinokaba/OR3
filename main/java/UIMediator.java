@@ -1,12 +1,8 @@
 
-
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 public class UIMediator extends Application{
@@ -14,7 +10,6 @@ public class UIMediator extends Application{
 	final int WINDOW_HEIGHT = 600;
 	final int WINDOW_WIDTH = 800;
 	//private StartUI startPage;
-	private Stage primaryStage;
 	private Scene scene;
 	
 	private AppWindow window;	

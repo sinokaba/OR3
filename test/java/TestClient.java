@@ -1,11 +1,8 @@
-package test.java;
 
-import main.java.*;
-import org.junit.Test;
 import static org.junit.Assert.*;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.junit.Test;
 
 public class TestClient {
 	User user = new User("rs10", "123", "1997-01-26", "rs@gmail.com", "06268", 1);
@@ -75,5 +72,4 @@ public class TestClient {
 		assertEquals(1, review.getRating(), .1);
 		assertEquals("Pitiful service, bad food.", review.getComments());
 	}
-
 }
