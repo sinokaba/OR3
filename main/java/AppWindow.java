@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 
+=======
+package main.java;
+>>>>>>> 236a6548d6f5e6ea026942fdef416a8e06ba3122
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -79,7 +83,11 @@ public class AppWindow{
 	}
 	
 	public Button createMenuBtn(String iconName, String iconTitle, int iconWidth){
+<<<<<<< HEAD
         Image icon = new Image(getClass().getResourceAsStream("/images/"+iconName));
+=======
+        Image icon = new Image(getClass().getResourceAsStream("/static/images/"+iconName));
+>>>>>>> 236a6548d6f5e6ea026942fdef416a8e06ba3122
         ImageView iconView = new ImageView(icon);
         iconView.setFitWidth(iconWidth);
         iconView.setFitHeight(iconWidth);
