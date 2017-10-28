@@ -1,5 +1,9 @@
 
+import org.controlsfx.control.textfield.TextFields;
+
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
@@ -7,11 +11,9 @@ import javafx.stage.Stage;
 
 public class UIMediator extends Application{
 
-	final int WINDOW_HEIGHT = 600;
-	final int WINDOW_WIDTH = 800;
-	//private StartUI startPage;
+	final int WINDOW_HEIGHT = 650;
+	final int WINDOW_WIDTH = 900;
 	private Scene scene;
-	
 	private AppWindow window;	
 	private	HomepageUI homeView;
 	private RegistrationUI regView;
@@ -25,6 +27,7 @@ public class UIMediator extends Application{
 	final private String dbURL = "jdbc:mysql://localhost:3306/2102_or3?autoReconnect=true&useSSL=false";
 	final private String dbUsername = "root";
 	final private String dbPassword = "allanK0_ph";
+	final private GoogleMapsService mapsAPI;
 
 	private boolean loggedIn = false;
 	private User currentUser;
@@ -34,13 +37,14 @@ public class UIMediator extends Application{
 	ValidateForm formValidation;
 	
 	public UIMediator(){
+		mapsAPI = new GoogleMapsService("AIzaSyCP-qr7umfKFSrmnbOB-cl-djIhD5p1mJ8");
 		window = new AppWindow();
 		homeView = new HomepageUI();
 		regView = new RegistrationUI();
 		loginView = new LoginUI();
 		restaurantRegView = new RestaurantRegistrationUI();
 		resView = new RestaurantUI();
-		db = new DBConnection(dbURL, dbUsername, dbPassword);
+		db = new DBConnection(dbURL, dbUsername, dbPassword, mapsAPI);
 	}
 	
 	
@@ -76,7 +80,21 @@ public class UIMediator extends Application{
 	
 	public void loadHomePage(){
 		homeView.buildStage(window, loggedIn);
-		//if the login button is clicked the view is switched to the login page
+		CustomTextField locField = homeView.locationSearchField;
+		String[] testWords = {"hmm", "hell", "heyo", "da", "dark", "app"};
+		locField.textProperty().addListener(new ChangeListener<String>() {
+		    @Override
+		    public void changed(ObservableValue<? extends String> observable,
+		            String oldValue, String newValue) {
+
+		        if(newValue.trim().length() >= 3){
+		        	//String[] words = mapsAPI.getAutocompleteRes(newValue);
+		    		TextFields.bindAutoCompletion(locField, sr -> { 
+		    			return mapsAPI.getAutocompleteRes(sr.getUserText()); 
+		    		}); 
+		        }
+		    }
+		});		//if the login button is clicked the view is switched to the login page
 		homeView.loginBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
 	        public void handle(ActionEvent e) {

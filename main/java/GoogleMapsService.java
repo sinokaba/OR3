@@ -1,29 +1,63 @@
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
+import okhttp3.internal.tls.BasicCertificateChainCleaner;
+import okhttp3.internal.tls.CertificateChainCleaner;
+import okhttp3.internal.tls.TrustRootIndex;
+import okio.Buffer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.maps.GeoApiContext;
 import com.google.maps.GeocodingApi;
+import com.google.maps.PlaceAutocompleteRequest;
+import com.google.maps.PlacesApi;
+import com.google.maps.QueryAutocompleteRequest;
 import com.google.maps.errors.ApiException;
+import com.google.maps.model.AutocompletePrediction;
 import com.google.maps.model.GeocodingResult;
 
 public class GoogleMapsService {
 	GeoApiContext geoAPI;
+	private static final Logger logger = Logger.getLogger(OkHttpClient.class.getName());
 	
 	public GoogleMapsService(String apiKey){
 		geoAPI = new GeoApiContext.Builder().apiKey(apiKey).build();
 	}
 	
-	public String[] getLocation(String zip){
+	public List<String> getAutocompleteRes(String keyword){
+		List<String> results = new ArrayList<String>();
+		PlaceAutocompleteRequest places = PlacesApi.placeAutocomplete(geoAPI, keyword);
+		try {
+			AutocompletePrediction[] placesOptions = places.await();
+			for(int i=0; i < placesOptions.length; i++){
+				//getLocation(placesOptions[i].description);
+				System.out.println(placesOptions[i].description);
+				results.add(placesOptions[i].description);
+			}
+		} catch (ApiException | InterruptedException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println(results);
+		return results;
+	}
+	
+	public String[] getLocation(String loc){
 		GeocodingResult[] results;
 		String[] location = new String[3];
 		boolean foundCity = false;
 		boolean foundState = false;
 		boolean foundCountry = false;
 		try {
-			results = GeocodingApi.geocode(geoAPI, zip).await();
+			results = GeocodingApi.geocode(geoAPI, loc).await();
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
 			int index = 0;
+			System.out.println(gson.toJson(results[0].formattedAddress));
 			while((!foundCity || !foundState || !foundCountry) && index < results[0].addressComponents.length){
 				String type = gson.toJson(results[0].addressComponents[index].types);
 				if(type.toLowerCase().contains("locality")){
@@ -40,11 +74,11 @@ public class GoogleMapsService {
 				}
 				index += 1;
 			}
-			System.out.println("country: " + location[2] + ", state: " + location[1] + ", city: " + location[0]);
 		} catch (ApiException | InterruptedException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		System.out.println("country: " + location[2] + ", state: " + location[1] + ", city: " + location[0]);
 		return location;
 	}
 	

@@ -16,8 +16,8 @@ public class DBConnection {
 	* @param takes 3 input, all string, the database url, and the user and password associated with the db
 	* @return no return value
 	*/
-    public DBConnection(String dbURL, String user, String pw){
-		mapsAPI = new GoogleMapsService("AIzaSyCP-qr7umfKFSrmnbOB-cl-djIhD5p1mJ8");
+    public DBConnection(String dbURL, String user, String pw, GoogleMapsService api){
+		mapsAPI = api;
     	try{
     		Class.forName("com.mysql.jdbc.Driver");
 	        connection = DriverManager.getConnection(dbURL, user, pw);
@@ -191,7 +191,17 @@ public class DBConnection {
 	* @return no return value
 	*/    
     public void clearTable(String tableName){
-    	executeQuery("truncate " + tableName, "Cleared table " + tableName);
+    	try{
+    		PreparedStatement pStatement = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=0;TRUNCATE ?;SET FOREIGN_KEY_CHECKS=1;");
+    		pStatement.setString(1, tableName);
+    		System.out.println(pStatement);
+    		pStatement.executeUpdate();
+    		connection.commit();
+    	}
+    	catch(SQLException ex){
+    		System.out.println("error cleared table");
+    		ex.printStackTrace();
+    	}
     }
     
 	/**
@@ -203,11 +213,23 @@ public class DBConnection {
     public void printTableData(String tableName){
         try{
         		ResultSet res = statement.executeQuery("select * from " + tableName);
+        		String[] keys = {"username", "password", "email"};
+        		if(tableName.contains("restaurant")){
+        			keys[0] = "name";
+        			keys[1] = "address";
+        			keys[2] = "phone";	
+        		}
+        		else if(tableName.contains("locations")){
+        			keys[0] = "state";
+        			keys[1] = "city";
+        			keys[2] = "country";        			
+        		}
             	//List<User> personList = new ArrayList<>();
                 while (res.next()) {
-                    String name = res.getString("username");
-                    String pw = res.getString("password");
-                    System.out.println("Name: " + name + " password: " + pw);
+                    String val1 = res.getString(keys[0]);
+                    String val2 = res.getString(keys[1]);
+                    String val3 = res.getString(keys[2]);
+                    System.out.println(val1 + ", " + val2 + ", " + val3);
                     //User person = new User(firstName, lastName, email);
                     //personList.add(person);
                 }
@@ -226,6 +248,7 @@ public class DBConnection {
 	*/    
     public void executeQuery(String query, String queryMessage){
     	try{
+    		System.out.println("query: " + query);
     		statement.executeUpdate(query);
     		System.out.println(queryMessage + " successfully.");
     	}

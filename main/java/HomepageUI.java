@@ -1,4 +1,6 @@
 
+import org.controlsfx.control.textfield.TextFields;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
@@ -8,7 +10,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 
 public class HomepageUI{
-	private CustomTextField restaurantSearchField, locationSearchField;
+	CustomTextField restaurantSearchField, locationSearchField;
 	DropdownMenu searchDropdown;
 	Button searchBtn, loginBtn, signUpBtn, addRestaurantBtn;
 	
@@ -37,9 +39,9 @@ public class HomepageUI{
 		//pane is empty, acts as buffer for layout other elements
 	    Pane buffer = new Pane();					
 		grid.add(buffer, 2, 0);
-		
+		//String[] testWords = {"hmm", "hell", "heyo", "da", "dark", "app"};
 		createSearchOptions();
-		locationSearchField = new CustomTextField("US state, city, or zipcode.", 42, 210);
+		locationSearchField = new CustomTextField("US state, city, or zipcode.", 42, 270);
 		
 		searchBtn = new Button("Search");
 		searchBtn.getStyleClass().add("searchButton");
@@ -65,7 +67,7 @@ public class HomepageUI{
 		searchDropdown = new DropdownMenu(null, 4, searchChoices, 0, 0, true);
 		searchDropdown.addClass("mainSearchDropdown");
 		
-		restaurantSearchField = new CustomTextField("of Restaurant...", 42, 315);
+		restaurantSearchField = new CustomTextField("of Restaurant...", 42, 350);
 
         searchDropdown.setOnAction((e) -> {
         	String currentSelectedItem = searchDropdown.getSelectionModel().getSelectedItem().toString();

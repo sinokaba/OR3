@@ -25,11 +25,11 @@ public class RestaurantRegistrationUI {
 		
 		Label zipcode = form.createLabel("Zipcode:");
 		zipcodeField = form.createTextField("Enter zipcode.", 5);
-		createFieldLabelPair(win.layout, zipcodeField, zipcode, 6);
+		createFieldLabelPair(win.layout, zipcodeField, zipcode, 4);
 		
 		Label phone = form.createLabel("Phone:");
 		phoneField = form.createTextField("Enter business phone number.", 11);
-		createFieldLabelPair(win.layout, phoneField, phone, 7);
+		createFieldLabelPair(win.layout, phoneField, phone, 5);
 		/*
 		Label hours = form.createLabel("Hours:");
 		hoursField = form.createTextField("Enter operating hours.", 16);
