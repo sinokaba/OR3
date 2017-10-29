@@ -1,33 +1,54 @@
 
 public class Review {
-	String review;
-	double rating;
+	private String comments;
+	private User user;
+	private Restaurant restaurant;
+	private double rating;
 	
-	public Review(double rating){
+	public Review(double rating, String comments, User byUser, Restaurant forRestaurant){
 		this.rating = rating;
-	}
-	
-	public void addComments(String text){
-		review = text;
+		user = byUser;
+		restaurant = forRestaurant;
+		if(comments != null){
+			this.comments = comments;
+		}
 	}
 	
 	public String getComments(){
-		return review;
+		return comments;
 	}
 	
 	public double getRating(){
 		return rating;
 	}
 	
+	public int getRestaurantId(){
+		return restaurant.getId();
+	}
+	
+	public int getUserId(){
+		return user.getId();
+	}
+	
+	public String getRestaurantName(){
+		return restaurant.getName();
+	}
+	
+	public String getUserName(){
+		return user.getUsername();
+	}
+	
 	public void updateReview(double rating, String text){
 		if(text != null){
-			review = text;
+			comments = text;
 		}
-		this.rating = rating;
+		if(rating > 0){
+			this.rating = rating;
+		}
 	}
 	
 	@Override
 	public String toString(){
-		return "Rating " + rating + "/5 .Comments: " + review;
+		return "Rating " + rating + "/5 .Comments: " + comments;
 	}
 }

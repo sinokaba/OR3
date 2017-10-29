@@ -1,5 +1,8 @@
 
+import java.util.Optional;
+
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.stage.Window;
 
 public class Popup {
@@ -22,9 +25,17 @@ public class Popup {
 	}
 	
 	public void showAlert(String title, String message) {
+	    createDialog(title, message);
+	    alert.show();
+	}
+	
+	public void createDialog(String title, String message){
 	    alert.setTitle(title);
 	    alert.setHeaderText(null);
 	    alert.setContentText(message);
-	    alert.show();
+	}
+	
+	public Optional<ButtonType> userConfirmation(){
+		return alert.showAndWait();
 	}
 }

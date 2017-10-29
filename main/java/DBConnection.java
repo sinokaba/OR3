@@ -3,6 +3,8 @@
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DBConnection {
     private Connection connection;	
@@ -109,26 +111,37 @@ public class DBConnection {
     	}
     }
     
-    //very unsafe, but ok for now just for testing
-    public User verifyUser(String username, String pass){
-    	/*
-    	if(!rowExists("users", "username", username)){
-    		return false;
+    public ResultSet getQueryResult(String table, String field1, String val1, String field2, String val2){
+    	String sqlQ = "Select * from " + table + " Where " + field1 + "='" + val1 + "' and " + field2 + "='" + val2 + "'";
+    	return getQueryResultSet(sqlQ);
+    }
+    
+    public List<String> getRestaurantSuggestions(String keyword){
+    	List<String> suggestions = new ArrayList<String>();
+    	if(keyword.trim().length() >= 2){
+    		String sqlQ = "SELECT * FROM restaurants WHERE name LIKE '%" + keyword + "%';";
+        	suggestions = getQueryResultList(sqlQ);
     	}
-    	*/
-    	String sqlQ = "Select * from users Where username='" + username + "' and password='" + pass + "'";
-    	return getUserFromDB(sqlQ);
+    	return suggestions;
     }
     
-    public ResultSet getQueryResult(String username, String pass){
-    	String sqlQ = "Select * from users Where username='" + username + "' and password='" + pass + "'";
-    	return getQueryResultSet(sqlQ);
+    public ResultSet getQueryResultReviews(User user, Restaurant restaurant){
+		ResultSet rs = null;
+		try {
+			String getUserIdQ = "SELECT iduser FROM users WHERE username = '" + user.getUsername() + "'";
+			ResultSet rUser = getQueryResultSet(getUserIdQ);
+			int userId = rUser.getInt(1);
+			String getRstIdQ = "SELECT idrestaurant FROM restaurants WHERE name = '" + restaurant.getName() + "'";
+			ResultSet rRst = getQueryResultSet(getRstIdQ);
+			int rstId = rRst.getInt(1);
+	    	String sqlQ = "Select * from reviews Where fk_user = " + userId + " and fk_restaurant = " + rstId + ";";
+	    	rs = getQueryResultSet(sqlQ);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return rs;
     }
-    
-    public ResultSet getQueryResultRst(String name, String address){
-    	String sqlQ = "Select * from restaurants Where name='" + name + "' and address='" + address + "'";
-    	return getQueryResultSet(sqlQ);
-    }  
 	/**
 	* This method creates an sql query for inserting a new restaurant in the db
 	* 	 
@@ -167,11 +180,15 @@ public class DBConnection {
 	* 
 	* @return no return value
 	*/    
-    public void insertReview(String comments, int restaurantId, int userId, double rating){
-    	String sqlQ = "insert into reviews "
-    				+ " (rating, up, down, comment, restaurant, user)"
-    				+ " values ('" + rating + "', '0', '0', '" + comments +"', '" + restaurantId + "', '" + userId + "')";
-    	executeQuery(sqlQ, "Review for: " + restaurantId + " by: " + userId + " added");
+    public void insertReview(Review review){
+		String sqlQ = "INSERT INTO reviews \n"
+				+ " SET overall_rating = '" + review.getRating() + "',\n"
+				+ "  comments = '" + review.getComments() + "', \n"
+				+ "  fk_user = (SELECT iduser FROM users WHERE username = '" + review.getUserName() + "'), \n"	
+				+ "  fk_restaurant = (SELECT idrestaurant FROM restaurants WHERE name = '" + review.getRestaurantName() + "')";	
+		System.out.println(sqlQ);
+		
+    	executeQuery(sqlQ, "Review for: " + review.getRestaurantName() + " by: " + review.getUserName() + " added");
     }
     
 	/**
@@ -191,17 +208,12 @@ public class DBConnection {
 	* @return no return value
 	*/    
     public void clearTable(String tableName){
-    	try{
-    		PreparedStatement pStatement = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=0;TRUNCATE ?;SET FOREIGN_KEY_CHECKS=1;");
-    		pStatement.setString(1, tableName);
-    		System.out.println(pStatement);
-    		pStatement.executeUpdate();
-    		connection.commit();
-    	}
-    	catch(SQLException ex){
-    		System.out.println("error cleared table");
-    		ex.printStackTrace();
-    	}
+    	String disableFK = "SET FOREIGN_KEY_CHECKS=0;";
+    	String clearTable = "TRUNCATE " + tableName + ";";
+    	String enableFK = "SET FOREIGN_KEY_CHECKS=1;";
+    	executeQuery(disableFK, "disabled foreign keys");
+    	executeQuery(clearTable, "Cleared table " + tableName);
+    	executeQuery(enableFK, "enabled foreign keys");
     }
     
 	/**
@@ -275,28 +287,61 @@ public class DBConnection {
     	return queryRes;
     }
     
-    public User getUserFromDB(String query){
+    public User getUserFromDB(String username, String password){
 		User usr = null;
     	try{
-			ResultSet rs = statement.executeQuery(query);
-			System.out.println("result of q: " + rs);
+			ResultSet rs = statement.executeQuery("Select * from users Where username='" + username + "' and password='" + password + "'");
+			System.out.println("result of q: 269 " + rs);
 			if(rs.next()) {
-				System.out.println(rs.getInt(1));
 			    if(rs.getInt(1) > 0){
+					System.out.println(rs.getInt(1));
+			    	System.out.println("transferring data from db to user class.");
 			    	String name = rs.getString("username");
 			    	String pw = rs.getString("password");
 			    	String birthdate = rs.getString("birthdate");
 			    	String email = rs.getString("email");
-			    	String loc = rs.getString("fk_location");
+			    	String locId = rs.getString("fk_location");
 			    	int privilege = rs.getInt("privilege");
-			    	usr = new User(name, pw, birthdate, email, loc, privilege);
+			    	int userId = rs.getInt(1);
+			    	usr = new User(name, pw, birthdate, email, locId, privilege);
+			    	System.out.println("id from db of user: " + userId);
+			    	usr.setId(userId);
 			    }
 			}
     	}
     	catch(SQLException ex){
+    		System.out.println("db error getting user from db line 287.");
     		ex.printStackTrace();
     	}
 		return usr;
+    }
+    
+    public Restaurant getRestaurantFromDB(String n, String addrs){
+    	System.out.println("getting restaurant from db..");
+		Restaurant rst = null;
+    	try{
+			ResultSet rs = statement.executeQuery("Select * from restaurants Where name='" + n + "' and address='" + addrs + "'");
+			System.out.println("result of q: 297" + rs);
+			if(rs.next()) {
+			    if(rs.getInt(1) > 0){
+			    	System.out.println("transferring data from db to restaurant class.");
+			    	String name = rs.getString("name");
+			    	String address = rs.getString("address");
+			    	String phone = rs.getString("phone");
+			    	int rstId = rs.getInt(1);
+			    	String locId = rs.getString("fk_location");
+			    	rst = new Restaurant(name, phone);
+			    	rst.setAddress(address, locId);
+			    	System.out.println("id from db of restaurnt: " + rstId);
+			    	rst.setId(rstId);
+			    }
+			}
+    	}
+    	catch(SQLException ex){
+    		System.out.print("Db error getting restaurant from db line 315.");
+    		ex.printStackTrace();
+    	}
+		return rst;
     }
     
     public ResultSet getQueryResultSet(String query){
@@ -314,6 +359,30 @@ public class DBConnection {
     	catch(SQLException ex){
     		ex.printStackTrace();
     	}
+		return res;
+    }
+    
+    public List<String> getQueryResultList(String query){
+		List<String> res = new ArrayList<String>();
+    	try{
+    		System.out.println("363 query: " + query);
+			ResultSet rs = statement.executeQuery(query);
+			while(rs.next()) {
+			    if(rs.getInt(1) > 0){
+					System.out.println(rs.getInt(1));
+					if(res.size() < 10){
+						res.add(rs.getString("name"));
+					}
+					else{
+						break;
+					}
+			    }
+			}
+    	}
+    	catch(SQLException ex){
+    		ex.printStackTrace();
+    	}
+    	//System.out.println("restaurant suggestions: " + res);
 		return res;
     }
     

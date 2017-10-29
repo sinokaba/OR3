@@ -20,7 +20,7 @@ public class RestaurantRegistrationUI {
 		createFieldLabelPair(win.layout, nameField, restaurantName, 2);
 		
 		Label address = form.createLabel("Address:");
-		addressField = form.createTextField("Enter street address.", 36);
+		addressField = form.createTextField("Enter street address.", 75);
 		createFieldLabelPair(win.layout, addressField, address, 3);
 		
 		Label zipcode = form.createLabel("Zipcode:");
@@ -28,14 +28,14 @@ public class RestaurantRegistrationUI {
 		createFieldLabelPair(win.layout, zipcodeField, zipcode, 4);
 		
 		Label phone = form.createLabel("Phone:");
-		phoneField = form.createTextField("Enter business phone number.", 11);
+		phoneField = form.createTextField("Enter business phone number.", 10);
 		createFieldLabelPair(win.layout, phoneField, phone, 5);
 		/*
 		Label hours = form.createLabel("Hours:");
 		hoursField = form.createTextField("Enter operating hours.", 16);
 		createFieldLabelPair(win.layout, hoursField, hours, 8);
 		*/
-		registerBtn = new Button("Add Restaurant!");
+		registerBtn = new Button("Register Restaurant.");
 		HBox hbBtn = new HBox(10);
 		hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
 		hbBtn.getChildren().add(registerBtn);

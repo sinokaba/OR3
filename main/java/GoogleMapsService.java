@@ -22,28 +22,25 @@ import com.google.maps.model.AutocompletePrediction;
 import com.google.maps.model.GeocodingResult;
 
 public class GoogleMapsService {
-	GeoApiContext geoAPI;
+	GeoApiContext geoApi;
 	private static final Logger logger = Logger.getLogger(OkHttpClient.class.getName());
 	
 	public GoogleMapsService(String apiKey){
-		geoAPI = new GeoApiContext.Builder().apiKey(apiKey).build();
+		geoApi = new GeoApiContext.Builder().apiKey(apiKey).build();
 	}
 	
-	public List<String> getAutocompleteRes(String keyword){
+	public List<String> getPlacesSuggestions(String keyword){
 		List<String> results = new ArrayList<String>();
-		PlaceAutocompleteRequest places = PlacesApi.placeAutocomplete(geoAPI, keyword);
-		try {
-			AutocompletePrediction[] placesOptions = places.await();
+		if(keyword.trim().length() >= 2){
+			System.out.println("k: " + keyword);
+			PlaceAutocompleteRequest places = PlacesApi.placeAutocomplete(geoApi, keyword);
+			AutocompletePrediction[] placesOptions = places.awaitIgnoreError();
 			for(int i=0; i < placesOptions.length; i++){
 				//getLocation(placesOptions[i].description);
-				System.out.println(placesOptions[i].description);
+				//System.out.println(placesOptions[i].description);
 				results.add(placesOptions[i].description);
 			}
-		} catch (ApiException | InterruptedException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-		System.out.println(results);
 		return results;
 	}
 	
@@ -54,7 +51,7 @@ public class GoogleMapsService {
 		boolean foundState = false;
 		boolean foundCountry = false;
 		try {
-			results = GeocodingApi.geocode(geoAPI, loc).await();
+			results = GeocodingApi.geocode(geoApi, loc).await();
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
 			int index = 0;
 			System.out.println(gson.toJson(results[0].formattedAddress));

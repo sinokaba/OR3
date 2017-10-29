@@ -7,7 +7,7 @@ public class User {
 	*/
 	private String name, password, email, zipcode, birthday;
 	private String status = "offline";
-	private int age, privilege;
+	private int age, privilege, userId;
 	private HashMap<Long, Review> reviews = new HashMap<Long, Review>();
 
 	/**
@@ -25,6 +25,10 @@ public class User {
 		this.birthday = birthdate; 
 	}
 	
+	public void setId(int id){
+		System.out.println("setting id of user to: " + id);
+		userId = id;
+	}
 	/**
 	* This method prints the current information of user, mainly for testing purposes
 	*
@@ -81,6 +85,11 @@ public class User {
 	
 	public String getEmail(){
 		return email;
+	}
+	
+	public int getId(){
+		System.out.println("user id: " + userId);
+		return userId;
 	}
 	
 	public String getPassword(){

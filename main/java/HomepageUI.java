@@ -1,6 +1,4 @@
 
-import org.controlsfx.control.textfield.TextFields;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
@@ -12,7 +10,7 @@ import javafx.scene.layout.Pane;
 public class HomepageUI{
 	CustomTextField restaurantSearchField, locationSearchField;
 	DropdownMenu searchDropdown;
-	Button searchBtn, loginBtn, signUpBtn, addRestaurantBtn;
+	Button searchBtn, loginBtn, signUpBtn;
 	
 	public void buildStage(AppWindow win, boolean loggedInUser){
 		win.resetLayout();
@@ -26,10 +24,6 @@ public class HomepageUI{
 			
 			hbBtn.getChildren().add(loginBtn);
 			hbBtn.getChildren().add(signUpBtn);
-		}
-		else{
-			addRestaurantBtn = new Button("Add Restaurant");
-			hbBtn.getChildren().add(addRestaurantBtn);
 		}
 		win.layout.add(hbBtn, 1, 6);
 		win.updateElementCount(3);

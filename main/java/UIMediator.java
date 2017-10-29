@@ -1,12 +1,21 @@
 
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
 
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.control.ButtonType;
+import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 
 public class UIMediator extends Application{
@@ -14,6 +23,7 @@ public class UIMediator extends Application{
 	final int WINDOW_HEIGHT = 650;
 	final int WINDOW_WIDTH = 900;
 	private Scene scene;
+	private Stage primaryStage;
 	private AppWindow window;	
 	private	HomepageUI homeView;
 	private RegistrationUI regView;
@@ -24,27 +34,30 @@ public class UIMediator extends Application{
 	
 	private int formFieldWidth = 258;
 	private int formFieldHeight = 38;
+	private String titleBase = "OR3 - ";
+	private String defaultTitleEx = "Rate, Review, Dine";
 	final private String dbURL = "jdbc:mysql://localhost:3306/2102_or3?autoReconnect=true&useSSL=false";
 	final private String dbUsername = "root";
 	final private String dbPassword = "allanK0_ph";
-	final private GoogleMapsService mapsAPI;
+	final private GoogleMapsService mapsApi;
 
+	final private Pattern GOOD_LOCATION_INPUT = 
+			Pattern.compile("^[a-zA-Z0-9]*.{2,}$");
 	private boolean loggedIn = false;
 	private User currentUser;
-	
 	private Restaurant currentRes;
 	Popup err, confirm;
 	ValidateForm formValidation;
 	
 	public UIMediator(){
-		mapsAPI = new GoogleMapsService("AIzaSyCP-qr7umfKFSrmnbOB-cl-djIhD5p1mJ8");
+		mapsApi = new GoogleMapsService("AIzaSyCP-qr7umfKFSrmnbOB-cl-djIhD5p1mJ8");
 		window = new AppWindow();
 		homeView = new HomepageUI();
 		regView = new RegistrationUI();
 		loginView = new LoginUI();
 		restaurantRegView = new RestaurantRegistrationUI();
 		resView = new RestaurantUI();
-		db = new DBConnection(dbURL, dbUsername, dbPassword, mapsAPI);
+		db = new DBConnection(dbURL, dbUsername, dbPassword, mapsApi);
 	}
 	
 	
@@ -52,78 +65,95 @@ public class UIMediator extends Application{
 		launch(args);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void start(Stage stage) throws Exception{
-		loadHomePage();
+		primaryStage = stage;
+		homePage();
 		scene = new AppScene(window.root, WINDOW_WIDTH, WINDOW_HEIGHT);
+		primaryStage.getIcons().add(new Image("/images/brand.png"));
+		primaryStage.setTitle(titleBase+defaultTitleEx);
 		err = new Popup("err", window.layout.getScene().getWindow());
 		confirm = new Popup("conf", window.layout.getScene().getWindow());
 		formValidation = new ValidateForm(window.layout, db, err);
-		stage.setScene(scene);
+		primaryStage.setScene(scene);
 		
 		window.homeBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
-            	loadHomePage();	     
+            	homePage();	     
             }
         });
-		window.logoutBtn.setOnAction(new EventHandler<ActionEvent>() {
+		window.userStatus.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
-            	loggedIn = false;
-            	currentUser.loggedOff();
-            	window.userLogout();
-            	loadHomePage();
+            	if(loggedIn){
+            		confirm.createDialog("Logout confirmation.", "Are you sure you want to log out?");
+            		Optional<ButtonType> result = confirm.userConfirmation();
+            		if(result.get() == ButtonType.OK){
+		            	System.out.println("logging off...");
+		            	loggedIn = false;
+		            	currentUser.loggedOff();
+		            	window.userLogout();
+		            	titleBase = "OR3 - ";
+		            	homePage();
+            		}
+            	}
+            	else{
+            		loginPage();
+            	}
             }
         });
-		stage.show();
-	}
-	
-	public void loadHomePage(){
-		homeView.buildStage(window, loggedIn);
-		CustomTextField locField = homeView.locationSearchField;
-		String[] testWords = {"hmm", "hell", "heyo", "da", "dark", "app"};
-		locField.textProperty().addListener(new ChangeListener<String>() {
+		window.userMenuActions.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
 		    @Override
-		    public void changed(ObservableValue<? extends String> observable,
-		            String oldValue, String newValue) {
-
-		        if(newValue.trim().length() >= 3){
-		        	//String[] words = mapsAPI.getAutocompleteRes(newValue);
-		    		TextFields.bindAutoCompletion(locField, sr -> { 
-		    			return mapsAPI.getAutocompleteRes(sr.getUserText()); 
-		    		}); 
+		    public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+		        if(oldValue != null && oldValue.equals(newValue)){
+		        	newValue = oldValue;
+		        }
+		    	if(newValue.toLowerCase().equals("add restaurant")){
+		        	//window.userMenuActions.getSelectionModel().clearSelection();
+		    		window.userMenuActions.getSelectionModel().clearAndSelect(0);
+		    		restaurantRegistrationpage();
 		        }
 		    }
-		});		//if the login button is clicked the view is switched to the login page
+		});
+		primaryStage.show();
+	}
+	
+	public void homePage(){
+		primaryStage.setTitle(titleBase + defaultTitleEx);
+		homeView.buildStage(window, loggedIn);
+		//String[] testWords = {"hmm", "hell", "heyo", "da", "dark", "app"};
+	    AutoCompletionBinding<String> locAutocomplete = TextFields.bindAutoCompletion(homeView.locationSearchField, sr -> { 
+			return mapsApi.getPlacesSuggestions(sr.getUserText()); 
+		}); 
+	    locAutocomplete.setPrefWidth(269);
+	    AutoCompletionBinding<String> rstAutocomplete = TextFields.bindAutoCompletion(homeView.restaurantSearchField, sr -> {
+			return db.getRestaurantSuggestions(sr.getUserText());
+		});
+	    rstAutocomplete.setPrefWidth(349);
+		//if the login button is clicked the view is switched to the login page
 		homeView.loginBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
 	        public void handle(ActionEvent e) {
-	        	loadLoginPage();
+	        	loginPage();
 	        }
 	    });
 		//if the sign up button is clicked the view is switched to the sign up page
 		homeView.signUpBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
 	        public void handle(ActionEvent e) {
-	        	loadRegistrationPage();
+	        	userRegistrationPage();
 	        }
 	    });
-		if(loggedIn){
-			homeView.addRestaurantBtn.setOnAction(new EventHandler<ActionEvent>(){
-		        @Override
-		        public void handle(ActionEvent e) {
-		        	loadAddRestaurantPage();
-		        }
-			});
-		}
 	}
 	
-	public void loadRegistrationPage(){
+	public void userRegistrationPage(){
+		primaryStage.setTitle(titleBase + "Create an account.");
 		regView.buildStage(window, formFieldWidth, formFieldHeight);
 		regView.backBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
 	        public void handle(ActionEvent e) {
-	    		loadHomePage();
+	        	homePage();
 	        }
 	    });
 		regView.registerBtn.setOnAction(new EventHandler<ActionEvent>() {
@@ -143,8 +173,13 @@ public class UIMediator extends Application{
 	    });
 	}
 	
-	public void loadAddRestaurantPage(){
+	public void restaurantRegistrationpage(){
+		primaryStage.setTitle("OR3 - Add restaurant.");
 		restaurantRegView.buildStage(window, formFieldWidth, formFieldHeight);
+		AutoCompletionBinding<String> locAutocomplete = TextFields.bindAutoCompletion(restaurantRegView.addressField, sr -> { 
+			return mapsApi.getPlacesSuggestions(sr.getUserText()); 
+		}); 
+		locAutocomplete.setPrefWidth(formFieldWidth-1);
 		restaurantRegView.registerBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
 	        public void handle(ActionEvent e) {
@@ -154,31 +189,33 @@ public class UIMediator extends Application{
 	        	String zip = restaurantRegView.zipcodeField.getText();
 	    		if(formValidation.validRestaurantReg(name, addrs, zip, phone)){
 	    			currentRes = new Restaurant(name, phone);
-	    			currentRes.addAddress(addrs, zip);
+	    			currentRes.setAddress(addrs, zip);
 	    			db.insertRestaurant(currentRes);
-	    			loadRestaurantPage();
+	    			restaurantPage();
 	    		}
 	        }
 		});
 	}
 	
-	public void loadRestaurantPage(){
+	public void restaurantPage(){
 		resView.buildStage(currentRes, window);
 		resView.addRatingBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
 	        public void handle(ActionEvent e) {
 	    		String rating = resView.ratingField.getText();
 	    		currentRes.addRating(Integer.parseInt(rating));
-	    		loadRestaurantPage();
+	    		restaurantPage();
 	        }		
 		});
 	}
-	public void loadLoginPage(){
+	
+	public void loginPage(){
+		primaryStage.setTitle(titleBase + "Login to your account.");
 		loginView.buildStage(window, formFieldWidth, formFieldHeight);
 		loginView.backBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
 	        public void handle(ActionEvent e) {
-	    		loadHomePage();
+	        	homePage();
 	        }
 	    });
 		loginView.loginBtn.setOnAction(new EventHandler<ActionEvent>() {
@@ -190,8 +227,9 @@ public class UIMediator extends Application{
 	        	if(enteredUsername.trim().length() <= 0 || enteredPassword.trim().length() <= 0){
 	        		err.showAlert("Error form.", "Please fill out all the fields.");
 	        	}
-	        	currentUser = db.verifyUser(enteredUsername, enteredPassword);
+	        	currentUser = db.getUserFromDB(enteredUsername, enteredPassword);
 	        	if(currentUser != null){
+	        		titleBase = "OR3(" + enteredUsername + ") -";
 	        		loginUser(enteredUsername);
 	        	}
 	        	else{
@@ -209,7 +247,15 @@ public class UIMediator extends Application{
 			userCreds = name + "(Admin)";
 		}
 		window.userLogin(userCreds);
-		loadHomePage();		
+		homePage();		
+	}
+	
+	public boolean checkLocationInput(String oldUserInput, String newUserInput) {
+		if(oldUserInput.equals(newUserInput)){
+			return false;
+		}
+        Matcher matcher = GOOD_LOCATION_INPUT.matcher(newUserInput);
+        return matcher.find();
 	}
 
 }
