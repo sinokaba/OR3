@@ -29,7 +29,7 @@ public class UIMediator extends Application{
 	private RegistrationUI regView;
 	private LoginUI loginView;
 	private RestaurantRegistrationUI restaurantRegView;
-	private RestaurantUI resView;
+	private RestaurantUI rstrntView;
 	private DBConnection db;
 	
 	private int formFieldWidth = 258;
@@ -45,7 +45,7 @@ public class UIMediator extends Application{
 			Pattern.compile("^[a-zA-Z0-9]*.{2,}$");
 	private boolean loggedIn = false;
 	private User currentUser;
-	private Restaurant currentRes;
+	private Restaurant currentRstrnt;
 	Popup err, confirm;
 	ValidateForm formValidation;
 	
@@ -56,7 +56,7 @@ public class UIMediator extends Application{
 		regView = new RegistrationUI();
 		loginView = new LoginUI();
 		restaurantRegView = new RestaurantRegistrationUI();
-		resView = new RestaurantUI();
+		rstrntView = new RestaurantUI();
 		db = new DBConnection(dbURL, dbUsername, dbPassword, mapsApi);
 	}
 	
@@ -75,8 +75,8 @@ public class UIMediator extends Application{
 		err = new Popup("err", window.layout.getScene().getWindow());
 		confirm = new Popup("conf", window.layout.getScene().getWindow());
 		formValidation = new ValidateForm(window.layout, db, err);
+		window.layout.getStyleClass().add("bgColor");
 		primaryStage.setScene(scene);
-		
 		window.homeBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
@@ -112,6 +112,7 @@ public class UIMediator extends Application{
 		    	if(newValue.toLowerCase().equals("add restaurant")){
 		        	//window.userMenuActions.getSelectionModel().clearSelection();
 		    		window.userMenuActions.getSelectionModel().clearAndSelect(0);
+		    		window.layout.getStyleClass().remove("bgImage");
 		    		restaurantRegistrationpage();
 		        }
 		    }
@@ -120,6 +121,9 @@ public class UIMediator extends Application{
 	}
 	
 	public void homePage(){
+		if(!window.layout.getStyleClass().contains("bgImage")){
+			window.layout.getStyleClass().add("bgImage");
+		}
 		primaryStage.setTitle(titleBase + defaultTitleEx);
 		homeView.buildStage(window, loggedIn);
 		//String[] testWords = {"hmm", "hell", "heyo", "da", "dark", "app"};
@@ -135,6 +139,7 @@ public class UIMediator extends Application{
 		homeView.loginBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
 	        public void handle(ActionEvent e) {
+	    		window.layout.getStyleClass().remove("bgImage");
 	        	loginPage();
 	        }
 	    });
@@ -142,9 +147,36 @@ public class UIMediator extends Application{
 		homeView.signUpBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
 	        public void handle(ActionEvent e) {
-	        	userRegistrationPage();
+	    		window.layout.getStyleClass().remove("bgImage");
+	    		userRegistrationPage();
 	        }
 	    });
+		homeView.searchBtn.setOnAction(new EventHandler<ActionEvent>(){
+			@Override
+			public void handle(ActionEvent e) {
+				String userSearchTerm = homeView.restaurantSearchField.getText().trim();
+				if(userSearchTerm.length() > 0){
+					String userSpecifiedLoc = homeView.locationSearchField.getText().trim();
+					if(userSpecifiedLoc.length() <= 3){
+						userSpecifiedLoc = null;
+					}
+					if(homeView.searchDropdown.getSelectionModel().getSelectedItem().equals("Name")){
+			    		window.layout.getStyleClass().remove("bgImage");
+			    		Restaurant dbQueryRes = db.getRestaurantFromDB(userSearchTerm, userSpecifiedLoc);
+						if(dbQueryRes != null){
+							currentRstrnt = dbQueryRes;
+				    		restaurantPage();
+						}
+						else{
+							err.showAlert("Restaurant not found.", "Error! Restaurant not found!");
+						}
+					}
+				}
+				else{
+					err.showAlert("Fields not completed.", "Error! The main search field must not be empty!");
+				}
+			}
+		});
 	}
 	
 	public void userRegistrationPage(){
@@ -188,9 +220,9 @@ public class UIMediator extends Application{
 	        	String addrs = restaurantRegView.addressField.getText();
 	        	String zip = restaurantRegView.zipcodeField.getText();
 	    		if(formValidation.validRestaurantReg(name, addrs, zip, phone)){
-	    			currentRes = new Restaurant(name, phone);
-	    			currentRes.setAddress(addrs, zip);
-	    			db.insertRestaurant(currentRes);
+	    			currentRstrnt = new Restaurant(name, phone);
+	    			currentRstrnt.setAddress(addrs, zip);
+	    			db.insertRestaurant(currentRstrnt);
 	    			restaurantPage();
 	    		}
 	        }
@@ -198,12 +230,12 @@ public class UIMediator extends Application{
 	}
 	
 	public void restaurantPage(){
-		resView.buildStage(currentRes, window);
-		resView.addRatingBtn.setOnAction(new EventHandler<ActionEvent>() {
+		rstrntView.buildStage(currentRstrnt, window);
+		rstrntView.addRatingBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
 	        public void handle(ActionEvent e) {
-	    		String rating = resView.ratingField.getText();
-	    		currentRes.addRating(Integer.parseInt(rating));
+	    		String rating = rstrntView.ratingField.getText();
+	    		currentRstrnt.addRating(Integer.parseInt(rating));
 	    		restaurantPage();
 	        }		
 		});

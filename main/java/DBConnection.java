@@ -119,8 +119,31 @@ public class DBConnection {
     public List<String> getRestaurantSuggestions(String keyword){
     	List<String> suggestions = new ArrayList<String>();
     	if(keyword.trim().length() >= 2){
-    		String sqlQ = "SELECT * FROM restaurants WHERE name LIKE '%" + keyword + "%';";
-        	suggestions = getQueryResultList(sqlQ);
+    		try {
+    			keyword = keyword
+    					.replace("!", "!!")
+    					.replace("_", "!_")
+    					.replace("%", "!%")
+    					.replace("'", "!'")
+    					.replace("[", "![");
+				PreparedStatement pStatement = connection.prepareStatement("SELECT * FROM restaurants WHERE name LIKE ? ESCAPE '!';");
+	    		pStatement.setString(1, "%" + keyword + "%");
+	        	ResultSet res = pStatement.executeQuery();
+				while(res.next()) {
+				    if(res.getInt(1) > 0){
+						System.out.println(res.getInt(1));
+						if(suggestions.size() < 10){
+							suggestions.add(res.getString("name"));
+						}
+						else{
+							break;
+						}
+				    }
+				}
+    		} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
     	}
     	return suggestions;
     }
@@ -162,9 +185,11 @@ public class DBConnection {
     		}
     	}
     	if(validZip){
+    		String safeAddress = restaurant.address.replace("'", "''");
+    		String safeName = restaurant.name.replace("'", "''");
     		String sqlQ = "INSERT INTO restaurants \n"
-					+ " SET name = '" + restaurant.name + "',\n"
-					+ "  address = '" + restaurant.address + "', \n"
+					+ " SET name = '" + safeName + "',\n"
+					+ "  address = '" + safeAddress + "', \n"
 					+ "  phone = '" + restaurant.phone + "',\n"
 					+ "  fk_location = (SELECT idlocations FROM locations WHERE zipcode = '" + zip + "')";	
     		System.out.println(sqlQ);
@@ -316,21 +341,29 @@ public class DBConnection {
 		return usr;
     }
     
-    public Restaurant getRestaurantFromDB(String n, String addrs){
+    public Restaurant getRestaurantFromDB(String name, String addrs){
     	System.out.println("getting restaurant from db..");
 		Restaurant rst = null;
     	try{
-			ResultSet rs = statement.executeQuery("Select * from restaurants Where name='" + n + "' and address='" + addrs + "'");
+    		name = name.replace("'", "''");
+    		if(addrs != null){
+    			addrs = addrs.replace("'", "''");
+    		}
+    		String query = "Select * from restaurants Where name='" + name + "' and address='" + addrs + "';";
+    		if(addrs == null){
+    			query = "Select * from restaurants Where name='" + name + "';";
+    		}
+			ResultSet rs = statement.executeQuery(query);
 			System.out.println("result of q: 297" + rs);
 			if(rs.next()) {
 			    if(rs.getInt(1) > 0){
 			    	System.out.println("transferring data from db to restaurant class.");
-			    	String name = rs.getString("name");
+			    	String rstName = rs.getString("name");
 			    	String address = rs.getString("address");
 			    	String phone = rs.getString("phone");
 			    	int rstId = rs.getInt(1);
 			    	String locId = rs.getString("fk_location");
-			    	rst = new Restaurant(name, phone);
+			    	rst = new Restaurant(rstName, phone);
 			    	rst.setAddress(address, locId);
 			    	System.out.println("id from db of restaurnt: " + rstId);
 			    	rst.setId(rstId);

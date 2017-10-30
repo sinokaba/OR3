@@ -40,9 +40,7 @@ public class AppWindow{
 		layout.setAlignment(Pos.CENTER);
 		layout.setHgap(10);
 		layout.setVgap(10);
-	
-		String backgroundUrl = "https://cdn.vox-cdn.com/uploads/chorus_asset/file/8712449/gbb_food.jpg";
-        root.setStyle("-fx-background-image: url('"+backgroundUrl+"');");
+		
         root.setCenter(layout);
    	}
 	
