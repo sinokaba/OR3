@@ -52,6 +52,7 @@ public class RegistrationUI{
 		win.layout.add(birthdayWrapper, 1, 7);
 		
 		registerBtn = new Button("Sign up!");
+		registerBtn.setDefaultButton(true);
 		HBox hbBtn = new HBox(10);
 		hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
 		hbBtn.getChildren().add(registerBtn);

@@ -26,6 +26,7 @@ public class LoginUI {
 		createFieldLabelPair(win.layout, passwordField, pw, 3);
 
 		loginBtn = new Button("Login");
+		loginBtn.setDefaultButton(true);
 		HBox hbBtn = new HBox(10);
 		hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
 		hbBtn.getChildren().add(loginBtn);

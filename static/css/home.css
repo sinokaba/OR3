@@ -11,23 +11,24 @@
 
 .bgImage{
 	-fx-background-image: url('https://cdn.vox-cdn.com/uploads/chorus_asset/file/8712449/gbb_food.jpg');
-	-fx-text-fill: #ffffff;
 }
 
 .bgColor{
-	-fx-background-color: #f1c40f !important;
+	-fx-background-color: #34495e !important;
 }
 
 .title .text{
 	-fx-font-family:"Lucida Handwriting";
 	-fx-font-weight: 900;
 	-fx-font-size: 50pt;
+	-fx-fill: #ffffff !important;
 }
 
 .field.label .text{
 	-fx-stroke-width: 2px;
 	-fx-font-weight: 800;
 	-fx-font-size: 20;
+	-fx-fill: #ffffff !important;
 }
 
 .button{

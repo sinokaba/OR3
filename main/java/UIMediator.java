@@ -99,6 +99,7 @@ public class UIMediator extends Application{
             		}
             	}
             	else{
+		    		window.layout.getStyleClass().remove("bgImage");
             		loginPage();
             	}
             }
@@ -259,13 +260,15 @@ public class UIMediator extends Application{
 	        	if(enteredUsername.trim().length() <= 0 || enteredPassword.trim().length() <= 0){
 	        		err.showAlert("Error form.", "Please fill out all the fields.");
 	        	}
-	        	currentUser = db.getUserFromDB(enteredUsername, enteredPassword);
-	        	if(currentUser != null){
-	        		titleBase = "OR3(" + enteredUsername + ") -";
-	        		loginUser(enteredUsername);
-	        	}
 	        	else{
-	        		err.showAlert("Error form.", "User not found with that password.");	        		
+		        	currentUser = db.getUserFromDB(enteredUsername, enteredPassword);
+		        	if(currentUser != null){
+		        		titleBase = "OR3(" + enteredUsername + ") -";
+		        		loginUser(enteredUsername);
+		        	}
+		        	else{
+		        		err.showAlert("Error form.", "User not found with that password.");	        		
+		        	}
 	        	}
 	        }
 	    });

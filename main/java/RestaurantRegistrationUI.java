@@ -36,6 +36,7 @@ public class RestaurantRegistrationUI {
 		createFieldLabelPair(win.layout, hoursField, hours, 8);
 		*/
 		registerBtn = new Button("Register Restaurant.");
+		registerBtn.setDefaultButton(true);
 		HBox hbBtn = new HBox(10);
 		hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
 		hbBtn.getChildren().add(registerBtn);

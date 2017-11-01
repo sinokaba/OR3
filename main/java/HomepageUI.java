@@ -21,7 +21,6 @@ public class HomepageUI{
 		if(!loggedInUser){
 			loginBtn = new Button("Login");
 			signUpBtn = new Button("Sign Up");
-			
 			hbBtn.getChildren().add(loginBtn);
 			hbBtn.getChildren().add(signUpBtn);
 		}
@@ -39,6 +38,7 @@ public class HomepageUI{
 		
 		searchBtn = new Button("Search");
 		searchBtn.getStyleClass().add("searchButton");
+		searchBtn.setDefaultButton(true);
 		
 		//hbox lays out its children in a single row, for formatting
 		HBox searchWrap = new HBox(3);				
