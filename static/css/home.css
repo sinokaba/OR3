@@ -31,6 +31,11 @@
 	-fx-fill: #ffffff !important;
 }
 
+.mainText{
+	-fx-font-size: 18;
+	-fx-fill: #ffffff !important;	
+}
+
 .button{
 	-fx-background-color: #3498db;
 	-fx-text-fill: #ffffff;
@@ -97,14 +102,14 @@
     -fx-background-radius: 0.0px !important;
     -fx-border-width: 0.0px !important;
     -fx-border-color: white !important;
-    -fx-border-radius: 0.0px !important;
-    -fx-padding: 0.0px !important;
-    
+    -fx-border-radius: 0.0px !important;    
+    -fx-padding-top: 10px !important;
 }
 
 .auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
     -fx-font-size: 14px !important;
     -fx-cursor: hand !important;
+    -fx-alignment: CENTER-LEFT !important;
 }
 
 .auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover, .auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:focused {

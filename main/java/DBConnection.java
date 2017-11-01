@@ -118,7 +118,7 @@ public class DBConnection {
     
     public List<String> getRestaurantSuggestions(String keyword){
     	List<String> suggestions = new ArrayList<String>();
-    	if(keyword.trim().length() >= 2){
+    	if(keyword.trim().length() >= 1){
     		try {
     			keyword = keyword
     					.replace("!", "!!")

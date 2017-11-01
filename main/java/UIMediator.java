@@ -1,4 +1,5 @@
 
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,8 +31,9 @@ public class UIMediator extends Application{
 	private LoginUI loginView;
 	private RestaurantRegistrationUI restaurantRegView;
 	private RestaurantUI rstrntView;
-	private DBConnection db;
+	private searchResultsUI searchView;
 	
+	private DBConnection db;
 	private int formFieldWidth = 258;
 	private int formFieldHeight = 38;
 	private String titleBase = "OR3 - ";
@@ -57,6 +59,7 @@ public class UIMediator extends Application{
 		loginView = new LoginUI();
 		restaurantRegView = new RestaurantRegistrationUI();
 		rstrntView = new RestaurantUI();
+		searchView = new searchResultsUI();
 		db = new DBConnection(dbURL, dbUsername, dbPassword, mapsApi);
 	}
 	
@@ -131,11 +134,15 @@ public class UIMediator extends Application{
 	    AutoCompletionBinding<String> locAutocomplete = TextFields.bindAutoCompletion(homeView.locationSearchField, sr -> { 
 			return mapsApi.getPlacesSuggestions(sr.getUserText()); 
 		}); 
+	    locAutocomplete.setHideOnEscape(true);
 	    locAutocomplete.setPrefWidth(269);
+	    locAutocomplete.setDelay(1);
 	    AutoCompletionBinding<String> rstAutocomplete = TextFields.bindAutoCompletion(homeView.restaurantSearchField, sr -> {
 			return db.getRestaurantSuggestions(sr.getUserText());
 		});
 	    rstAutocomplete.setPrefWidth(349);
+	    rstAutocomplete.setHideOnEscape(true);
+	    rstAutocomplete.setDelay(70);
 		//if the login button is clicked the view is switched to the login page
 		homeView.loginBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
@@ -169,7 +176,7 @@ public class UIMediator extends Application{
 				    		restaurantPage();
 						}
 						else{
-							err.showAlert("Restaurant not found.", "Error! Restaurant not found!");
+							searchResultsPage(db.getRestaurantSuggestions(userSearchTerm), userSearchTerm);
 						}
 					}
 				}
@@ -206,6 +213,10 @@ public class UIMediator extends Application{
 	    });
 	}
 	
+	public void searchResultsPage(List<String> result, String searchKeyword){
+		primaryStage.setTitle("OR3 - Searched for " + searchKeyword);
+		searchView.buildStage(window, searchKeyword, result);
+	}
 	public void restaurantRegistrationpage(){
 		primaryStage.setTitle("OR3 - Add restaurant.");
 		restaurantRegView.buildStage(window, formFieldWidth, formFieldHeight);
@@ -236,8 +247,11 @@ public class UIMediator extends Application{
 	        @Override
 	        public void handle(ActionEvent e) {
 	    		String rating = rstrntView.ratingField.getText();
+	    		System.out.println("rating txt: " + rating);
 	    		currentRstrnt.addRating(Integer.parseInt(rating));
-	    		restaurantPage();
+	    		double rt = currentRstrnt.getRating();
+	    		System.out.println("rating: " + rt);
+	    		rstrntView.rating.setRating(rt);
 	        }		
 		});
 	}

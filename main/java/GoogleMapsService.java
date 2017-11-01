@@ -31,11 +31,15 @@ public class GoogleMapsService {
 	
 	public List<String> getPlacesSuggestions(String keyword){
 		List<String> results = new ArrayList<String>();
+		int maxSuggestions = 5;
 		if(keyword.trim().length() >= 2){
 			System.out.println("k: " + keyword);
 			PlaceAutocompleteRequest places = PlacesApi.placeAutocomplete(geoApi, keyword);
 			AutocompletePrediction[] placesOptions = places.awaitIgnoreError();
-			for(int i=0; i < placesOptions.length; i++){
+			if(placesOptions.length < 5){
+				maxSuggestions = placesOptions.length;
+			}
+			for(int i=0; i < maxSuggestions; i++){
 				//getLocation(placesOptions[i].description);
 				//System.out.println(placesOptions[i].description);
 				results.add(placesOptions[i].description);
