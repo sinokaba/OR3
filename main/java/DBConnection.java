@@ -1,5 +1,4 @@
 
-
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -10,6 +9,9 @@ public class DBConnection {
     private Connection connection;	
     private Statement statement;
     private GoogleMapsService mapsAPI;
+	final private String dbURL = "jdbc:mysql://localhost:3306/or3_remote?autoReconnect=true&useSSL=false";
+	final private String dbUsername = "rs";
+	final private String dbPassword = "getInternship2017";
 
 	/**
 	* The constructor of the DBConnection class
@@ -18,11 +20,12 @@ public class DBConnection {
 	* @param takes 3 input, all string, the database url, and the user and password associated with the db
 	* @return no return value
 	*/
-    public DBConnection(String dbURL, String user, String pw, GoogleMapsService api){
+	/*
+    public DBConnection(GoogleMapsService api){
 		mapsAPI = api;
     	try{
     		Class.forName("com.mysql.jdbc.Driver");
-	        connection = DriverManager.getConnection(dbURL, user, pw);
+	        connection = DriverManager.getConnection(dbURL, dbUsername, dbPassword);
 	        
 	        statement = connection.createStatement();
     	}
@@ -32,7 +35,34 @@ public class DBConnection {
 			e.printStackTrace();
 		}
     }
-    
+    */
+    public DBConnection(GoogleMapsService api) {
+    	mapsAPI = api;
+        try {
+			Class.forName("com.mysql.jdbc.Driver");
+			String dbName = System.getenv("RDS_DB_NAME");
+			String username = System.getenv("RDS_USER");
+			String password = System.getenv("RDS_PASSWORD");
+			String hostname = System.getenv("RDS_HOST_NAME");
+			String port = System.getenv("RDS_PORT");
+			String jdbcUrl = "jdbc:mysql://" + hostname + ":" + port + "/" + dbName;
+			//connection = DriverManager.getConnection(jdbcUrl);
+			//logger.trace("Getting remote connection with connection string from environment variables.");
+			connection = DriverManager.getConnection(jdbcUrl, username, password);
+			statement = connection.createStatement();
+			//logger.info("Remote connection successful.");
+			//return con;
+			System.out.println("connection good bruh? " + connection);
+        }
+        catch (SQLException e) { 
+        	System.out.println("something wrong with sql connection.");
+        	e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+        	System.out.println("Class not found 57.");
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}  
+    }
 	/**
 	* This method shutdowns and closes connection with db when called.
 	* 	 

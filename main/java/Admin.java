@@ -1,5 +1,4 @@
 
-
 public class Admin extends User{
 	/**
 	* The Admin class constructor, a child of the User class

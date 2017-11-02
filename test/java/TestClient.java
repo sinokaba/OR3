@@ -7,7 +7,7 @@ import org.junit.Test;
 public class TestClient {
 	User user = new User("rs10", "123", "1997-01-26", "rs@gmail.com", "06268", 1);
 	GoogleMapsService mapsAPI = new GoogleMapsService("AIzaSyCP-qr7umfKFSrmnbOB-cl-djIhD5p1mJ8");
-	DBConnection db = new DBConnection("jdbc:mysql://localhost:3306/2102_or3?autoReconnect=true&useSSL=false", "root", "allanK0_ph", mapsAPI);
+	DBConnection db = new DBConnection(mapsAPI);
 	Restaurant restaurant = new Restaurant("Monkey Kazoo","911");
 	Review review = new Review(5, "good i guess", user, restaurant);
 

@@ -1,28 +1,32 @@
-import java.awt.Window;
-import java.util.List;
 
+import java.util.List;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.shape.Rectangle;
 
 public class searchResultsUI {
-	
-	public void buildStage(AppWindow win, String keyword, List<String> searchResults){
+	ObservableList<Restaurant> listViewData = FXCollections.observableArrayList();
+	ListView<Restaurant> listViewable;
+	public void buildStage(AppWindow win, String keyword, List<String> searchResults, DBConnection db){
 		win.resetLayout();
+		listViewData.clear();
 		Label title = new Label("Search results for '" + keyword + "': ");
 		win.layout.add(title, 0, 2);
 		title.getStyleClass().add("field");
-		int index = 3;
 		for(String res : searchResults){
 			System.out.println("res: " + res);
-			Hyperlink link = new Hyperlink(res);
-			win.layout.add(link, 1, index);
-			link.getStyleClass().add("mainText");
-			Rectangle picPlaceholder = new Rectangle(64,64);
-			win.layout.add(picPlaceholder, 0, index);
-			index += 1;
+			listViewData.add(db.getRestaurantFromDB(res, null));
 		}
-		win.updateElementCount(index+1);
+		System.out.println("first item in observable list: " + listViewData.get(0).getName());
+		listViewable = new ListView<>(listViewData);
+		win.layout.add(listViewable, 0, 3);
+		win.updateElementCount(2);
 		
 	}
 }

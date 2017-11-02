@@ -38,9 +38,6 @@ public class UIMediator extends Application{
 	private int formFieldHeight = 38;
 	private String titleBase = "OR3 - ";
 	private String defaultTitleEx = "Rate, Review, Dine";
-	final private String dbURL = "jdbc:mysql://localhost:3306/2102_or3?autoReconnect=true&useSSL=false";
-	final private String dbUsername = "root";
-	final private String dbPassword = "allanK0_ph";
 	final private GoogleMapsService mapsApi;
 
 	final private Pattern GOOD_LOCATION_INPUT = 
@@ -60,7 +57,8 @@ public class UIMediator extends Application{
 		restaurantRegView = new RestaurantRegistrationUI();
 		rstrntView = new RestaurantUI();
 		searchView = new searchResultsUI();
-		db = new DBConnection(dbURL, dbUsername, dbPassword, mapsApi);
+		//db = new DBConnection(dbURL, dbUsername, dbPassword, mapsApi);
+		db = new DBConnection(mapsApi);
 	}
 	
 	
@@ -68,7 +66,6 @@ public class UIMediator extends Application{
 		launch(args);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void start(Stage stage) throws Exception{
 		primaryStage = stage;
 		homePage();
@@ -215,8 +212,10 @@ public class UIMediator extends Application{
 	
 	public void searchResultsPage(List<String> result, String searchKeyword){
 		primaryStage.setTitle("OR3 - Searched for " + searchKeyword);
-		searchView.buildStage(window, searchKeyword, result);
+		searchView.buildStage(window, searchKeyword, result, db);
+		
 	}
+	
 	public void restaurantRegistrationpage(){
 		primaryStage.setTitle("OR3 - Add restaurant.");
 		restaurantRegView.buildStage(window, formFieldWidth, formFieldHeight);

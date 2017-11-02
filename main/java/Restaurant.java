@@ -66,4 +66,9 @@ public class Restaurant {
 		return restaurantId;
 	}
 	
+	@Override
+	public String toString(){
+		return name;
+	}
+	
 }

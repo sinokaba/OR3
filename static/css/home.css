@@ -112,6 +112,7 @@
     -fx-alignment: CENTER-LEFT !important;
 }
 
+
 .auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover, .auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:focused {
     -fx-background-color: #3498db !important;
     -fx-text-fill: #ffffff !important;

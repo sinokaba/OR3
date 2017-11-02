@@ -34,7 +34,7 @@ public class HomepageUI{
 		grid.add(buffer, 2, 0);
 		//String[] testWords = {"hmm", "hell", "heyo", "da", "dark", "app"};
 		createSearchOptions();
-		locationSearchField = new CustomTextField("US state, city, or zipcode.", 42, 270);
+		locationSearchField = new CustomTextField("US state, city, or zipcode.", 26, 270);
 		
 		searchBtn = new Button("Search");
 		searchBtn.getStyleClass().add("searchButton");
@@ -61,7 +61,7 @@ public class HomepageUI{
 		searchDropdown = new DropdownMenu(null, 4, searchChoices, 0, 0, true);
 		searchDropdown.addClass("mainSearchDropdown");
 		
-		restaurantSearchField = new CustomTextField("of Restaurant...", 42, 350);
+		restaurantSearchField = new CustomTextField("of Restaurant...", 26, 350);
 
         searchDropdown.setOnAction((e) -> {
         	String currentSelectedItem = searchDropdown.getSelectionModel().getSelectedItem().toString();
