@@ -17,25 +17,9 @@ public class DBConnection {
 	* The constructor of the DBConnection class
 	* Will connect to the database based on input given, or raise exceptions if something goes wrong
 	* 
-	* @param takes 3 input, all string, the database url, and the user and password associated with the db
+	* @param takes 1 input an instance of the google maps api, to check for location
 	* @return no return value
 	*/
-	/*
-    public DBConnection(GoogleMapsService api){
-		mapsAPI = api;
-    	try{
-    		Class.forName("com.mysql.jdbc.Driver");
-	        connection = DriverManager.getConnection(dbURL, dbUsername, dbPassword);
-	        
-	        statement = connection.createStatement();
-    	}
-    	catch(SQLException ex){
-    		System.out.println("Something went wrong with sql! Error message: " + ex);
-    	} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-    }
-    */
     public DBConnection(GoogleMapsService api) {
     	mapsAPI = api;
         try {
@@ -146,18 +130,55 @@ public class DBConnection {
     	return getQueryResultSet(sqlQ);
     }
     
-    public List<String> getRestaurantSuggestions(String keyword){
+    public List<String> getRestaurantSuggestions(String keyword, String loc){
     	List<String> suggestions = new ArrayList<String>();
-    	if(keyword.trim().length() >= 1){
-    		try {
-    			keyword = keyword
-    					.replace("!", "!!")
-    					.replace("_", "!_")
-    					.replace("%", "!%")
-    					.replace("'", "!'")
-    					.replace("[", "![");
-				PreparedStatement pStatement = connection.prepareStatement("SELECT * FROM restaurants WHERE name LIKE ? ESCAPE '!';");
-	    		pStatement.setString(1, "%" + keyword + "%");
+		try {
+			String[] geoLocation = new String[3];
+	    	if(loc != null){
+	    		System.out.println("location entred: " + loc);
+	    		String[] locationSplit = loc.split(",");
+	    		String country = locationSplit[locationSplit.length - 1].trim();
+	    		System.out.println("country: " + country + country.toLowerCase().equals("united states"));
+	    		if(country.toLowerCase().equals("united states")){
+	    			geoLocation[0] = "US";
+		    		geoLocation[1] = locationSplit[locationSplit.length - 2].trim();
+		    		if(locationSplit.length >= 3){
+		    			geoLocation[2] = locationSplit[locationSplit.length - 3].trim();
+		    		}
+		    		/*
+	    			System.out.println("country: " + country + " state: " + state);
+		    		String locQuery = "SELECT idlocations FROM locations WHERE country = '" + country + "' and state = '" + state + "';)";
+		    		ResultSet locRes = getQueryResultSet(locQuery);
+		    		if(locRes.next()){
+		    			if(locRes.getInt(1) > 0){
+		    				locIndex = locRes.getInt(1);
+		    				//locIndex = "SELECT * FROM restaurants WHERE name LIKE ? ESCAPE '!' and fk_location = " + locIndex + "y";
+		    			}
+		    		}
+		    		*/
+	    		}
+	    	}
+    		String locStatement = "SELECT idlocations FROM locations WHERE locations.state = '" + geoLocation[1];
+	    	if(geoLocation[2] != null){
+	    		locStatement = "SELECT idlocations FROM locations WHERE locations.state = '" + geoLocation[1] + "' and locations.city = '" + geoLocation[2] +"'";
+	    	}
+	    	else{
+	    		locStatement = "SELECT idlocations FROM locations WHERE locations.state = '" + geoLocation[1] + "'";
+	    	}
+			if(keyword.length() >= 1){
+	    		String sqlStatement = "SELECT * FROM restaurants WHERE restaurants.name LIKE ? ESCAPE '!'";
+	    		if(geoLocation[2] != null){
+	    			sqlStatement = "SELECT * FROM restaurants WHERE restaurants.name LIKE ? ESCAPE '!' AND restaurants.fk_location IN (" + locStatement + ")";
+	    		}
+				keyword = keyword
+						.replace("!", "!!")
+						.replace("_", "!_")
+						.replace("%", "!%")
+						.replace("'", "!'")
+						.replace("[", "![");
+				PreparedStatement pStatement = connection.prepareStatement(sqlStatement);
+				pStatement.setString(1, "%" + keyword + "%");
+				System.out.println(pStatement);
 	        	ResultSet res = pStatement.executeQuery();
 				while(res.next()) {
 				    if(res.getInt(1) > 0){
@@ -170,11 +191,29 @@ public class DBConnection {
 						}
 				    }
 				}
-    		} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
-    	}
+			else{
+				if(geoLocation[0] != null){
+			    	PreparedStatement pStatement = connection.prepareStatement("SELECT * FROM restaurants WHERE restaurants.fk_location IN (" + locStatement + ")");
+			    	System.out.println(pStatement);
+		        	ResultSet res = pStatement.executeQuery();
+					while(res.next()) {
+					    if(res.getInt(1) > 0){
+							System.out.println(res.getInt(1));
+							if(suggestions.size() < 10){
+								suggestions.add(res.getString("name"));
+							}
+							else{
+								break;
+							}
+					    }
+					}
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     	return suggestions;
     }
     

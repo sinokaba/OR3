@@ -126,20 +126,23 @@ public class UIMediator extends Application{
 			window.layout.getStyleClass().add("bgImage");
 		}
 		primaryStage.setTitle(titleBase + defaultTitleEx);
-		homeView.buildStage(window, loggedIn);
+		homeView.buildStage(window, loggedIn, db, mapsApi);
 		//String[] testWords = {"hmm", "hell", "heyo", "da", "dark", "app"};
+		/*
 	    AutoCompletionBinding<String> locAutocomplete = TextFields.bindAutoCompletion(homeView.locationSearchField, sr -> { 
 			return mapsApi.getPlacesSuggestions(sr.getUserText()); 
 		}); 
 	    locAutocomplete.setHideOnEscape(true);
 	    locAutocomplete.setPrefWidth(269);
 	    locAutocomplete.setDelay(1);
+	    
 	    AutoCompletionBinding<String> rstAutocomplete = TextFields.bindAutoCompletion(homeView.restaurantSearchField, sr -> {
 			return db.getRestaurantSuggestions(sr.getUserText());
 		});
 	    rstAutocomplete.setPrefWidth(349);
 	    rstAutocomplete.setHideOnEscape(true);
 	    rstAutocomplete.setDelay(70);
+	    */
 		//if the login button is clicked the view is switched to the login page
 		homeView.loginBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
@@ -159,22 +162,27 @@ public class UIMediator extends Application{
 		homeView.searchBtn.setOnAction(new EventHandler<ActionEvent>(){
 			@Override
 			public void handle(ActionEvent e) {
-				String userSearchTerm = homeView.restaurantSearchField.getText().trim();
-				if(userSearchTerm.length() > 0){
-					String userSpecifiedLoc = homeView.locationSearchField.getText().trim();
-					if(userSpecifiedLoc.length() <= 3){
-						userSpecifiedLoc = null;
+				String searchTerm = homeView.restaurantSearchField.getText().trim();
+				String specifiedLoc = homeView.locationSearchField.getText().trim();
+				if(searchTerm.length() > 0 || specifiedLoc.length() > 3){
+		    		window.layout.getStyleClass().remove("bgImage");
+					if(specifiedLoc.length() <= 3){
+						specifiedLoc = null;
 					}
-					if(homeView.searchDropdown.getSelectionModel().getSelectedItem().equals("Name")){
-			    		window.layout.getStyleClass().remove("bgImage");
-			    		Restaurant dbQueryRes = db.getRestaurantFromDB(userSearchTerm, userSpecifiedLoc);
-						if(dbQueryRes != null){
-							currentRstrnt = dbQueryRes;
-				    		restaurantPage();
+					if(searchTerm.length() > 0){
+						if(homeView.searchDropdown.getSelectionModel().getSelectedItem().equals("Name")){
+				    		Restaurant dbQueryRes = db.getRestaurantFromDB(searchTerm, specifiedLoc);
+							if(dbQueryRes != null){
+								currentRstrnt = dbQueryRes;
+					    		restaurantPage(currentRstrnt);
+							}
+							else{
+								searchResultsPage(db.getRestaurantSuggestions(searchTerm, specifiedLoc), searchTerm, specifiedLoc);
+							}
 						}
-						else{
-							searchResultsPage(db.getRestaurantSuggestions(userSearchTerm), userSearchTerm);
-						}
+					}
+					else{
+						searchResultsPage(db.getRestaurantSuggestions(searchTerm, specifiedLoc), searchTerm, specifiedLoc);						
 					}
 				}
 				else{
@@ -210,19 +218,19 @@ public class UIMediator extends Application{
 	    });
 	}
 	
-	public void searchResultsPage(List<String> result, String searchKeyword){
-		primaryStage.setTitle("OR3 - Searched for " + searchKeyword);
-		searchView.buildStage(window, searchKeyword, result, db);
+	public void searchResultsPage(List<String> result, String searchKeyword, String location){
+		primaryStage.setTitle("OR3 - Searched for " + searchKeyword + " at " + location);
+		searchView.buildStage(window, searchKeyword, location, result, db, UIMediator.this);
 		
 	}
 	
 	public void restaurantRegistrationpage(){
 		primaryStage.setTitle("OR3 - Add restaurant.");
-		restaurantRegView.buildStage(window, formFieldWidth, formFieldHeight);
-		AutoCompletionBinding<String> locAutocomplete = TextFields.bindAutoCompletion(restaurantRegView.addressField, sr -> { 
-			return mapsApi.getPlacesSuggestions(sr.getUserText()); 
-		}); 
-		locAutocomplete.setPrefWidth(formFieldWidth-1);
+		restaurantRegView.buildStage(window, formFieldWidth, formFieldHeight, mapsApi);
+		//AutoCompletionBinding<String> locAutocomplete = TextFields.bindAutoCompletion(restaurantRegView.addressField, sr -> { 
+			//return mapsApi.getPlacesSuggestions(sr.getUserText()); 
+		//}); 
+		//locAutocomplete.setPrefWidth(formFieldWidth-1);
 		restaurantRegView.registerBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
 	        public void handle(ActionEvent e) {
@@ -234,21 +242,21 @@ public class UIMediator extends Application{
 	    			currentRstrnt = new Restaurant(name, phone);
 	    			currentRstrnt.setAddress(addrs, zip);
 	    			db.insertRestaurant(currentRstrnt);
-	    			restaurantPage();
+	    			restaurantPage(currentRstrnt);
 	    		}
 	        }
 		});
 	}
 	
-	public void restaurantPage(){
-		rstrntView.buildStage(currentRstrnt, window);
+	public void restaurantPage(Restaurant rstnt){
+		rstrntView.buildStage(rstnt, window);
 		rstrntView.addRatingBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
 	        public void handle(ActionEvent e) {
 	    		String rating = rstrntView.ratingField.getText();
 	    		System.out.println("rating txt: " + rating);
-	    		currentRstrnt.addRating(Integer.parseInt(rating));
-	    		double rt = currentRstrnt.getRating();
+	    		rstnt.addRating(Integer.parseInt(rating));
+	    		double rt = rstnt.getRating();
 	    		System.out.println("rating: " + rt);
 	    		rstrntView.rating.setRating(rt);
 	        }		

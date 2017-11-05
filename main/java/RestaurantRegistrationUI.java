@@ -7,10 +7,11 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 
 public class RestaurantRegistrationUI {
-	CustomTextField nameField, addressField, cityField, stateField, zipcodeField, phoneField;
+	CustomTextField nameField, cityField, stateField, zipcodeField, phoneField;
+	AutoCompleteTextField addressField;
 	Button registerBtn;
 	
-	public void buildStage(AppWindow win, int w, int h){
+	public void buildStage(AppWindow win, int w, int h, GoogleMapsService mapsApi){
 		win.resetLayout();
 		
 		FormField form = new FormField(w, h);
@@ -20,7 +21,8 @@ public class RestaurantRegistrationUI {
 		createFieldLabelPair(win.layout, nameField, restaurantName, 2);
 		
 		Label address = form.createLabel("Address:");
-		addressField = form.createTextField("Enter street address.", 75);
+		addressField = new AutoCompleteTextField("Enter street address.", w, h);
+		addressField.autocomplete(null, mapsApi);
 		createFieldLabelPair(win.layout, addressField, address, 3);
 		
 		Label zipcode = form.createLabel("Zipcode:");

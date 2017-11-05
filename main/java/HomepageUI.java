@@ -1,4 +1,6 @@
 
+import java.util.Arrays;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
@@ -8,11 +10,16 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 
 public class HomepageUI{
-	CustomTextField restaurantSearchField, locationSearchField;
+	//CustomTextField restaurantSearchField;
+	AutoCompleteTextField locationSearchField, restaurantSearchField;
 	DropdownMenu searchDropdown;
 	Button searchBtn, loginBtn, signUpBtn;
+	DBConnection db;
+	GoogleMapsService mapsApi;
 	
-	public void buildStage(AppWindow win, boolean loggedInUser){
+	public void buildStage(AppWindow win, boolean loggedInUser, DBConnection db, GoogleMapsService api){
+		this.db = db;
+		mapsApi = api;
 		win.resetLayout();
 		HBox searchWrap = createSearchBar(win.layout);
 		win.layout.add(searchWrap, 1, 1);
@@ -34,8 +41,12 @@ public class HomepageUI{
 		grid.add(buffer, 2, 0);
 		//String[] testWords = {"hmm", "hell", "heyo", "da", "dark", "app"};
 		createSearchOptions();
-		locationSearchField = new CustomTextField("US state, city, or zipcode.", 26, 270);
-		
+		//locationSearchField = new CustomTextField("US state, city, or zipcode.", 26, 270);
+		locationSearchField = new AutoCompleteTextField("US state, city, or zipcode.", 270, 44);
+		locationSearchField.autocomplete(null, mapsApi);
+		//locationSearchField.getEntries().addAll(Arrays.asList("AA", "AB", "AC","BCA"));
+		restaurantSearchField = new AutoCompleteTextField("of Restaurant...", 350, 44);
+		restaurantSearchField.autocomplete(db, null);
 		searchBtn = new Button("Search");
 		searchBtn.getStyleClass().add("searchButton");
 		searchBtn.setDefaultButton(true);
@@ -60,9 +71,6 @@ public class HomepageUI{
 			    );
 		searchDropdown = new DropdownMenu(null, 4, searchChoices, 0, 0, true);
 		searchDropdown.addClass("mainSearchDropdown");
-		
-		restaurantSearchField = new CustomTextField("of Restaurant...", 26, 350);
-
         searchDropdown.setOnAction((e) -> {
         	String currentSelectedItem = searchDropdown.getSelectionModel().getSelectedItem().toString();
             if(currentSelectedItem.equals("Name") || currentSelectedItem.equals("Type")){
