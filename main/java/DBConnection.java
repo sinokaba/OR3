@@ -446,6 +446,45 @@ public class DBConnection {
 		return rst;
     }
     
+    public List<Review> getRestaurantReviewsFromDB(Restaurant restaurant){
+    	List<Review> reviewList = new ArrayList<Review>();
+    	try{
+    		String reviewsQuery = "SELECT * FROM reviews WHERE fk_restaurant IN (SELECT idrestaurant FROM restaurants WHERE name = '" + restaurant.getName() +"')";
+    		System.out.println(reviewsQuery);
+    		ResultSet rs = statement.executeQuery(reviewsQuery);
+    		while(rs.next()){
+    			if(rs.getInt(1) > 0){
+    				Date creationDate = rs.getDate("creation_date");
+    				String comments = rs.getString("comments");
+    				double rating = rs.getDouble("overall_rating");
+    				int userId = rs.getInt("fk_user");
+    				String userQuery = "SELECT * FROM users WHERE iduser = " + userId;
+    				System.out.println(userQuery);
+    				ResultSet userRs = statement.executeQuery(userQuery);
+    				User usr = null;
+    				if(userRs.next()){
+    					if(userRs.getInt(1) > 0){
+    						String name = userRs.getString("username");
+    				    	String pw = userRs.getString("password");
+    				    	String birthdate = userRs.getString("birthdate");
+    				    	String email = userRs.getString("email");
+    				    	String locId = userRs.getString("fk_location");
+    				    	int privilege = userRs.getInt("privilege");
+    				    	usr = new User(name, pw, birthdate, email, locId, privilege);
+    				    	//System.out.println("id from db of user: " + userId);
+    				    	usr.setId(userId);    					
+    				    }
+    				}
+    				Review review = new Review(rating, comments, usr, restaurant);
+    				reviewList.add(review);
+    			}
+    		}
+    	}
+    	catch(SQLException e){
+    		e.printStackTrace();
+    	}
+    	return reviewList;
+    }
     public ResultSet getQueryResultSet(String query){
 		ResultSet res = null;
     	try{

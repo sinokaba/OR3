@@ -18,7 +18,7 @@ public class FormField {
 	
 	public CustomTextField createTextField(String placeholder, int charLimit){
 		CustomTextField textField = new CustomTextField(placeholder, fieldHeight, fieldWidth);
-		textField.addCharLimit(charLimit);
+		textField.setCharLimit(charLimit);
 		return textField;
 	}
 	

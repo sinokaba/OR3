@@ -11,7 +11,7 @@ public class CustomTextField extends TextField{
 		super.setPrefSize(width, height);
 	}
 	
-	public void addCharLimit(int charLimit){
+	public void setCharLimit(int charLimit){
 		if(charLimit > 0){
 			super.setTextFormatter(new TextFormatter<String>(change -> 
             change.getControlNewText().length() <= charLimit ? change : null));

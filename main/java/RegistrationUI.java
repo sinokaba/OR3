@@ -95,20 +95,6 @@ public class RegistrationUI{
 		return year.getValue() + "-" + month.getValue() + "-" + day.getValue();
 	}
 	
-	/*
-	public void checkForm(){
-    	String username = getUsername();
-    	String email = getEmail();
-    	String pw = getPassword();
-    	String pwV = getPasswordV();
-    	String zip = getZipcode();
-    	if(validRegistration(pw, pwV, username, email, zip)){
-    		User newUser = new User(username, pw, regView.getBirthday(), email, zip, 0);
-    		db.insertUser(newUser);
-    	}
-	}
-	*/
-	
 	public void createFieldLabelPair(GridPane grid, CustomTextField field, Label lbl, int row){		
 		grid.add(lbl, 0, row);
 		grid.add(field, 1, row);

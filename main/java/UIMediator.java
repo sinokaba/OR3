@@ -4,19 +4,14 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.controlsfx.control.textfield.AutoCompletionBinding;
-import org.controlsfx.control.textfield.TextFields;
-
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
-import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 
 public class UIMediator extends Application{
@@ -249,16 +244,22 @@ public class UIMediator extends Application{
 	}
 	
 	public void restaurantPage(Restaurant rstnt){
-		rstrntView.buildStage(rstnt, window);
-		rstrntView.addRatingBtn.setOnAction(new EventHandler<ActionEvent>() {
+		rstrntView.buildStage(rstnt, window, loggedIn, db.getRestaurantReviewsFromDB(rstnt));
+		rstrntView.addReviewBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
 	        public void handle(ActionEvent e) {
-	    		String rating = rstrntView.ratingField.getText();
-	    		System.out.println("rating txt: " + rating);
-	    		rstnt.addRating(Integer.parseInt(rating));
-	    		double rt = rstnt.getRating();
-	    		System.out.println("rating: " + rt);
-	    		rstrntView.rating.setRating(rt);
+	    		String comments = rstrntView.commentField.getText();
+	    		//System.out.println("rating txt: " + rating);
+	    		//System.out.println(rstrntView.rating.getSelectionModel().getSelectedIndex());
+	    		Double rating = rstrntView.getRating();
+	    		rstnt.addRating(rating);
+	    		//double rt = rstnt.getRating();
+	    		//System.out.println("rating: " + rt);
+	    		//rstrntView.rating.setRating(rt);
+	    		Review review = new Review(rating, comments, currentUser, currentRstrnt);
+	    		db.insertReview(review);
+	    		rstrntView.postReview(review);
+	    		//restaurantPage(currentRstrnt);
 	        }		
 		});
 	}
