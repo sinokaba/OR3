@@ -44,8 +44,6 @@ public class RestaurantRegistrationUI {
 		hbBtn.getChildren().add(registerBtn);
 		win.layout.add(hbBtn, 1, 9);
 		
-		win.updateElementCount(9);
-		
 	}
 
 	public void createFieldLabelPair(GridPane grid, CustomTextField field, Label lbl, int row){		

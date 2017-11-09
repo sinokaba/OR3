@@ -17,11 +17,13 @@ public class searchResultsUI {
 	public void buildStage(AppWindow win, String keyword, String loc, List<String> searchResults, DBConnection db, UIMediator ui){
 		win.resetLayout();
 		listViewData.clear();
-		Label title = new Label("Search results for '" + keyword + "' at '" + loc + "' : ");
-		win.layout.add(title, 0, 2);
-		title.getStyleClass().add("field");
-		int numElements = 1;
-		int pos = 3;
+		Label searchTitle = new Label("Search results for '" + keyword + "' at '" + loc + "': ");
+		if(loc == null){
+			searchTitle = new Label("Search results for '" + keyword + "': ");
+		}
+		win.layout.add(searchTitle, 0, 0);
+		searchTitle.getStyleClass().add("field");
+		int pos = 1;
 		for(String res : searchResults){
 			/*
 			System.out.println("res: " + res);
@@ -38,11 +40,11 @@ public class searchResultsUI {
 			        ui.restaurantPage(r);
 			    }
 			});
-			Label lbl2 = new Label(r.getAddress());
+			Label lbl2 = new Label("Address: " + r.getAddress());
 			lbl2.getStyleClass().add("field");
-			Label lbl3 = new Label(r.getPhone());
+			Label lbl3 = new Label("Phone: " + r.getPhone());
 			lbl3.getStyleClass().add("field");
-			Label lbl4 = new Label(String.valueOf(r.getRating()));
+			Label lbl4 = new Label(String.valueOf(r.getRating()) + " stars.");
 			lbl4.getStyleClass().add("field");
 			detailsWrapperV.getChildren().add(lbl);
 			detailsWrapperV.getChildren().add(lbl2);
@@ -52,13 +54,10 @@ public class searchResultsUI {
 			detailsWrapperH.getChildren().add(detailsWrapperV);
 			detailsWrapperH.getChildren().add(lbl4);
 			win.layout.add(detailsWrapperH, 0, pos);
-			numElements += 1;
 			pos += 1;
 		}
 		//System.out.println("first item in observable list: " + listViewData.get(0).getName());
 		//listViewable = new ListView<>(listViewData);
-		//win.layout.add(listViewable, 0, 3);
-		win.updateElementCount(numElements);
-		
+		//win.layout.add(listViewable, 0, 3);		
 	}
 }

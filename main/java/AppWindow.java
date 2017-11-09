@@ -31,12 +31,7 @@ public class AppWindow{
 	
 	public void buildWindow(){
 		root = new BorderPane();
-        root.setTop(createWindowMenu());
-		Label sceneTitle = new Label("OR3");
-		sceneTitle.getStyleClass().add("title");
-		sceneTitle.setAlignment(Pos.TOP_CENTER);
-
-		layout.add(sceneTitle, 1, 0);		
+        root.setTop(createWindowMenu());	
 		layout.setAlignment(Pos.CENTER);
 		layout.setHgap(10);
 		layout.setVgap(10);
@@ -115,17 +110,8 @@ public class AppWindow{
         return btn;
 	}
 	
-	public void updateElementCount(int n){
-		numElements += n;
-		System.out.println("Number of elements: " + numElements);
-	}
-	
-	public int getNumElements(){
-		return numElements;
-	}
-	
 	public void resetLayout(){
-		layout.getChildren().remove(1, numElements);
-		numElements = 1;
+		layout.getChildren().clear();
+		layout.getColumnConstraints().clear();
 	}
 }

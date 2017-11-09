@@ -41,9 +41,7 @@ public class LoginUI {
 		final Text actionTarget = new Text();
 		actionTarget.setStyle("-fx-font-size: 13pt");
 		win.layout.add(actionTarget, 1, 9, 7, 1);
-        
-		win.updateElementCount(7);
-	}
+    }
 	
 	public void createFieldLabelPair(GridPane grid, CustomTextField field, Label lbl, int row){		
 		grid.add(lbl, 0, row);

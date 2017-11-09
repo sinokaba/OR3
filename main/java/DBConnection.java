@@ -9,8 +9,11 @@ public class DBConnection {
     private Connection connection;	
     private Statement statement;
     private GoogleMapsService mapsAPI;
-	final private String dbURL = "jdbc:mysql://localhost:3306/or3_remote?autoReconnect=true&useSSL=false";
+	//final private String dbURL = "jdbc:mysql://localhost:3306/or3_remote?autoReconnect=true&useSSL=false";
 	final private String dbUsername = "rs";
+	final private String dbPort = "3306";
+	final private String dbName = "or3";
+	final private String dbHostName = "or3-db-instance.cyfhhdzaczmo.us-east-1.rds.amazonaws.com";
 	final private String dbPassword = "getInternship2017";
 
 	/**
@@ -24,15 +27,10 @@ public class DBConnection {
     	mapsAPI = api;
         try {
 			Class.forName("com.mysql.jdbc.Driver");
-			String dbName = System.getenv("RDS_DB_NAME");
-			String username = System.getenv("RDS_USER");
-			String password = System.getenv("RDS_PASSWORD");
-			String hostname = System.getenv("RDS_HOST_NAME");
-			String port = System.getenv("RDS_PORT");
-			String jdbcUrl = "jdbc:mysql://" + hostname + ":" + port + "/" + dbName;
+			String jdbcUrl = "jdbc:mysql://" + dbHostName + ":" + dbPort + "/" + dbName;
 			//connection = DriverManager.getConnection(jdbcUrl);
 			//logger.trace("Getting remote connection with connection string from environment variables.");
-			connection = DriverManager.getConnection(jdbcUrl, username, password);
+			connection = DriverManager.getConnection(jdbcUrl, dbUsername, dbPassword);
 			statement = connection.createStatement();
 			//logger.info("Remote connection successful.");
 			//return con;
@@ -275,14 +273,21 @@ public class DBConnection {
 	* @return no return value
 	*/    
     public void insertReview(Review review){
+    	String restaurantName = review.getRestaurantName().replace("'", "\\'");
+    	System.out.println("restaurant name: " + restaurantName);
 		String sqlQ = "INSERT INTO reviews \n"
 				+ " SET overall_rating = '" + review.getRating() + "',\n"
 				+ "  comments = '" + review.getComments() + "', \n"
 				+ "  fk_user = (SELECT iduser FROM users WHERE username = '" + review.getUserName() + "'), \n"	
-				+ "  fk_restaurant = (SELECT idrestaurant FROM restaurants WHERE name = '" + review.getRestaurantName() + "')";	
+				+ "  fk_restaurant = (SELECT idrestaurant FROM restaurants WHERE name = '" + restaurantName + "')";	
 		System.out.println(sqlQ);
 		
     	executeQuery(sqlQ, "Review for: " + review.getRestaurantName() + " by: " + review.getUserName() + " added");
+    }
+    
+    public void deleteReview(Review review){
+    	String sqlQ = "DELETE FROM reviews WHERE comments = '" + review.getComments() + "' AND fk_user = " + review.getUserId();
+    	executeQuery(sqlQ, "Deleted review by " + review.getUserId());
     }
     
 	/**
@@ -448,10 +453,14 @@ public class DBConnection {
     
     public List<Review> getRestaurantReviewsFromDB(Restaurant restaurant){
     	List<Review> reviewList = new ArrayList<Review>();
+    	String restaurantName = restaurant.getName().replace("'", "\'");
     	try{
-    		String reviewsQuery = "SELECT * FROM reviews WHERE fk_restaurant IN (SELECT idrestaurant FROM restaurants WHERE name = '" + restaurant.getName() +"')";
-    		System.out.println(reviewsQuery);
-    		ResultSet rs = statement.executeQuery(reviewsQuery);
+    		PreparedStatement queryReviews = connection.prepareStatement("SELECT * FROM reviews WHERE fk_restaurant IN (SELECT idrestaurant FROM restaurants WHERE name = ?)");
+    		//String reviewsQuery = "SELECT * FROM reviews WHERE fk_restaurant IN (SELECT idrestaurant FROM restaurants WHERE name = '" + restaurantName +"' ESCAPE '!')";
+    		//System.out.println(reviewsQuery);
+    		queryReviews.setString(1, restaurantName);
+    		System.out.println(queryReviews);
+    		ResultSet rs = queryReviews.executeQuery();
     		while(rs.next()){
     			if(rs.getInt(1) > 0){
     				Date creationDate = rs.getDate("creation_date");
@@ -476,6 +485,7 @@ public class DBConnection {
     				    }
     				}
     				Review review = new Review(rating, comments, usr, restaurant);
+    				review.setCreationDate(creationDate);
     				reviewList.add(review);
     			}
     		}

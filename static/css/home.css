@@ -36,6 +36,11 @@
 	-fx-fill: #ffffff !important;	
 }
 
+.normalText.label .text{
+	-fx-font-size: 14;
+	-fx-fill: #ffffff !important;
+}
+
 .button{
 	-fx-background-color: #3498db;
 	-fx-text-fill: #ffffff;

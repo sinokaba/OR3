@@ -38,8 +38,8 @@ public class UIMediator extends Application{
 	final private Pattern GOOD_LOCATION_INPUT = 
 			Pattern.compile("^[a-zA-Z0-9]*.{2,}$");
 	private boolean loggedIn = false;
-	private User currentUser;
-	private Restaurant currentRstrnt;
+	private User currentUser = null;
+	private Restaurant currentRstrnt = null;
 	Popup err, confirm;
 	ValidateForm formValidation;
 	
@@ -244,22 +244,22 @@ public class UIMediator extends Application{
 	}
 	
 	public void restaurantPage(Restaurant rstnt){
-		rstrntView.buildStage(rstnt, window, loggedIn, db.getRestaurantReviewsFromDB(rstnt));
+		rstrntView.buildStage(rstnt, window, currentUser, db.getRestaurantReviewsFromDB(rstnt), db);
 		rstrntView.addReviewBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
 	        public void handle(ActionEvent e) {
 	    		String comments = rstrntView.commentField.getText();
-	    		//System.out.println("rating txt: " + rating);
+	    		System.out.println("rating txt: " + comments);
 	    		//System.out.println(rstrntView.rating.getSelectionModel().getSelectedIndex());
 	    		Double rating = rstrntView.getRating();
 	    		rstnt.addRating(rating);
 	    		//double rt = rstnt.getRating();
 	    		//System.out.println("rating: " + rt);
 	    		//rstrntView.rating.setRating(rt);
-	    		Review review = new Review(rating, comments, currentUser, currentRstrnt);
+	    		Review review = new Review(rating, comments, currentUser, rstnt);
 	    		db.insertReview(review);
-	    		rstrntView.postReview(review);
-	    		//restaurantPage(currentRstrnt);
+	    		//rstrntView.load(currentUser, db);
+	    		restaurantPage(rstnt);
 	        }		
 		});
 	}

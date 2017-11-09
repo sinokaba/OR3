@@ -5,6 +5,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -17,10 +18,14 @@ public class HomepageUI{
 	DBConnection db;
 	GoogleMapsService mapsApi;
 	
-	public void buildStage(AppWindow win, boolean loggedInUser, DBConnection db, GoogleMapsService api){
+	public void buildStage(AppWindow win, boolean loggedInUser, DBConnection db, GoogleMapsService api){;	
 		this.db = db;
 		mapsApi = api;
 		win.resetLayout();
+		Label mainTitle = new Label("OR3");
+		mainTitle.getStyleClass().add("title");
+		mainTitle.setAlignment(Pos.TOP_CENTER);
+		win.layout.add(mainTitle, 1, 0);
 		HBox searchWrap = createSearchBar(win.layout);
 		win.layout.add(searchWrap, 1, 1);
 		HBox hbBtn = new HBox(30);		
@@ -32,7 +37,6 @@ public class HomepageUI{
 			hbBtn.getChildren().add(signUpBtn);
 		}
 		win.layout.add(hbBtn, 1, 6);
-		win.updateElementCount(3);
 	}
 	
 	public HBox createSearchBar(GridPane grid){

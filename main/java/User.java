@@ -110,6 +110,7 @@ public class User {
 	}
 	
 	public String getStatus(){
+		System.out.println(status);
 		return status;
 	}
 }

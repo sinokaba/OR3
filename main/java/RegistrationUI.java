@@ -21,24 +21,24 @@ public class RegistrationUI{
 		
 		Label username = form.createLabel("Username:");
 		usernameField = form.createTextField("Enter your unique username.", 16);
-		createFieldLabelPair(win.layout, usernameField, username, 2);
+		createFieldLabelPair(win.layout, usernameField, username, 1);
 		
 		Label email = form.createLabel("Email:");
 		emailField = form.createTextField("Enter your email.", 0);
-		createFieldLabelPair(win.layout, emailField, email, 3);
+		createFieldLabelPair(win.layout, emailField, email, 2);
 		
 		Label pw = form.createLabel("Password:");
 		pwField = form.createPasswordField("Your password.");
-		createFieldLabelPair(win.layout, pwField, pw, 4);
+		createFieldLabelPair(win.layout, pwField, pw, 3);
 
 		Label pwV = form.createLabel("Password:");
 		pwFieldVerify = form.createPasswordField("Verify and re-enter your password.");
-		createFieldLabelPair(win.layout, pwFieldVerify, pwV, 5);
+		createFieldLabelPair(win.layout, pwFieldVerify, pwV, 4);
 		
 
 		Label zipcode = form.createLabel("Zipcode:");
 		zipcodeField = form.createTextField("Enter your 5 digit zipcode.", 5);
-		createFieldLabelPair(win.layout, zipcodeField, zipcode, 6);
+		createFieldLabelPair(win.layout, zipcodeField, zipcode, 5);
 		
 		HBox birthdayWrapper = new HBox(10);
 		Label bday = form.createLabel("Birthday:");
@@ -49,26 +49,24 @@ public class RegistrationUI{
 		birthdayWrapper.getChildren().add(month);
 		birthdayWrapper.getChildren().add(day);
 		birthdayWrapper.getChildren().add(year);
-		win.layout.add(birthdayWrapper, 1, 7);
+		win.layout.add(birthdayWrapper, 1, 6);
 		
 		registerBtn = new Button("Sign up!");
 		registerBtn.setDefaultButton(true);
 		HBox hbBtn = new HBox(10);
 		hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
 		hbBtn.getChildren().add(registerBtn);
-		win.layout.add(hbBtn, 1, 8);
+		win.layout.add(hbBtn, 1,7);
 	
 		backBtn = new Button("Back");
 		HBox hbBackBtn = new HBox(10);
 		hbBackBtn.setAlignment(Pos.BOTTOM_LEFT);
 		hbBackBtn.getChildren().add(backBtn);
-		win.layout.add(hbBackBtn, 0, 8);
+		win.layout.add(hbBackBtn, 0, 7);
 		
 		final Text actionTarget = new Text();
 		actionTarget.setStyle("-fx-font-size: 13pt");
-		win.layout.add(actionTarget, 1, 10, 4, 1);
-        
-		win.updateElementCount(15);
+		win.layout.add(actionTarget, 1, 9, 4, 1);
 	}
 	
 	public String getUsername(){
