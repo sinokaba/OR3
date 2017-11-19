@@ -22,9 +22,8 @@ public class DropdownMenu extends ComboBox<String>{
 
 	public DropdownMenu(ImageView def){
 		final ObservableList<Image> data = FXCollections.observableArrayList();
-		
-		
 	}
+	
 	public static ObservableList<String> addElements(ObservableList<String> l, int start, int end, boolean fw){
 		if(l != null){
 			return l;
@@ -40,7 +39,7 @@ public class DropdownMenu extends ComboBox<String>{
 		}
 		else{
 			for(int i = end; i > start; i--){
-					dropdownItems.add(String.valueOf(i));
+				dropdownItems.add(String.valueOf(i));
 			}		
 		}
 		return dropdownItems;
@@ -48,5 +47,9 @@ public class DropdownMenu extends ComboBox<String>{
 	
 	public void addClass(String className){
 		super.getStyleClass().add(className);
+	}
+	
+	public void clear(){
+		super.getSelectionModel().clearSelection();
 	}
 }

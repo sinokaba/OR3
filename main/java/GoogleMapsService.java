@@ -71,7 +71,7 @@ public class GoogleMapsService {
 			results = GeocodingApi.geocode(geoApi, loc).await();
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
 			int index = 0;
-			System.out.println(gson.toJson(results[0].formattedAddress) + " num results: " + results.length);
+			//System.out.println(gson.toJson(results[0].formattedAddress) + " num results: " + results.length);
 			while((!foundCity || !foundState || !foundCountry || !foundPostalCode) && index < results[0].addressComponents.length){
 				String type = gson.toJson(results[0].addressComponents[index].types);
 				System.out.println("type: " + type);

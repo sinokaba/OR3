@@ -1,49 +1,34 @@
-
 import org.controlsfx.control.PopOver;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ToolBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.*;
-import javafx.stage.Stage;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 
-public class AppWindow{
-	private int numElements = 1;
+public class Navbar {
 	boolean loggedIn = false;
-	Button homeBtn, userAccountBtn, userStatus, loginBtn;
-	GridPane layout;
+	Button homeBtn, userAccountBtn, loginBtn, signupBtn, logoutBtn;
 	ListView<String> userMenuActions;
-	BorderPane root;
 	String username = null;
 	ToolBar leftBar, rightBar;
 	PopOver userMenu;
-		
-	public AppWindow(){
-		layout = new GridPane();
-		buildWindow();
-	}
-	
-	public void buildWindow(){
-		root = new BorderPane();
-        root.setTop(createWindowMenu());	
-		layout.setAlignment(Pos.CENTER);
-		layout.setHgap(10);
-		layout.setVgap(10);
-		
-        root.setCenter(layout);
-   	}
 	
 	public HBox createWindowMenu(){
         homeBtn = createMenuBtn("brand.png", "OR3", 44);
         userAccountBtn = createMenuBtn("user.png", "", 44);
         userAccountBtn.setVisible(false);
-		userStatus = new Button("Login");
+        loginBtn = new Button("Login");
+        logoutBtn = new Button("Logout");
+        signupBtn = new Button("Signup");
+        signupBtn.managedProperty().bind(signupBtn.visibleProperty());
 		
         userMenu = new PopOver();
 		userMenu.setDetachable(false);
@@ -62,14 +47,11 @@ public class AppWindow{
             public void handle(ActionEvent event) {
             	userMenu.show(userAccountBtn);
             };
-	    });
-        //DropdownMenu userMenu = new DropdownMenu(homeBtn, numElements, null, numElements, numElements, false);
-        
+	    });        
         leftBar = new ToolBar();
         leftBar.getItems().add(homeBtn);
         rightBar = new ToolBar();
-        rightBar.getItems().add(userAccountBtn); 
-        rightBar.getItems().add(userStatus);
+        rightBar.getItems().addAll(userAccountBtn, signupBtn, loginBtn);
         leftBar.getStyleClass().add("menu-bar");
         rightBar.getStyleClass().add("menu-bar");
         
@@ -82,15 +64,25 @@ public class AppWindow{
 	
 	public void userLogin(String username){
 		userAccountBtn.setVisible(true);
+		if(rightBar.getItems().contains(signupBtn)){
+			rightBar.getItems().remove(signupBtn);
+		}
 		userMenuActions.getItems().set(0, username);
-		userStatus.setText("Logout");
+		rightBar.getItems().remove(loginBtn);
+		rightBar.getItems().add(1, logoutBtn);
 		loggedIn = true;
 	}
 	
 	public void userLogout(){
 		userAccountBtn.setVisible(false);
+		rightBar.getItems().add(1, signupBtn);
+		if(rightBar.getItems().contains(logoutBtn)){
+			rightBar.getItems().remove(logoutBtn);
+		}
+		if(!rightBar.getItems().contains(loginBtn)){
+			rightBar.getItems().add(loginBtn);
+		}
 		userAccountBtn.setText("");
-		userStatus.setText("Login");
 		loggedIn = false;
 	}
 	
@@ -99,15 +91,8 @@ public class AppWindow{
         ImageView iconView = new ImageView(icon);
         iconView.setFitWidth(iconWidth);
         iconView.setFitHeight(iconWidth);
-        
         Button btn = new Button(iconTitle, iconView);
         btn.getStyleClass().add("menuButton");
-        
         return btn;
-	}
-	
-	public void resetLayout(){
-		layout.getChildren().clear();
-		layout.getColumnConstraints().clear();
-	}
+	}	
 }

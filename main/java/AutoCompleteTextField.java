@@ -41,23 +41,27 @@ public class AutoCompleteTextField extends CustomTextField{
 			public void changed(ObservableValue<? extends String> observableValue, String oldStr, String newStr){
 				String userInput = getText().trim();
 				boolean showing = suggestionsPopup.isShowing();
+				System.out.println("user input: " + newStr);
 				if(userInput.length() <= 1 || oldStr == newStr){
 					if(showing){
 						suggestionsPopup.hide();
 					}
 				}
 				else{
-					List<String> suggestions = null;
-					if(mapsApi != null){
-						suggestions = mapsApi.getPlacesSuggestions(userInput);
-					}
-					else{
-						suggestions = db.getRestaurantSuggestions(userInput, null);
-					}
-					if(!suggestions.isEmpty()){
-						populatePopup(suggestions);
-						if(!showing){
-							suggestionsPopup.show(AutoCompleteTextField.this, Side.BOTTOM, 0, 0);
+					if(mapsApi != null || db != null){
+						List<String> suggestions = null;
+						System.out.println(mapsApi);
+						if(mapsApi != null){
+							suggestions = mapsApi.getPlacesSuggestions(userInput);
+						}
+						else{
+							suggestions = db.getRestaurantSuggestions(userInput, null);
+						}
+						if(!suggestions.isEmpty()){
+							populatePopup(suggestions);
+							if(!showing){
+								suggestionsPopup.show(AutoCompleteTextField.this, Side.BOTTOM, 0, 0);
+							}
 						}
 					}
 				}

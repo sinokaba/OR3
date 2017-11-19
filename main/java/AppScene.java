@@ -4,11 +4,24 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 
 public class AppScene extends Scene{
+	final static int WINDOW_HEIGHT = 600;
+	final static int WINDOW_WIDTH = 850;
 	
-	public AppScene(Parent p, double window_width, double window_height){
-		super(p, window_width, window_height);
-		super.getStylesheets().addAll(getClass().getResource(	
+	public AppScene(Parent p){
+		super(p, WINDOW_WIDTH, WINDOW_HEIGHT);
+		/*
+		super.getStylesheets().add(getClass().getResource(	
                 "/css/home.css"
+        ).toExternalForm());
+        */
+		super.getStylesheets().add(getClass().getResource(	
+                "/css/main.css"
+        ).toExternalForm());
+	}
+	
+	public void addCss(String fileName){
+		super.getStylesheets().add(getClass().getResource(	
+                "/css/" + fileName + ".css"
         ).toExternalForm());
 	}
 }

@@ -54,8 +54,10 @@ public class Restaurant {
 	}
 	
 	public String getPhone(){
-		String phoneFormatted = phone.substring(0,3) + "-" + phone.substring(3, 6) + "-" + phone.substring(6);
-		return phoneFormatted;
+		if(phone.length() == 10){
+			return phone.substring(0,3) + "-" + phone.substring(3, 6) + "-" + phone.substring(6);
+		}
+		return phone;
 	}
 	
 	public String getzip(){

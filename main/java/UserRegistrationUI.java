@@ -1,72 +1,91 @@
 
+import java.util.concurrent.Callable;
+
+import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 
-public class RegistrationUI{
-	CustomTextField usernameField, emailField, zipcodeField;
-	DropdownMenu month, day, year;
-	PasswordField pwField, pwFieldVerify;
+public class UserRegistrationUI {
+
+	private CustomTextField usernameField, emailField, zipcodeField;
+	private DropdownMenu month, day, year;
+	private PasswordField pwField, pwFieldVerify;
+	private int fieldW, fieldH;
+	GridPane layout;
 	Button registerBtn, backBtn;
-	String birthday; 
 	
-	public void buildStage(AppWindow win, int w, int h){
-		win.resetLayout();
+	public UserRegistrationUI(int w, int h){
+		fieldW = w;
+		fieldH = h;
+	}
+	
+	public void buildPage(){
+		layout = new GridPane();
 		
-		FormField form = new FormField(w, h);
+		FormField form = new FormField(fieldW, fieldH);
+		
+		Label titlePage = new Label("Create your account!");
+		titlePage.getStyleClass().add("h3");
+		layout.add(titlePage, 1, 0);
 		
 		Label username = form.createLabel("Username:");
 		usernameField = form.createTextField("Enter your unique username.", 16);
-		createFieldLabelPair(win.layout, usernameField, username, 1);
+		createFieldLabelPair(layout, usernameField, username, 1);
 		
 		Label email = form.createLabel("Email:");
 		emailField = form.createTextField("Enter your email.", 0);
-		createFieldLabelPair(win.layout, emailField, email, 2);
+		createFieldLabelPair(layout, emailField, email, 2);
 		
 		Label pw = form.createLabel("Password:");
 		pwField = form.createPasswordField("Your password.");
-		createFieldLabelPair(win.layout, pwField, pw, 3);
+		createFieldLabelPair(layout, pwField, pw, 3);
 
 		Label pwV = form.createLabel("Password:");
 		pwFieldVerify = form.createPasswordField("Verify and re-enter your password.");
-		createFieldLabelPair(win.layout, pwFieldVerify, pwV, 4);
+		createFieldLabelPair(layout, pwFieldVerify, pwV, 4);
 		
 
 		Label zipcode = form.createLabel("Zipcode:");
 		zipcodeField = form.createTextField("Enter your 5 digit zipcode.", 5);
-		createFieldLabelPair(win.layout, zipcodeField, zipcode, 5);
+		createFieldLabelPair(layout, zipcodeField, zipcode, 5);
 		
 		HBox birthdayWrapper = new HBox(10);
 		Label bday = form.createLabel("Birthday:");
-		win.layout.add(bday, 0, 7);
+		layout.add(bday, 0, 6);
 		month = new DropdownMenu("Month", 9, null, 1, 12, true);
 		day = new DropdownMenu("Day", 9, null, 1, 31, true);
 		year = new DropdownMenu("Year", 9, null, 1920, 2017, false);
 		birthdayWrapper.getChildren().add(month);
 		birthdayWrapper.getChildren().add(day);
 		birthdayWrapper.getChildren().add(year);
-		win.layout.add(birthdayWrapper, 1, 6);
+		layout.add(birthdayWrapper, 1, 6);
 		
 		registerBtn = new Button("Sign up!");
-		registerBtn.setDefaultButton(true);
 		HBox hbBtn = new HBox(10);
 		hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
 		hbBtn.getChildren().add(registerBtn);
-		win.layout.add(hbBtn, 1,7);
-	
+		layout.add(hbBtn, 1,7);
+		registerBtn.setDefaultButton(true);
+
 		backBtn = new Button("Back");
 		HBox hbBackBtn = new HBox(10);
 		hbBackBtn.setAlignment(Pos.BOTTOM_LEFT);
 		hbBackBtn.getChildren().add(backBtn);
-		win.layout.add(hbBackBtn, 0, 7);
+		layout.add(hbBackBtn, 0, 7);
 		
 		final Text actionTarget = new Text();
 		actionTarget.setStyle("-fx-font-size: 13pt");
-		win.layout.add(actionTarget, 1, 9, 4, 1);
+		layout.add(actionTarget, 1, 9, 4, 1);
+		
+		layout.setAlignment(Pos.CENTER);
+		layout.setHgap(10);
+		layout.setVgap(10);
 	}
 	
 	public String getUsername(){
@@ -102,4 +121,21 @@ public class RegistrationUI{
 		grid.add(lbl, 0, row);
 		grid.add(field, 1, row);			
 	}
+	
+	public void clearFields(){
+		try{
+			usernameField.clear();
+			zipcodeField.clear();
+			pwField.clear();
+			pwFieldVerify.clear();
+			emailField.clear();
+			month.clear();
+			day.clear();
+			year.clear();
+		}
+		catch(NullPointerException err){
+			//err.printStackTrace();
+		}
+	}
+
 }

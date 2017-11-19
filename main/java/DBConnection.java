@@ -9,7 +9,6 @@ public class DBConnection {
     private Connection connection;	
     private Statement statement;
     private GoogleMapsService mapsAPI;
-	//final private String dbURL = "jdbc:mysql://localhost:3306/or3_remote?autoReconnect=true&useSSL=false";
 	final private String dbUsername = "rs";
 	final private String dbPort = "3306";
 	final private String dbName = "or3";
@@ -28,12 +27,8 @@ public class DBConnection {
         try {
 			Class.forName("com.mysql.jdbc.Driver");
 			String jdbcUrl = "jdbc:mysql://" + dbHostName + ":" + dbPort + "/" + dbName;
-			//connection = DriverManager.getConnection(jdbcUrl);
-			//logger.trace("Getting remote connection with connection string from environment variables.");
 			connection = DriverManager.getConnection(jdbcUrl, dbUsername, dbPassword);
 			statement = connection.createStatement();
-			//logger.info("Remote connection successful.");
-			//return con;
 			System.out.println("connection good bruh? " + connection);
         }
         catch (SQLException e) { 
@@ -41,7 +36,6 @@ public class DBConnection {
         	e.printStackTrace();
         } catch (ClassNotFoundException e) {
         	System.out.println("Class not found 57.");
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}  
     }
@@ -83,10 +77,16 @@ public class DBConnection {
     	return executeQuery(sqlQ);
     }
     
+    public boolean rowExists(String tableName, String arg1, String input1, String arg2, String input2){
+    	String sqlQ = "SELECT EXISTS(SELECT 1 FROM " + tableName + " WHERE " + 
+    					arg1 + " = '"+input1+"' AND "+ arg2 + " = '" + input2 + "')";
+    	System.out.println("Checking if " + input1 + " already in table " + tableName);
+    	return executeQuery(sqlQ);    	
+    }
+    
     public void insertUser(User newUser){
     	java.sql.Date birthday = null;
     	boolean validZipcode = true;
-    	//boolean locationInDB = executeQuery("SELECT EXISTS(SELECT 1 FROM locations WHERE zipcode = "+zipcode+")");
     	String zip = newUser.getZipcode();
     	try{
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
@@ -143,17 +143,6 @@ public class DBConnection {
 		    		if(locationSplit.length >= 3){
 		    			geoLocation[2] = locationSplit[locationSplit.length - 3].trim();
 		    		}
-		    		/*
-	    			System.out.println("country: " + country + " state: " + state);
-		    		String locQuery = "SELECT idlocations FROM locations WHERE country = '" + country + "' and state = '" + state + "';)";
-		    		ResultSet locRes = getQueryResultSet(locQuery);
-		    		if(locRes.next()){
-		    			if(locRes.getInt(1) > 0){
-		    				locIndex = locRes.getInt(1);
-		    				//locIndex = "SELECT * FROM restaurants WHERE name LIKE ? ESCAPE '!' and fk_location = " + locIndex + "y";
-		    			}
-		    		}
-		    		*/
 	    		}
 	    	}
     		String locStatement = "SELECT idlocations FROM locations WHERE locations.state = '" + geoLocation[1];
@@ -181,12 +170,7 @@ public class DBConnection {
 				while(res.next()) {
 				    if(res.getInt(1) > 0){
 						System.out.println(res.getInt(1));
-						if(suggestions.size() < 10){
-							suggestions.add(res.getString("name"));
-						}
-						else{
-							break;
-						}
+						suggestions.add(res.getString("name"));
 				    }
 				}
 			}
@@ -198,18 +182,12 @@ public class DBConnection {
 					while(res.next()) {
 					    if(res.getInt(1) > 0){
 							System.out.println(res.getInt(1));
-							if(suggestions.size() < 10){
-								suggestions.add(res.getString("name"));
-							}
-							else{
-								break;
-							}
+							suggestions.add(res.getString("name"));
 					    }
 					}
 				}
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     	return suggestions;
@@ -227,7 +205,6 @@ public class DBConnection {
 	    	String sqlQ = "Select * from reviews Where fk_user = " + userId + " and fk_restaurant = " + rstId + ";";
 	    	rs = getQueryResultSet(sqlQ);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return rs;

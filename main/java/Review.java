@@ -6,14 +6,15 @@ public class Review {
 	private String comments;
 	private User user;
 	private Restaurant restaurant;
-	private Date date;
+	private String date;
+	private DateFormat dateFormat;
 	private double rating;
 	
 	@SuppressWarnings("deprecation")
 	public Review(double rating, String comments, User byUser, Restaurant forRestaurant){
-		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+		dateFormat = new SimpleDateFormat("yyyy/MM/dd");
 		Date dateNow = new Date();
-		date = new Date(dateFormat.format(dateNow));
+		date = dateFormat.format(dateNow); //2016/11/16 12:08:43
 		this.rating = rating;
 		user = byUser;
 		restaurant = forRestaurant;
@@ -46,12 +47,12 @@ public class Review {
 		return user.getUsername();
 	}
 	
-	public Date getCreationDate(){
+	public String getCreationDate(){
 		return date;
 	}
 	
 	public void setCreationDate(Date creation){
-		date = creation;
+		date = dateFormat.format(creation);
 	}
 	public void updateReview(double rating, String text){
 		if(text != null){

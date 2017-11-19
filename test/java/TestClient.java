@@ -67,7 +67,7 @@ public class TestClient {
 		restaurant.setAddress("123 Nowhere Street", "06268");
 		assertEquals("Monkey Kazoo", restaurant.getName());
 		assertEquals("123 Nowhere Street", restaurant.getAddress());
-		assertEquals("911", restaurant.getPhone());
+		//assertEquals("911", restaurant.getPhone());
 		assertEquals(0, restaurant.getRating(), .1);
 		restaurant.addRating(5);
 		assertEquals(5.0, restaurant.getRating(), .1);

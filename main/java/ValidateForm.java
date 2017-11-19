@@ -6,6 +6,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 
 public class ValidateForm {
 	final Pattern VALID_EMAIL_ADDRESS_REGEX = 
@@ -19,17 +20,15 @@ public class ValidateForm {
 	
 	private DBConnection db;
 	Popup err;
-	GridPane grid;
 	
-	public ValidateForm(GridPane grid, DBConnection db, Popup popup){
-		this.grid = grid;
+	public ValidateForm(DBConnection db, Popup popup){
 		this.db = db;
 		err = popup;
 	}
 	
-	public boolean validUserRegistration(String pw, String pwRe, String name, String email, String zip){
+	public boolean validUserRegistration(String pw, String pwRe, String name, String email, String zip, Pane p){
     	//Tooltip tp = new Tooltip("Invalid password. Must be at least 6 chars long and have 1 number and uppercase letter.");;
-    	if(!noEmptyFields(grid, true)){
+    	if(!noEmptyFields(p, true)){
     		return false;
     	}
     	else if(!checkUsername(name)){
@@ -48,8 +47,8 @@ public class ValidateForm {
     	return true;    
 	}
 	
-	public boolean validRestaurantReg(String name, String address, String zip, String phone){
-	   	if(!noEmptyFields(grid, false)){
+	public boolean validRestaurantReg(String name, String address, String zip, String phone, Pane p){
+	   	if(!noEmptyFields(p, false)){
     		return false;
     	}
     	else if(!validZipcode(zip)){
@@ -60,6 +59,11 @@ public class ValidateForm {
     		err.showAlert("Form Error!", "Invalid phone number entered.");    
 	    	return false;   		
     	}
+	   	if(db.rowExists("restaurants", "name", name, "address", address)){
+	   		err.showAlert("Restaurant already added", "This restaurant at this address already added!");
+	   		return false;
+	   	}
+	   	
 	   	return true;
 	}
 	
@@ -99,7 +103,7 @@ public class ValidateForm {
 		return true;
 	}
 	
-	public boolean noEmptyFields(GridPane grid, boolean noWhitespace){
+	public boolean noEmptyFields(Pane grid, boolean noWhitespace){
 		for (Node child : grid.getChildren()) {
     	    if(child instanceof TextField){
     	    	String userInput = ((TextField)child).getText();

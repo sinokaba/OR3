@@ -12,7 +12,7 @@ public class FormField {
 	
 	public Label createLabel(String labelName){
 		Label label = new Label(labelName);
-		label.getStyleClass().add("field");
+		label.getStyleClass().add("h3");
 		return label;
 	}
 	
