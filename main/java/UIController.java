@@ -84,29 +84,29 @@ public class UIController extends Application{
 		    	if(newValue.toLowerCase().equals("add restaurant")){
 		        	nav.userMenuActions.getSelectionModel().clearSelection();
 		    		nav.userMenuActions.getSelectionModel().clearAndSelect(0);
-		    		restaurantRegScene();
+		    		restaurantRegView();
 		        }
 		    }
 		});
 		nav.signupBtn.setOnAction(e -> {
 			clearAllFields();
-			userRegScene();
+			userRegView();
 		});
 		nav.homeBtn.setOnAction(e -> {
 			clearAllFields();
-			homeScene();
+			homeView();
 		});
 		nav.loginBtn.setOnAction(e -> {
 			clearAllFields();
-			loginScene();
+			loginView();
 		});
 		
-		homeScene();
+		homeView();
 		primaryStage.setScene(currentScene);
 		primaryStage.show();
 	}
 	
-	public void homeScene(){
+	public void homeView(){
 		homePage.clearFields();
 		primaryStage.setTitle("Welcome - OR3");
 		root.setCenter(homePage.layout);
@@ -126,15 +126,15 @@ public class UIController extends Application{
 				    		Restaurant dbQueryRes = db.getRestaurantFromDB(searchTerm, specifiedLoc);
 							if(dbQueryRes != null){
 								currentRstrnt = dbQueryRes;
-					    		restaurantScene(currentRstrnt);
+					    		restaurantView(currentRstrnt);
 							}
 							else{
-								searchResultsScene(db.getRestaurantSuggestions(searchTerm, specifiedLoc), searchTerm, specifiedLoc);
+								searchResultView(db.getRestaurantSuggestions(searchTerm, specifiedLoc), searchTerm, specifiedLoc);
 							}
 						}
 					}
 					else{
-						searchResultsScene(db.getRestaurantSuggestions(searchTerm, specifiedLoc), searchTerm, specifiedLoc);						
+						searchResultView(db.getRestaurantSuggestions(searchTerm, specifiedLoc), searchTerm, specifiedLoc);						
 					}
 					homePage.clearFields();
 				}
@@ -145,10 +145,10 @@ public class UIController extends Application{
 		});
 	}
 	
-	public void loginScene(){
+	public void loginView(){
 		primaryStage.setTitle("Login to your account - OR3");
 		root.setCenter(loginPage.getLayout());
-		loginPage.backBtn.setOnAction(e -> homeScene());	
+		loginPage.backBtn.setOnAction(e -> homeView());	
 		loginPage.loginBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
 	        public void handle(ActionEvent e) {
@@ -173,11 +173,11 @@ public class UIController extends Application{
 	    });
 	}
 	
-	public void userRegScene(){
+	public void userRegView(){
 		userRegPage.buildPage();
 		primaryStage.setTitle("Create an account - OR3");
 		root.setCenter(userRegPage.layout);
-		userRegPage.backBtn.setOnAction(e -> homeScene());
+		userRegPage.backBtn.setOnAction(e -> homeView());
 		userRegPage.registerBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
 	        public void handle(ActionEvent e) {
@@ -196,15 +196,15 @@ public class UIController extends Application{
 	    });
 	}
 
-	public void userAcctScene(){
+	public void userAcctView(){
 		
 	}
 	
-	public void restaurantRegScene(){
+	public void restaurantRegView(){
 		primaryStage.setTitle("OR3 - Add restaurant.");
 		rstRegPage.buildPage();
 		root.setCenter(rstRegPage.layout);
-		rstRegPage.backBtn.setOnAction(e -> homeScene());
+		rstRegPage.backBtn.setOnAction(e -> homeView());
 		rstRegPage.registerBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
 	        public void handle(ActionEvent e) {
@@ -216,7 +216,7 @@ public class UIController extends Application{
 	    			currentRstrnt = new Restaurant(name, phone);
 	    			currentRstrnt.setAddress(addrs, zip);
 	    			db.insertRestaurant(currentRstrnt);
-	    			restaurantScene(currentRstrnt);
+	    			restaurantView(currentRstrnt);
 	    			rstRegPage.clearFields();
 	    			confirmDialog.showAlert("Success!", "Restaurant " + name + " added successfully!");
 	    		}
@@ -224,12 +224,12 @@ public class UIController extends Application{
 	    });
 	}
 	
-	public void restaurantScene(Restaurant rst){
+	public void restaurantView(Restaurant rst){
 		rstPage.buildPage(rst, currentUser, db.getRestaurantReviewsFromDB(rst));
 		root.setCenter(rstPage.layout);
 	}
 	
-	public void searchResultsScene(List<String> res, String searchTerm, String specifiedLoc){
+	public void searchResultView(List<String> res, String searchTerm, String specifiedLoc){
 		searchResultPage.build(specifiedLoc, searchTerm, res);
 		root.setCenter(searchResultPage.layout);
 	}
@@ -241,14 +241,14 @@ public class UIController extends Application{
 			userCreds = user.getUsername() + "(Admin)";
 		}
 		nav.userLogin(userCreds);
-		homeScene();		
+		homeView();		
 	}
 	
 	public void logoutUser(){
 		currentUser.loggedOff();
 		currentUser = null;
 		nav.userLogout();
-		homeScene();			
+		homeView();			
 	}
 	
 	public void clearAllFields(){
