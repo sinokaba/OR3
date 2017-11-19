@@ -52,7 +52,7 @@ public class SearchResultUI {
 			rstName.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			    @Override
 			    public void handle(MouseEvent event) {
-			        controller.restaurantScene(r);
+			        controller.restaurantView(r);
 			    }
 			});
 			Label lbl2 = new Label("Address: " + r.getAddress());

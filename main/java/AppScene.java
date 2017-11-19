@@ -9,11 +9,6 @@ public class AppScene extends Scene{
 	
 	public AppScene(Parent p){
 		super(p, WINDOW_WIDTH, WINDOW_HEIGHT);
-		/*
-		super.getStylesheets().add(getClass().getResource(	
-                "/css/home.css"
-        ).toExternalForm());
-        */
 		super.getStylesheets().add(getClass().getResource(	
                 "/css/main.css"
         ).toExternalForm());
