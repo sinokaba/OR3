@@ -1,5 +1,4 @@
 import javafx.beans.binding.Bindings;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
@@ -19,7 +18,7 @@ public class HomeUI {
 	
 	public HomeUI(boolean loggedInUser, DBConnection db, GoogleMapsService api){
 		layout = new GridPane();
-		layout.getStyleClass().add("bgImage");
+		layout.getStyleClass().add("bg-image");
 		this.db = db;
 		mapsApi = api;
 		Label mainTitle = new Label("OR3");
@@ -46,7 +45,7 @@ public class HomeUI {
 		restaurantSearchField = new AutoCompleteTextField("of Restaurant...", 350, 44);
 		restaurantSearchField.autocomplete(db, null);
 		searchBtn = new Button("Search");
-		searchBtn.getStyleClass().add("searchButton");
+		searchBtn.getStyleClass().addAll("main-button", "search-button");
 		searchBtn.defaultButtonProperty().bind(Bindings.or(
 				locationSearchField.focusedProperty(), 
 				restaurantSearchField.focusedProperty()));
@@ -69,7 +68,7 @@ public class HomeUI {
 			        "Keyword"			        
 			    );
 		searchDropdown = new DropdownMenu(null, 4, searchChoices, 0, 0, true);
-		searchDropdown.addClass("mainSearchDropdown");
+		searchDropdown.addClass("main-search-dropdown");
         searchDropdown.setOnAction((e) -> {
         	String currentSelectedItem = searchDropdown.getSelectionModel().getSelectedItem().toString();
             if(currentSelectedItem.equals("Name") || currentSelectedItem.equals("Type")){

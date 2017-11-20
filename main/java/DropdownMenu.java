@@ -21,6 +21,7 @@ public class DropdownMenu extends ComboBox<String>{
 	}
 
 	public DropdownMenu(ImageView def){
+		@SuppressWarnings("unused")
 		final ObservableList<Image> data = FXCollections.observableArrayList();
 	}
 	

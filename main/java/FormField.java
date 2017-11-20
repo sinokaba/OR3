@@ -25,7 +25,7 @@ public class FormField {
 	public PasswordField createPasswordField(String placeholder){
 		PasswordField pwField = new PasswordField();
 		pwField.setPromptText(placeholder);
-		pwField.getStyleClass().add("formField");
+		pwField.getStyleClass().add("form-field");
 		return pwField;
 	}
 }

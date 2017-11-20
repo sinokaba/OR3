@@ -45,8 +45,10 @@ public class RestaurantRegUI {
 		createFieldLabelPair(win.layout, hoursField, hours, 8);
 		*/
 		backBtn = new Button("Back");
+		backBtn.getStyleClass().add("main-button");
 		layout.add(backBtn, 0, 7);
 		registerBtn = new Button("Register");
+		registerBtn.getStyleClass().add("main-button");
 		registerBtn.setDefaultButton(true);
 		HBox hbBtn = new HBox(10);
 		hbBtn.setAlignment(Pos.BOTTOM_RIGHT);

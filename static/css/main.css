@@ -1,6 +1,6 @@
 
 .root{
-	-fx-background-color: #34495e !important;
+	-fx-background-color: #46627f !important;
 }
 
 .h1{
@@ -35,13 +35,39 @@
 }
 
 .scroll-pane > .viewport{
-	-fx-background: transparent !important;
+	-fx-background: transparent;
 }
 
 .scroll-pane:focused{
 	-fx-focus-color: transparent;
     -fx-background-color: -fx-box-border, -fx-control-inner-background;
 	-fx-background-insets: -1.4, 0, 1, 2;
+}
+
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+	-fx-shape: " ";	
+	-fx-padding:0;
+}
+
+/* The increment and decrement button CSS class of scrollbar */
+.scroll-bar:horizontal .increment-button ,
+.scroll-bar:horizontal .decrement-button {
+    -fx-background-color:transparent;
+	-fx-background-radius: 0em;
+	-fx-padding:0 0 10 0;
+}
+
+/* The increment and decrement button CSS class of scrollbar */
+.scroll-bar:vertical .increment-button ,
+.scroll-bar:vertical .decrement-button {
+    -fx-background-color:transparent;
+	-fx-background-radius: 0em;
+	-fx-padding:0 10 0 0;
+}
+
+.scroll-pane .corner {    
+    -fx-background-color: transparent ;
 }
 
 .scroll-bar .increment-button {
@@ -68,19 +94,42 @@
 	-fx-background-color: #3498db;
 }
 
-.search{
-	-fx-background-color: #34495e !important;
+.scroll-bar:horizontal {
+	-fx-background-color: transparent;
+}
+
+.scroll-bar:horizontal .track-background {
+	visibility: hidden;
+}
+
+.scroll-bar:horizontal .track {
+	visibility: hidden;
+}
+
+.scroll-bar:horizontal .thumb {
+	-fx-background-color: #3498db;
+}
+
+
+.scroll-fill{
+	-fx-background-color: #46627f !important;
 	-fx-fill: #ffffff !important;
-	-fx-border-color: #34495e;
+	-fx-border-color: #46627f;
 }
 
 .button{
 	-fx-background-color: #3498db;
 	-fx-text-fill: #ffffff;
+	-fx-font-size: 12pt;
+	-fx-min-width: 15;
+	-fx-min-height: 25;
+	-fx-cursor: hand;
+}
+
+.main-button{
 	-fx-font-size: 15pt;
 	-fx-min-width: 35;
-	-fx-min-height: 50;
-	-fx-cursor: hand;
+	-fx-min-height: 50;	
 }
 
 .menu-bar{
@@ -94,11 +143,7 @@
     -fx-text-fill: #ffffff;
 }
 
-.menuButton:hover{
-	-fx-background-color: #3498db !important;	
-}
-
-.menuButton{
+.menu-button{
 	-fx-background-color: transparent !important;
 }
 
@@ -112,23 +157,23 @@
     -fx-background-insets: -3 -3 -3 -3, 0 0 0 0, 0 -1 3 -1;
 }
 
-.formField{
+.form-field{
     -fx-min-width: 258;
     -fx-min-height: 38;
     -fx-font-size: 13pt;
 }
 
-.searchButton{
+.search-button{
 	-fx-background-color: #c0392b;
 	-fx-min-height: 40 !important;
 }
 
-.mainSearchDropdown{
+.main-search-dropdown{
     -fx-pref-width: 100 !important;   	
     -fx-pref-height: 42 !important;	
 }
 
-.mainSearchDropdown > .list-view{
+.main-search-dropdown > .list-view{
     -fx-pref-width: 100 !important;   			
 }
 
@@ -146,6 +191,6 @@
     -fx-font-size: 13px;
 }
 
-.bgImage{
+.bg-image{
 	-fx-background-image: url('https://cdn.vox-cdn.com/uploads/chorus_asset/file/8712449/gbb_food.jpg');
 }

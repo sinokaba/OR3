@@ -8,11 +8,9 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 public class UIController extends Application{
@@ -43,20 +41,23 @@ public class UIController extends Application{
 	
 	public UIController(){
 		root = new BorderPane();
+		currentScene = new AppScene(root);
 		nav = new Navbar();
 		root.setTop(nav.createWindowMenu());
+		
 		mapsApi = new GoogleMapsService("AIzaSyCP-qr7umfKFSrmnbOB-cl-djIhD5p1mJ8");
 		db = new DBConnection(mapsApi);		
-		loginPage = new LoginUI(FIELD_WIDTH, FIELD_HEIGHT);
-		homePage = new HomeUI(false, db, mapsApi);
-		userRegPage = new UserRegistrationUI(FIELD_WIDTH, FIELD_HEIGHT);
-		rstPage = new RestaurantUI(db);
-		searchResultPage = new SearchResultUI(db, UIController.this);
-		rstRegPage = new RestaurantRegUI(mapsApi, FIELD_WIDTH, FIELD_HEIGHT);
-		currentScene = new AppScene(root);
+		
 		errDialog = new Popup("err", currentScene.getWindow());
 		formValidation = new ValidateForm(db, errDialog);
 		confirmDialog = new Popup("conf", currentScene.getWindow());
+		
+		rstPage = new RestaurantUI(db, errDialog, confirmDialog);
+		loginPage = new LoginUI(FIELD_WIDTH, FIELD_HEIGHT);
+		homePage = new HomeUI(false, db, mapsApi);
+		userRegPage = new UserRegistrationUI(FIELD_WIDTH, FIELD_HEIGHT);
+		searchResultPage = new SearchResultUI(db, UIController.this);
+		rstRegPage = new RestaurantRegUI(mapsApi, FIELD_WIDTH, FIELD_HEIGHT);
 	}
 	public static void main(String[] args) {
 		launch(args);
@@ -226,7 +227,7 @@ public class UIController extends Application{
 	
 	public void restaurantView(Restaurant rst){
 		rstPage.buildPage(rst, currentUser, db.getRestaurantReviewsFromDB(rst));
-		root.setCenter(rstPage.layout);
+		root.setCenter(rstPage.getLayout());
 	}
 	
 	public void searchResultView(List<String> res, String searchTerm, String specifiedLoc){

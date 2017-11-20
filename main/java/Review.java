@@ -10,11 +10,10 @@ public class Review {
 	private DateFormat dateFormat;
 	private double rating;
 	
-	@SuppressWarnings("deprecation")
 	public Review(double rating, String comments, User byUser, Restaurant forRestaurant){
 		dateFormat = new SimpleDateFormat("yyyy/MM/dd");
 		Date dateNow = new Date();
-		date = dateFormat.format(dateNow); //2016/11/16 12:08:43
+		date = dateFormat.format(dateNow);
 		this.rating = rating;
 		user = byUser;
 		restaurant = forRestaurant;

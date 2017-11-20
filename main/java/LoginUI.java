@@ -27,6 +27,7 @@ public class LoginUI{
 		createFieldLabelPair(layout, passwordField, pw, 3);
 
 		loginBtn = new Button("Login");
+		loginBtn.getStyleClass().add("main-button");
 		HBox hbBtn = new HBox(10);
 		hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
 		hbBtn.getChildren().add(loginBtn);
@@ -37,6 +38,7 @@ public class LoginUI{
 				));
 	
 		backBtn = new Button("Back");
+		backBtn.getStyleClass().add("main-button");
 		HBox hbBackBtn = new HBox(10);
 		hbBackBtn.setAlignment(Pos.BOTTOM_LEFT);
 		hbBackBtn.getChildren().add(backBtn);

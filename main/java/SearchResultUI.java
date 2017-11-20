@@ -1,24 +1,17 @@
 import java.util.List;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.web.*;
 
 public class SearchResultUI {
 	private DBConnection db;
@@ -42,7 +35,7 @@ public class SearchResultUI {
 		scroll.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
 		
 		VBox container = new VBox(30);
-		container.getStyleClass().add("container");
+		//container.getStyleClass().add("container");
 		for(String res : searchResults){
 			Restaurant r = db.getRestaurantFromDB(res, null);
 			HBox detailsWrapperH = new HBox(15);
@@ -74,17 +67,21 @@ public class SearchResultUI {
 			container.getChildren().add(detailsWrapperH);
 		}
 		VBox mapContainer = new VBox(15);
-		Image img = new Image(getClass().getResourceAsStream("/images/testMap.png"));
-	    ImageView imgView = new ImageView(img);
-	    imgView.setFitWidth(360);
-	    imgView.setFitHeight(200);
-	    mapContainer.getChildren().add(imgView);
+		
+		WebView webView = new WebView();
+		WebEngine webEngine = webView.getEngine();
+        final java.net.URL urlGoogleMaps = getClass().getResource("/html/googleMaps.html");
+        webEngine.load(urlGoogleMaps.toExternalForm());
+        webEngine.setJavaScriptEnabled(true);
+		//Image img = new Image(getClass().getResourceAsStream("/images/testMap.png"));
+		//ImageView imgView = new ImageView(img);
+	    //imgView.setFitWidth(360);
+		//imgView.setFitHeight(200);
+		webView.setMaxSize(400, 225);
+	    mapContainer.getChildren().add(webView);
 		layout.setRight(mapContainer);
 	    scroll.setContent(container);
-		scroll.getStyleClass().add("search");
-		scroll.setPrefSize(400, 300);
+		scroll.getStyleClass().add("scroll-fill");
 		layout.setCenter(scroll);
-		//System.out.print(imgView);
-		layout.setMargin(searchTitle, new Insets(10));
 	}
 }

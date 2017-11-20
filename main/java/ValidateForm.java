@@ -4,7 +4,6 @@ import java.util.regex.Pattern;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 
@@ -121,7 +120,8 @@ public class ValidateForm {
     	    else if(child instanceof HBox){
     	    	for(Node n : ((HBox)child).getChildren()){
     	    		if(n instanceof ComboBox){
-            	    	String selectedVal = ((ComboBox<String>)n).getSelectionModel().getSelectedItem().toString();
+            	    	@SuppressWarnings("unchecked")
+						String selectedVal = ((ComboBox<String>)n).getSelectionModel().getSelectedItem().toString();
             	    	if(selectedVal.equals("Month") || selectedVal.equals("Day") || selectedVal.equals("Year")){
             	    		err.showAlert("Form Error!", "Please enter your birthday.");;     	    		
             	    		return false;

@@ -4,8 +4,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 
 public class AppScene extends Scene{
-	final static int WINDOW_HEIGHT = 600;
-	final static int WINDOW_WIDTH = 850;
+	final static int WINDOW_HEIGHT = 620;
+	final static int WINDOW_WIDTH = 992;
 	
 	public AppScene(Parent p){
 		super(p, WINDOW_WIDTH, WINDOW_HEIGHT);

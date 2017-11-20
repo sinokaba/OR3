@@ -1,14 +1,10 @@
 
-import java.util.concurrent.Callable;
-
-import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 
 public class UserRegistrationUI {
@@ -67,6 +63,7 @@ public class UserRegistrationUI {
 		layout.add(birthdayWrapper, 1, 6);
 		
 		registerBtn = new Button("Sign up!");
+		registerBtn.getStyleClass().add("main-button");
 		HBox hbBtn = new HBox(10);
 		hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
 		hbBtn.getChildren().add(registerBtn);
@@ -74,6 +71,7 @@ public class UserRegistrationUI {
 		registerBtn.setDefaultButton(true);
 
 		backBtn = new Button("Back");
+		backBtn.getStyleClass().add("main-button");
 		HBox hbBackBtn = new HBox(10);
 		hbBackBtn.setAlignment(Pos.BOTTOM_LEFT);
 		hbBackBtn.getChildren().add(backBtn);

@@ -7,7 +7,6 @@ import javafx.geometry.Side;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
 import javafx.util.Duration;
 import java.util.LinkedList;
 import java.util.List;

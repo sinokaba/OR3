@@ -1,16 +1,9 @@
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import okhttp3.OkHttpClient;
-import okhttp3.Protocol;
-import okhttp3.internal.tls.BasicCertificateChainCleaner;
-import okhttp3.internal.tls.CertificateChainCleaner;
-import okhttp3.internal.tls.TrustRootIndex;
-import okio.Buffer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.maps.DirectionsApi;
@@ -27,14 +20,9 @@ import com.google.maps.model.DirectionsResult;
 import com.google.maps.model.DistanceMatrix;
 import com.google.maps.model.GeocodingResult;
 
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.scene.control.CustomMenuItem;
-import javafx.scene.control.Label;
-
 public class GoogleMapsService {
 	GeoApiContext geoApi;
-	private static final Logger logger = Logger.getLogger(OkHttpClient.class.getName());
+	//private static final Logger logger = Logger.getLogger(OkHttpClient.class.getName());
 	
 	public GoogleMapsService(String apiKey){
 		geoApi = new GeoApiContext.Builder().apiKey(apiKey).build();
@@ -94,7 +82,6 @@ public class GoogleMapsService {
 				index += 1;
 			}
 		} catch (ApiException | InterruptedException | IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		System.out.println("country: " + location[2] + ", state: " + location[1] + ", city: " + location[0] + " zip: " + location[3]);
@@ -116,7 +103,6 @@ public class GoogleMapsService {
 			//System.out.println(des.rows[0].elements[0].distance);
 			System.out.println(des.rows[0].elements[0].duration);
 		} catch (ApiException | InterruptedException | IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
@@ -127,7 +113,6 @@ public class GoogleMapsService {
 			DirectionsResult directions = DirectionsApi.getDirections(geoApi, origin, dest).await();
 			System.out.println(directions.routes[0].bounds);
 		} catch (ApiException | InterruptedException | IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
