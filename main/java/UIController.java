@@ -52,7 +52,7 @@ public class UIController extends Application{
 		formValidation = new ValidateForm(db, errDialog);
 		confirmDialog = new Popup("conf", currentScene.getWindow());
 		
-		rstPage = new RestaurantUI(db, errDialog, confirmDialog);
+		rstPage = new RestaurantUI(db, currentScene.getWindow());
 		loginPage = new LoginUI(FIELD_WIDTH, FIELD_HEIGHT);
 		homePage = new HomeUI(false, db, mapsApi);
 		userRegPage = new UserRegistrationUI(FIELD_WIDTH, FIELD_HEIGHT);

@@ -252,9 +252,10 @@ public class DBConnection {
     public void insertReview(Review review){
     	String restaurantName = review.getRestaurantName().replace("'", "\\'");
     	System.out.println("restaurant name: " + restaurantName);
+    	String comments = review.getComments().replace("'", "\\'");
 		String sqlQ = "INSERT INTO reviews \n"
 				+ " SET overall_rating = '" + review.getRating() + "',\n"
-				+ "  comments = '" + review.getComments() + "', \n"
+				+ "  comments = '" + comments + "', \n"
 				+ "  fk_user = (SELECT iduser FROM users WHERE username = '" + review.getUserName() + "'), \n"	
 				+ "  fk_restaurant = (SELECT idrestaurant FROM restaurants WHERE name = '" + restaurantName + "')";	
 		System.out.println(sqlQ);

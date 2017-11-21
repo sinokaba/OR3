@@ -1,92 +1,130 @@
 import java.util.List;
 
+import org.controlsfx.control.Rating;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.StageStyle;
+import javafx.stage.Window;
 import jiconfont.icons.FontAwesome;
 import jiconfont.icons.GoogleMaterialDesignIcons;
 import jiconfont.javafx.IconFontFX;
 import jiconfont.javafx.IconNode;
 
 public class RestaurantUI {
-	private CustomTextField commentField;
-	private DropdownMenu rating;
+	private TextArea commentField;
+	private DropdownMenu ratingField;
 	private DBConnection db;
 	private BorderPane layout;
 	private Popup errDialog, confDialog;
+	private Alert reviewDialog;
 	private boolean leftPaneExtended = true;
 	//Rating rating;
 	
 	//ATTACH EXPAND CARROT TO CENTERED CONTENT
-	public RestaurantUI(DBConnection db, Popup error, Popup confirm){
+	public RestaurantUI(DBConnection db, Window win){
 		layout = new BorderPane();
 		this.db = db;
-		errDialog = error;
-		confDialog = confirm;
+		errDialog = new Popup("err", win);
+		confDialog = new Popup("conf", win);
+		reviewDialog = new Alert(Alert.AlertType.CONFIRMATION);
+		reviewDialog.initOwner(win);
+		//reviewDialog.setTitle("Your review.");
+		reviewDialog.setHeaderText(null);
+		reviewDialog.initStyle(StageStyle.UTILITY);
+		addReviewField("Post your review.", "Your comments.");
+		final Button btOk = (Button) reviewDialog.getDialogPane().lookupButton(ButtonType.OK);
+		btOk.addEventFilter(
+		    ActionEvent.ACTION, 
+		    event -> {
+		        // Check whether some conditions are fulfilled
+		        if(commentField.getText().trim().length() <= 0 || getRating() == -1){
+		            // The conditions are not fulfilled so we consume the event
+		            // to prevent the dialog to close
+		        	//commentField.requestFocus();
+		            event.consume();
+	    			errDialog.showAlert("Incomplete review!", "Error! You must fill out all the fields!");		            
+		        }
+		    }
+		);
         IconFontFX.register(GoogleMaterialDesignIcons.getIconFont());
 	}
 	
 	public void buildPage(Restaurant rst, User user, List<Review> reviews){
-		GridPane centerContent = new GridPane();
-		ColumnConstraints mainContent = new ColumnConstraints();
-		mainContent.setPercentWidth(5);
-		ColumnConstraints leftPaneControl = new ColumnConstraints();
-		leftPaneControl.setPercentWidth(95);		
-		centerContent.getColumnConstraints().addAll(mainContent, leftPaneControl);	
+		reviewDialog.setTitle("Review for " + rst.name);
 		
-		VBox restaurantInfo = new VBox(5);
-		Label name = new Label("Name: " + rst.name);
+		GridPane headerContent = new GridPane();
+		ColumnConstraints mainContent = new ColumnConstraints();
+		mainContent.setPercentWidth(65);
+		ColumnConstraints leftPaneControl = new ColumnConstraints();
+		leftPaneControl.setPercentWidth(35);		
+		headerContent.getColumnConstraints().addAll(mainContent, leftPaneControl);	
+		
+		BorderPane restaurantContent = new BorderPane();
+		Label name = new Label(rst.name);
+		name.getStyleClass().add("h1");
+		
+		VBox restaurantInfo = new VBox(2);
 		Label address = new Label("Address: " + rst.address);
 		Label phone = new Label("Phone: " + rst.getPhone());
-		restaurantInfo.getChildren().addAll(name, address, phone);
+		restaurantInfo.getChildren().addAll(address, phone);
 		
 		//HBox sidePaneHeader = new HBox(50);
-		Label sidePaneTitle = new Label("Your thoughts:");
-		sidePaneTitle.getStyleClass().add("h3");
-		
-		IconNode extendLeftIcon = new IconNode(GoogleMaterialDesignIcons.SKIP_NEXT);
-		extendLeftIcon.setIconSize(20);
-		extendLeftIcon.setFill(Color.BLACK);
-
-		IconNode contractLeftIcon = new IconNode(GoogleMaterialDesignIcons.SKIP_PREVIOUS);
-		contractLeftIcon.setIconSize(20);
-		contractLeftIcon.setFill(Color.BLACK);
-        //Button contractLeft = new Button("", contractLeftIcon);
-        Button extendLeft = new Button("", contractLeftIcon);
-        extendLeft.setStyle("-fx-background-color: transparent !important");
-		//sidePaneHeader.getChildren().addAll(sidePaneTitle, extendLeft);
-		
+		//Label sidePaneTitle = new Label("Your thoughts:");
+		//sidePaneTitle.getStyleClass().add("h3");
+			
 		VBox reviewsWrapper = new VBox(12);
+        /*
 		VBox reviewFieldContainer = new VBox(3);
 		rating = new DropdownMenu("Rating", 5, null, 1, 5, true);
-		commentField = new CustomTextField("Your comments.", 100, 120);
-		commentField.setCharLimit(260);
-		HBox ratingSubmit = new HBox(5);
-		Button addReviewBtn = new Button("Add Review");
-		addReviewBtn.setDefaultButton(true);
-		ratingSubmit.getChildren().addAll(rating, addReviewBtn);
-		reviewFieldContainer.getChildren().addAll(sidePaneTitle, commentField, ratingSubmit);
 
+		commentField = new TextArea("Your comments.");
+		commentField.setMaxSize(240, 135);
+		//commentField.setCharLimit(260);
+		HBox ratingSubmit = new HBox(5);
+		*/
+		HBox reviewButtonCont = new HBox(10);
+		IconNode postIcon = new IconNode(GoogleMaterialDesignIcons.BORDER_COLOR);
+		postIcon.setIconSize(32);
+		postIcon.setFill(Color.BLACK);
+		Button addReviewBtn = new Button("Write A Review", postIcon);
+		addReviewBtn.getStyleClass().add("main-button");
+		reviewButtonCont.getChildren().add(addReviewBtn);
+		reviewButtonCont.setAlignment(Pos.CENTER);
+		//addReviewBtn.setDefaultButton(true);
+		
+		//ratingSubmit.getChildren().addAll(rating, addReviewBtn);
+		//reviewFieldContainer.getChildren().addAll(sidePaneTitle, commentField, ratingSubmit);
+		
+		/*
 		if(user == null || user.getStatus().equals("offline")){
 			reviewFieldContainer.managedProperty().bind(reviewFieldContainer.visibleProperty());
 			reviewFieldContainer.setVisible(false);
 		}
+		*/
 		
-		GridPane sidePane = new GridPane();
+		//GridPane sidePane = new GridPane();
 
-		Label reviewsTitle = new Label("User Reviews: ");
-		reviewsTitle.getStyleClass().add("h4");
+		Label reviewsTitle = new Label("Reviews");
+		reviewsTitle.getStyleClass().add("h3");
 
 		double rating = 0;
 		int numRating = 0;
@@ -97,27 +135,13 @@ public class RestaurantUI {
 		reviewsContainer.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
 		reviewsContainer.getStyleClass().add("scroll-fill");
 		reviewsContainer.setMaxWidth(360);
-        
-		extendLeft.setOnAction(new EventHandler<ActionEvent>(){
-			@Override
-			public void handle(ActionEvent e){
-				System.out.println("clicked expand carat.");
-				if(leftPaneExtended){
-					leftPaneExtended = false;
-					extendLeft.setGraphic(extendLeftIcon);
-					reviewsContainer.setMaxWidth(120);
-				}
-				else{
-					leftPaneExtended = true;
-					extendLeft.setGraphic(contractLeftIcon);
-					reviewsContainer.setMaxWidth(360);
-				}
-			}
-		});
+		Insets topPadding = new Insets(10);
+		reviewsContainer.setPadding(topPadding);
 		
-		centerContent.add(extendLeft, 0, 0);
-		centerContent.add(restaurantInfo, 1, 0);
-		layout.setCenter(centerContent);
+		headerContent.add(name, 0, 0);
+		restaurantContent.setTop(headerContent);
+		restaurantContent.setCenter(restaurantInfo);
+		layout.setCenter(restaurantContent);
 		
 		VBox userReviews = new VBox(12);
 		for(Review review : reviews){
@@ -129,7 +153,7 @@ public class RestaurantUI {
 			rating += review.getRating();
 			numRating += 1;
 			userRating.getStyleClass().add("p");
-			Rectangle profilePic = new Rectangle(60, 60);
+			Circle profilePic = new Circle(20);
 			HBox hGrid = new HBox(10);
 			hGrid.getChildren().add(profilePic);
 			VBox vGrid = new VBox(3);
@@ -185,40 +209,83 @@ public class RestaurantUI {
 		addReviewBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
 	        public void handle(ActionEvent e) {
-	    		String comments = commentField.getText();
-	    		System.out.println("rating txt: " + comments);
-	    		//System.out.println(rstrntView.rating.getSelectionModel().getSelectedIndex());
-	    		Double rating = getRating();
-	    		rst.addRating(rating);
-	    		//double rt = rstnt.getRating();
-	    		//System.out.println("rating: " + rt);
-	    		//rstrntView.rating.setRating(rt);
-	    		Review review = new Review(rating, comments, user, rst);
-	    		db.insertReview(review);
-	    		//rstrntView.load(currentUser, db);
-	    		//restaurantScene(rst);
-	    		reviews.add(review);
-	    		buildPage(rst, user, reviews);
+	        	if(!(user == null || user.getStatus().equals("offline"))){
+	        		ButtonType userAction = reviewDialog.showAndWait().get();
+	        		//System.out.println("user actions: " + userAction);
+	        		if(userAction == ButtonType.OK && !(commentField.getText().trim().length() <= 0 || getRating() == -1)){
+			    		String comments = commentField.getText();
+			    		System.out.println("rating txt: " + comments);
+			    		//System.out.println(rstrntView.rating.getSelectionModel().getSelectedIndex());
+			    		Double rating = getRating();
+			    		rst.addRating(rating);
+			    		//double rt = rstnt.getRating();
+			    		//System.out.println("rating: " + rt);
+			    		//rstrntView.rating.setRating(rt);
+			    		Review review = new Review(rating, comments, user, rst);
+			    		db.insertReview(review);
+			    		//rstrntView.load(currentUser, db);
+			    		//restaurantScene(rst);
+			    		reviews.add(review);
+				    	commentField.clear();
+				    	ratingField.clear();
+			    		buildPage(rst, user, reviews);
+	        		}
+			    	commentField.clear();
+			    	ratingField.clear();
+	        	}
+	        	else{
+	        		errDialog.showAlert("Write a review.", "You are not logged in. Please log in to write your review.");
+	        	}
 	        }		
 		});
-		reviewsWrapper.getChildren().addAll(reviewFieldContainer, reviewsTitle, userReviews);
+		reviewsWrapper.getChildren().addAll(reviewButtonCont, reviewsTitle, userReviews);
 		reviewsContainer.setContent(reviewsWrapper);
 		layout.setLeft(reviewsContainer);
-		Label currentRating = new Label("Rating: " + Math.round((rating/numRating)*100)/100 + " stars.");
-		name.getStyleClass().add("h4");
+		final Rating ratingStars = new Rating();
+		ratingStars.setPartialRating(true);
+		ratingStars.setMax(5);
+		ratingStars.setRating(Math.round((rating/numRating)*100.0)/100.0);
+		ratingStars.setDisable(true);
+		//Label currentRating = new Label("Rating: " + Math.round((rating/numRating)*100)/100 + " stars.");
 		address.getStyleClass().add("h4");
 		phone.getStyleClass().add("h4");
-		currentRating.getStyleClass().add("h3");
-		restaurantInfo.getChildren().add(currentRating);
+		//currentRating.getStyleClass().add("h3");
+		restaurantInfo.getChildren().add(ratingStars);
 		restaurantInfo.setFocusTraversable(true);
 	}
 
 	public double getRating(){
-		return Double.parseDouble(rating.getValue());
+		if(ratingField.getValue().isEmpty() || ratingField.getValue().equals("Rating")){
+			return -1;
+		}
+		return Double.parseDouble(ratingField.getValue());
 	}
 	
 	public BorderPane getLayout(){
 		return layout;
+	}
+	
+	public void addReviewField(String title, String placeholder){
+		commentField = new TextArea();
+		commentField.setPromptText("Your comments.");
+		commentField.setEditable(true);
+		commentField.setWrapText(true);
+		commentField.setMaxWidth(400);
+		commentField.setMaxHeight(225);
+
+		ratingField = new DropdownMenu("Rating", 5, null, 1, 5, true);
+		
+		Label label = new Label("Write a review.");
+		label.getStyleClass().add("h3");
+
+		GridPane expContent = new GridPane();
+		GridPane.setVgrow(commentField, Priority.ALWAYS);
+		GridPane.setHgrow(commentField, Priority.ALWAYS);
+		expContent.add(label, 0, 0);
+		expContent.add(ratingField, 1, 0);
+		expContent.add(commentField, 0, 1);
+		reviewDialog.getDialogPane().setContent(expContent);
+		//alert.initStyle(StageStyle.UTILITY);
 	}
 	
 }

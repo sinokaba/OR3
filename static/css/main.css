@@ -1,4 +1,11 @@
 
+/*
+ * Main Styles
+ */
+.bg-image{
+	-fx-background-image: url('https://cdn.vox-cdn.com/uploads/chorus_asset/file/8712449/gbb_food.jpg');
+}
+
 .root{
 	-fx-background-color: #46627f !important;
 }
@@ -34,6 +41,10 @@
 	-fx-text-fill: #ffffff;
 }
 
+
+/*
+ * Scroll pane and scroll bar styles
+ */
 .scroll-pane > .viewport{
 	-fx-background: transparent;
 }
@@ -110,13 +121,17 @@
 	-fx-background-color: #3498db;
 }
 
-
 .scroll-fill{
 	-fx-background-color: #46627f !important;
 	-fx-fill: #ffffff !important;
 	-fx-border-color: #46627f;
 }
 
+
+/*
+ * Button styles
+ */
+ 
 .button{
 	-fx-background-color: #3498db;
 	-fx-text-fill: #ffffff;
@@ -127,11 +142,21 @@
 }
 
 .main-button{
-	-fx-font-size: 15pt;
+	-fx-font-size: 16pt;
 	-fx-min-width: 35;
 	-fx-min-height: 50;	
+	-fx-font-weight: 800;
 }
 
+.search-button{
+	-fx-background-color: #c0392b;
+	-fx-min-height: 40 !important;
+}
+
+
+/*
+ * Menu Styles
+ */
 .menu-bar{
 	-fx-min-height: 50px;
 	-fx-font-size: 14pt;
@@ -147,6 +172,10 @@
 	-fx-background-color: transparent !important;
 }
 
+
+/*
+ * TextField styles
+ */
 .text-field {
     -fx-background-color: #3498db , #ffffff , #ffffff;
     -fx-font-size: 13pt;
@@ -163,11 +192,10 @@
     -fx-font-size: 13pt;
 }
 
-.search-button{
-	-fx-background-color: #c0392b;
-	-fx-min-height: 40 !important;
-}
 
+/*
+ * Dropdown and combobox styles
+ */
 .main-search-dropdown{
     -fx-pref-width: 100 !important;   	
     -fx-pref-height: 42 !important;	
@@ -191,6 +219,36 @@
     -fx-font-size: 13px;
 }
 
-.bg-image{
-	-fx-background-image: url('https://cdn.vox-cdn.com/uploads/chorus_asset/file/8712449/gbb_food.jpg');
+
+/*
+ * Five star rating styles
+ */
+.rating > .container > .button {
+    -fx-background-color: #ffffff;
+    -fx-border-color: transparent;
+    -fx-shape: "M147.421,249.541l6.152,4.854l-2.393,7.355l6.521-4.361l6.549,4.361l-2.393-7.355l6.152-4.854h-7.738l-2.571-7.396l-2.543,7.396H147.421z";
+    -fx-background-image: null;
+    -fx-padding: 16 16;
+    -fx-background-image-repeat: no-repeat;
+}
+.rating > .container > .button.strong {
+    -fx-background-color: #FFD700;
+    -fx-border-color: transparent;
+    -fx-background-image: null;
+
+}
+.rating > .container:hover > .button.strong {
+    -fx-background-color: #FFD700;
+}
+
+.rating > .container > .button:hover {
+    -fx-effect: null;
+}
+
+.rating:disabled  > .container > .button.strong{
+    -fx-opacity: .85 !important;
+}
+
+.rating:disabled  > .container > .button{
+    -fx-opacity: .85 !important;
 }

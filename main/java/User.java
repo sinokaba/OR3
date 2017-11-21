@@ -88,7 +88,7 @@ public class User {
 	}
 	
 	public int getId(){
-		System.out.println("user id: " + userId);
+		//System.out.println("user id: " + userId);
 		return userId;
 	}
 	

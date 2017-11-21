@@ -7,15 +7,17 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 public class DropdownMenu extends ComboBox<String>{
+	String defaultValue;
 	
 	public DropdownMenu(String defVal, int numVis, ObservableList<String> l, int s, int end, boolean asc){
 		super(addElements(l, s, end, asc));
+		defaultValue = defVal;
 		
 		if(defVal == null){
 			super.getSelectionModel().selectFirst();
 		}
 		else{
-			super.setValue(defVal);
+			super.setValue(defaultValue);
 		}
 		super.setVisibleRowCount(numVis);
 	}
@@ -52,5 +54,6 @@ public class DropdownMenu extends ComboBox<String>{
 	
 	public void clear(){
 		super.getSelectionModel().clearSelection();
+		super.setValue(defaultValue);
 	}
 }
