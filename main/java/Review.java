@@ -22,8 +22,16 @@ public class Review {
 		}
 	}
 	
+	public void setComments(String comments){
+		this.comments = comments;
+	}
+	
 	public String getComments(){
 		return comments;
+	}
+	
+	public void setRating(double rating){
+		this.rating = rating;
 	}
 	
 	public double getRating(){

@@ -263,6 +263,16 @@ public class DBConnection {
     	executeQuery(sqlQ, "Review for: " + review.getRestaurantName() + " by: " + review.getUserName() + " added");
     }
     
+    public void updateReview(Review oldReview, Review newReview){
+    	String comments = newReview.getComments().replace("'", "\\'");
+    	int userId = newReview.getUserId();
+    	int rstId = newReview.getRestaurantId();
+    	String sqlQ = "UPDATE reviews SET comments='" + comments + "', overall_rating='" + newReview.getRating() + "' WHERE \n"
+				+ " fk_user = " + userId + " AND fk_restaurant = " + rstId + " AND comments = '" + oldReview.getComments() + "'";	
+    	System.out.println(sqlQ);
+    	executeQuery(sqlQ, "Updating review for: " + newReview.getRestaurantName() + " by: " + newReview.getUserName());
+    }
+    
     public void deleteReview(Review review){
     	String sqlQ = "DELETE FROM reviews WHERE comments = '" + review.getComments() + "' AND fk_user = " + review.getUserId();
     	executeQuery(sqlQ, "Deleted review by " + review.getUserId());
@@ -439,7 +449,8 @@ public class DBConnection {
     		queryReviews.setString(1, restaurantName);
     		System.out.println(queryReviews);
     		ResultSet rs = queryReviews.executeQuery();
-    		while(rs.next()){
+    		int count = 0;
+    		while(rs.next() && count <= 10){
     			if(rs.getInt(1) > 0){
     				Date creationDate = rs.getDate("creation_date");
     				String comments = rs.getString("comments");
@@ -465,6 +476,7 @@ public class DBConnection {
     				Review review = new Review(rating, comments, usr, restaurant);
     				review.setCreationDate(creationDate);
     				reviewList.add(review);
+    				count += 1;
     			}
     		}
     	}

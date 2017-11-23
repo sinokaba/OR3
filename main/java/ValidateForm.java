@@ -36,7 +36,7 @@ public class ValidateForm {
     	else if(!checkPassword(pw, pwRe)){
     		return false;
     	}
-    	else if(!checkEmail(email)){
+    	else if(!checkEmail(email, true)){
     		return false;
     	}
     	else if(!validZipcode(zip)){
@@ -78,16 +78,22 @@ public class ValidateForm {
 		return true;
 	}
 	
-	public boolean checkEmail(String email){
+	public boolean checkEmail(String email, boolean newUser){
     	if(!validEmail(email)){
     		err.showAlert("Form Error!", "Email address: " + email + ", is invalid.");;
     	    return false;
     	}
-    	else if(db.rowExists("users", "email", email)){
-    		err.showAlert("Form Error!", "Email address: " + email + ", already associated with another account.");;
-    	    return false;    		
-    	}	
-    	return true;
+	    if(db.rowExists("users", "email", email)){
+	    	if(newUser){
+		    	err.showAlert("Form Error!", "Email address: " + email + ", already associated with another account.");;
+		    	return false; 
+	    	}
+	    	return true;
+    	}
+	    if(newUser){
+	    	return true;
+	    }
+	    return false;
 	}
 	
 	public boolean checkUsername(String username){

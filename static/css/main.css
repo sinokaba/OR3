@@ -228,7 +228,7 @@
     -fx-border-color: transparent;
     -fx-shape: "M147.421,249.541l6.152,4.854l-2.393,7.355l6.521-4.361l6.549,4.361l-2.393-7.355l6.152-4.854h-7.738l-2.571-7.396l-2.543,7.396H147.421z";
     -fx-background-image: null;
-    -fx-padding: 16 16;
+    -fx-padding: 24 24;
     -fx-background-image-repeat: no-repeat;
 }
 .rating > .container > .button.strong {
@@ -246,9 +246,53 @@
 }
 
 .rating:disabled  > .container > .button.strong{
-    -fx-opacity: .85 !important;
+    -fx-opacity: .95 !important;
 }
 
 .rating:disabled  > .container > .button{
-    -fx-opacity: .85 !important;
+    -fx-opacity: .95 !important;
+}
+
+.user-rating.rating > .container > .button{
+	-fx-padding: 12 12 !important;
+	-fx-opacity: .7;
+}
+
+.user-rating.rating > .container > .button.strong{
+	-fx-background-color: #FFA500;
+	-fx-opacity: .7;
+}
+
+
+/*
+ * Review dialog pane styling for textarea and labels
+ */
+.review-dialog.rating > .container > .button{
+    -fx-background-color: #ffffff;
+    -fx-border-color: transparent;
+    -fx-shape: "M147.421,249.541l6.152,4.854l-2.393,7.355l6.521-4.361l6.549,4.361l-2.393-7.355l6.152-4.854h-7.738l-2.571-7.396l-2.543,7.396H147.421z";
+    -fx-background-image: null;
+    -fx-padding: 16 16;
+    -fx-background-image-repeat: no-repeat;	
+}
+
+.review-dialog.rating > .container > .button.strong{
+    -fx-background-color: #FFA500;
+    -fx-border-color: transparent;
+    -fx-background-image: null;
+}
+
+.review-dialog.rating > .container > .button:hover {
+    -fx-effect: null;
+}
+
+.review-dialog.label{
+	-fx-font-size: 21px;
+	-fx-font-weight: 800;
+	-fx-text-fill: #ffffff;
+}
+
+.review-dialog:header *.header-panel *.label{
+    -fx-font-size: 21px !important;
+    -fx-font-weight: 800;
 }

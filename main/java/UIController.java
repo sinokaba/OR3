@@ -53,7 +53,7 @@ public class UIController extends Application{
 		confirmDialog = new Popup("conf", currentScene.getWindow());
 		
 		rstPage = new RestaurantUI(db, currentScene.getWindow());
-		loginPage = new LoginUI(FIELD_WIDTH, FIELD_HEIGHT);
+		loginPage = new LoginUI(FIELD_WIDTH, FIELD_HEIGHT, currentScene.getWindow(), formValidation);
 		homePage = new HomeUI(false, db, mapsApi);
 		userRegPage = new UserRegistrationUI(FIELD_WIDTH, FIELD_HEIGHT);
 		searchResultPage = new SearchResultUI(db, UIController.this);
@@ -66,6 +66,7 @@ public class UIController extends Application{
 	@Override
 	public void start(Stage stage) throws Exception {
 		primaryStage = stage;
+		primaryStage.setResizable(false);
 		primaryStage.getIcons().add(new Image("/images/brand.png"));
 		nav.logoutBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
