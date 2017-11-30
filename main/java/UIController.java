@@ -1,4 +1,5 @@
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,6 +26,7 @@ public class UIController extends Application{
 	private SearchResultUI searchResultPage;
 	private RestaurantRegUI rstRegPage;
 	private RestaurantUI rstPage;
+	private UserAccountUI userPage;
 	private Navbar nav;
 	
 	private DBConnection db;
@@ -53,11 +55,12 @@ public class UIController extends Application{
 		confirmDialog = new Popup("conf", currentScene.getWindow());
 		
 		rstPage = new RestaurantUI(db, currentScene.getWindow());
-		loginPage = new LoginUI(FIELD_WIDTH, FIELD_HEIGHT, currentScene.getWindow(), formValidation);
+		loginPage = new LoginUI(FIELD_WIDTH, FIELD_HEIGHT, currentScene.getWindow(), formValidation, db);
 		homePage = new HomeUI(false, db, mapsApi);
 		userRegPage = new UserRegistrationUI(FIELD_WIDTH, FIELD_HEIGHT);
 		searchResultPage = new SearchResultUI(db, UIController.this);
 		rstRegPage = new RestaurantRegUI(mapsApi, FIELD_WIDTH, FIELD_HEIGHT);
+		userPage = new UserAccountUI(db, currentScene.getWindow(), confirmDialog);
 	}
 	public static void main(String[] args) {
 		launch(args);
@@ -88,6 +91,11 @@ public class UIController extends Application{
 		    		nav.userMenuActions.getSelectionModel().clearAndSelect(0);
 		    		restaurantRegView();
 		        }
+		    	else if(newValue.toLowerCase().equals("account")){
+		        	nav.userMenuActions.getSelectionModel().clearSelection();
+		    		nav.userMenuActions.getSelectionModel().clearAndSelect(0);
+		    		userAcctView(currentUser);
+		    	}
 		    }
 		});
 		nav.signupBtn.setOnAction(e -> {
@@ -120,23 +128,30 @@ public class UIController extends Application{
 				String searchTerm = homePage.restaurantSearchField.getText().trim();
 				String specifiedLoc = homePage.locationSearchField.getText().trim();
 				if(searchTerm.length() > 0 || specifiedLoc.length() > 3){
-					if(specifiedLoc.length() <= 3){
+					if(specifiedLoc.length() <= 2){
 						specifiedLoc = null;
 					}
 					if(searchTerm.length() > 0){
-						if(homePage.searchDropdown.getSelectionModel().getSelectedItem().equals("Name")){
-				    		Restaurant dbQueryRes = db.getRestaurantFromDB(searchTerm, specifiedLoc);
-							if(dbQueryRes != null){
-								currentRstrnt = dbQueryRes;
-					    		restaurantView(currentRstrnt);
+						//if(homePage.searchDropdown.getSelectionModel().getSelectedItem().equals("Name")){
+			    		Restaurant dbQueryRes = db.getRestaurantFromDB(searchTerm, specifiedLoc);
+						if(dbQueryRes != null){
+							currentRstrnt = dbQueryRes;
+				    		restaurantView(currentRstrnt);
+						}
+						else{
+							List<String> searchRes = new ArrayList<String>();
+							if(specifiedLoc == null){
+								searchRes = db.getRestaurantSuggestions(searchTerm, false);
 							}
 							else{
-								searchResultView(db.getRestaurantSuggestions(searchTerm, specifiedLoc), searchTerm, specifiedLoc);
+								searchRes = db.getRestaurantSuggestions(searchTerm, specifiedLoc, false);
 							}
+							searchResultView(searchRes, searchTerm, specifiedLoc);
 						}
+						
 					}
 					else{
-						searchResultView(db.getRestaurantSuggestions(searchTerm, specifiedLoc), searchTerm, specifiedLoc);						
+						searchResultView(db.getRestaurantSuggestions(searchTerm, specifiedLoc, false), searchTerm, specifiedLoc);						
 					}
 					homePage.clearFields();
 				}
@@ -198,7 +213,20 @@ public class UIController extends Application{
 	    });
 	}
 
-	public void userAcctView(){
+	public void userAcctView(User user){
+		userPage.buildStage(user);
+		root.setCenter(userPage.getLayout());
+	
+		userPage.deleteAccount.setOnAction(new EventHandler<ActionEvent>(){
+			@Override
+			public void handle(ActionEvent e){
+				confirmDialog.createDialog("Delete account", "Are you sure you want to delete your account? This cannot be undone.");
+				if(confirmDialog.userConfirmation().get() == ButtonType.OK){
+					db.deleteUser(currentUser);
+					logoutUser();
+				}
+			}
+		});
 		
 	}
 	

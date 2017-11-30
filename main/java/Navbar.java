@@ -50,8 +50,8 @@ public class Navbar {
 		userMenu.setArrowLocation(PopOver.ArrowLocation.TOP_CENTER);
 		
 		userMenuActions = new ListView<String>();
-        userMenuActions.setPrefSize(200, 220);
-		userMenuActions.getItems().addAll("Account","Reviews","Messages","Add restaurant");
+        userMenuActions.setPrefSize(180, 140);
+		userMenuActions.getItems().addAll("Nothing", "Account", "Add restaurant", "Help");
 		
 		userMenu.setContentNode(userMenuActions);
 

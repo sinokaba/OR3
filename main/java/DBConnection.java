@@ -113,8 +113,9 @@ public class DBConnection {
 						+ " SET username = '" + newUser.getUsername() + "',\n"
 						+ "  email = '" + newUser.getEmail() + "',\n"
 						+ "  birthdate = '" + birthday + "',\n"
+						+ "  privilege = 0,\n" 
 						+ "  password = '" + newUser.getPassword() + "',\n"
-						+ "  fk_location = (SELECT idlocations FROM locations WHERE zipcode = '" + zip + "')";	
+						+ "  fk_location = (SELECT idlocations FROM locations WHERE zipcode = '" + zip + "' LIMIT 1)";	
 			System.out.println(sqlQ);
 			executeQuery(sqlQ, "User: " + newUser.getUsername() + " added");
     	}
@@ -123,41 +124,84 @@ public class DBConnection {
     	}
     }
     
-    public ResultSet getQueryResult(String table, String field1, String val1, String field2, String val2){
-    	String sqlQ = "Select * from " + table + " Where " + field1 + "='" + val1 + "' and " + field2 + "='" + val2 + "'";
-    	return getQueryResultSet(sqlQ);
+    public void deleteUser(User user){
+    	String sqlQ = "DELETE FROM users WHERE username= '" + user.getUsername() + "' AND email = '" + user.getEmail() + "'";
+    	executeQuery(sqlQ, "Deleted " + user.getUsername() + " successfully.");
     }
     
-    public List<String> getRestaurantSuggestions(String keyword, String loc){
+    public void deleteUser(String username){
+    	String sqlQ = "DELETE FROM users WHERE username= '" + username + "'";
+    	executeQuery(sqlQ, "Deleted " + username + " successfully.");    	
+    }
+    /*
+     * VERY VERY UNSAFE, only for testing purposes. Will remove later
+     */
+    public String getUserPassword(String email){
+    	String passwordQ = "SELECT * FROM users WHERE email = '" + email + "'";
+    	ResultSet userPassword = getQueryResultSet(passwordQ);
+    	String password = null;
+    	try {
+			password = userPassword.getString("password");
+		} catch (SQLException e) {
+			System.out.println("Something went wrong, and password was unable to be retrived.");
+			e.printStackTrace();
+		}
+    	return password; 
+    }
+    
+    public List<String> getRestaurantSuggestions(String keyword, boolean autocomplete){
     	List<String> suggestions = new ArrayList<String>();
+    	int maxCount = 10;
+    	if(autocomplete){
+    		maxCount = 5;
+    	}
+    	int count = 0;
 		try {
-			String[] geoLocation = new String[3];
-	    	if(loc != null){
-	    		System.out.println("location entred: " + loc);
-	    		String[] locationSplit = loc.split(",");
-	    		String country = locationSplit[locationSplit.length - 1].trim();
-	    		System.out.println("country: " + country + country.toLowerCase().equals("united states"));
-	    		if(country.toLowerCase().equals("united states")){
-	    			geoLocation[0] = "US";
-		    		geoLocation[1] = locationSplit[locationSplit.length - 2].trim();
-		    		if(locationSplit.length >= 3){
-		    			geoLocation[2] = locationSplit[locationSplit.length - 3].trim();
-		    		}
-	    		}
-	    	}
-    		String locStatement = "SELECT idlocations FROM locations WHERE locations.state = '" + geoLocation[1];
-	    	if(geoLocation[2] != null){
-	    		locStatement = "SELECT idlocations FROM locations WHERE locations.state = '" + geoLocation[1] + "' and locations.city = '" + geoLocation[2] +"'";
-	    	}
-	    	else{
-	    		locStatement = "SELECT idlocations FROM locations WHERE locations.state = '" + geoLocation[1] + "'";
-	    	}
-			if(keyword.length() >= 1){
-	    		String sqlStatement = "SELECT * FROM restaurants WHERE restaurants.name LIKE ? ESCAPE '!'";
-	    		if(geoLocation[2] != null){
-	    			sqlStatement = "SELECT * FROM restaurants WHERE restaurants.name LIKE ? ESCAPE '!' AND restaurants.fk_location IN (" + locStatement + ")";
-	    		}
-				keyword = keyword
+    		String sqlStatement = "SELECT * FROM restaurants WHERE restaurants.name LIKE ? ESCAPE '!'";
+			keyword = keyword
+					.replace("!", "!!")
+					.replace("_", "!_")
+					.replace("%", "!%")
+					.replace("'", "!'")
+					.replace("[", "![");
+			PreparedStatement pStatement = connection.prepareStatement(sqlStatement);
+			pStatement.setString(1, "%" + keyword + "%");
+			System.out.println(pStatement);
+        	ResultSet res = pStatement.executeQuery();
+			while(res.next() && count < maxCount) {
+			    if(res.getInt(1) > 0){
+					System.out.println(res.getInt(1));
+					suggestions.add(res.getString("name"));
+					count += 1;
+			    }
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    	return suggestions;
+    }
+    
+    public List<String> getRestaurantSuggestions(String keyword, String loc, boolean autocomplete){
+    	List<String> suggestions = new ArrayList<String>();
+    	int maxCount = 10;
+    	if(autocomplete){
+    		maxCount = 5;
+    	}
+    	int count = 0;
+		try {
+			//get the correctly formatted reaction from google maps api call
+			String[] geoLocation = mapsAPI.getLocation(loc);
+			System.out.println("185 location " + geoLocation);
+			String locStatement = "SELECT idlocations FROM locations WHERE state = '" + geoLocation[1] + "'";
+			if(geoLocation[0] != null){
+				locStatement = "SELECT idlocations FROM locations WHERE state = '" + geoLocation[1] + "' AND city = '" + geoLocation[0] + "'";
+			}
+			//check if the there's a keyword provided, else just return restaurants based on the loc specified
+			if(keyword.length() > 0){
+				System.out.println("178 " + keyword.length());
+	    		String sqlStatement = "SELECT * FROM restaurants WHERE restaurants.name LIKE ? ESCAPE '!' AND restaurants.fk_location IN (" + locStatement + ")";
+				//escaping certain characters which mess up query calls
+	    		keyword = keyword
 						.replace("!", "!!")
 						.replace("_", "!_")
 						.replace("%", "!%")
@@ -167,30 +211,30 @@ public class DBConnection {
 				pStatement.setString(1, "%" + keyword + "%");
 				System.out.println(pStatement);
 	        	ResultSet res = pStatement.executeQuery();
-				while(res.next()) {
+				while(res.next() && count < maxCount) {
 				    if(res.getInt(1) > 0){
-						System.out.println(res.getInt(1));
+						System.out.println(res.getString("name"));
 						suggestions.add(res.getString("name"));
+						count += 1;
 				    }
 				}
 			}
 			else{
-				if(geoLocation[0] != null){
-			    	PreparedStatement pStatement = connection.prepareStatement("SELECT * FROM restaurants WHERE restaurants.fk_location IN (" + locStatement + ")");
-			    	System.out.println(pStatement);
-		        	ResultSet res = pStatement.executeQuery();
-					while(res.next()) {
-					    if(res.getInt(1) > 0){
-							System.out.println(res.getInt(1));
-							suggestions.add(res.getString("name"));
-					    }
-					}
+		    	PreparedStatement pStatement = connection.prepareStatement("SELECT * FROM restaurants WHERE restaurants.fk_location IN (" + locStatement + ")");
+		    	System.out.println(pStatement);
+	        	ResultSet res = pStatement.executeQuery();
+				while(res.next() && count < maxCount) {
+				    if(res.getInt(1) > 0){
+						System.out.println(res.getString("name"));
+						suggestions.add(res.getString("name"));
+						count += 1;
+				    }
 				}
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-    	return suggestions;
+    	return suggestions;    	
     }
     
     public ResultSet getQueryResultReviews(User user, Restaurant restaurant){
@@ -209,6 +253,7 @@ public class DBConnection {
 		}
 		return rs;
     }
+    
 	/**
 	* This method creates an sql query for inserting a new restaurant in the db
 	* 	 
@@ -229,7 +274,7 @@ public class DBConnection {
     		}
     	}
     	if(validZip){
-    		String safeAddress = restaurant.address.replace("'", "''");
+    		String safeAddress = restaurant.address.split(",")[0].replace("'", "''");
     		String safeName = restaurant.name.replace("'", "''");
     		String sqlQ = "INSERT INTO restaurants \n"
 					+ " SET name = '" + safeName + "',\n"
@@ -251,6 +296,7 @@ public class DBConnection {
 	*/    
     public void insertReview(Review review){
     	String restaurantName = review.getRestaurantName().replace("'", "\\'");
+    	executeQuery("SELECT FROM restaurants WHERE name = '" + restaurantName + "' AND idrestaurant = " + review.getRestaurantId());
     	System.out.println("restaurant name: " + restaurantName);
     	String comments = review.getComments().replace("'", "\\'");
 		String sqlQ = "INSERT INTO reviews \n"
@@ -424,11 +470,25 @@ public class DBConnection {
 			    	String address = rs.getString("address");
 			    	String phone = rs.getString("phone");
 			    	int rstId = rs.getInt(1);
-			    	String locId = rs.getString("fk_location");
+			    	//String locId = rs.getString("fk_location");
 			    	rst = new Restaurant(rstName, phone);
-			    	rst.setAddress(address, locId);
+			    	//System.out.println("what is this? " + locId);
+			    	rst.setAddress(address, null);
 			    	System.out.println("id from db of restaurnt: " + rstId);
 			    	rst.setId(rstId);
+			    	rst.setPriceRange((int)rs.getDouble("min_price"), (int)rs.getDouble("max_price"));
+			    	ResultSet locInfoRs = getQueryResultSet("SELECT * FROM locations WHERE idlocations = " + rs.getInt("fk_location"));
+			    	if(locInfoRs != null && locInfoRs.getInt(1) > 0){
+			    		rst.addLocation(locInfoRs.getString("state"), locInfoRs.getString("city"), locInfoRs.getString("zipcode"));
+			    	}
+			    	String numReviewsQ = "SELECT COUNT(*) FROM reviews WHERE fk_restaurant = " + rstId;
+			    	String totalReviewsRatingQ = "SELECT SUM(overall_rating) AS total FROM reviews WHERE fk_restaurant = " + rstId;
+			    	ResultSet numReviewRs = getQueryResultSet(numReviewsQ);
+			    	if(numReviewRs != null && numReviewRs.getInt(1) > 0){
+			    			rst.setNumReviews(numReviewRs.getInt(1));
+			    			ResultSet totalReviewRatingRs = getQueryResultSet(totalReviewsRatingQ);
+			    			rst.setTotalRating(totalReviewRatingRs.getDouble(1));
+			    	}
 			    }
 			}
     	}
@@ -485,6 +545,46 @@ public class DBConnection {
     	}
     	return reviewList;
     }
+    
+    public List<Review> getUserReviews(User user){
+    	List<Review> reviewList = new ArrayList<Review>();
+    	System.out.println("getting user reviews" );
+    	try{
+    		String query = "SELECT * FROM reviews WHERE fk_user = (SELECT iduser FROM users WHERE username = '" + user.getUsername() + "')";
+    		System.out.println(query);
+    		ResultSet rs = getQueryResultSet(query);
+    		int count = 0;
+    		if(rs != null){
+	    		while(rs.next() && count <= 10){
+	    			if(rs.getInt(1) > 0){
+	    				Date creationDate = rs.getDate("creation_date");
+	    				String comments = rs.getString("comments");
+	    				double rating = rs.getDouble("overall_rating");
+	    				int rstId = rs.getInt("fk_restaurant");
+	    				String rstQuery = "SELECT * FROM restaurants WHERE idrestaurant = " + rstId;
+	    				System.out.println(rstQuery);
+	    				ResultSet rstRs = statement.executeQuery(rstQuery);
+	    				Restaurant rst = null;
+	    				if(rstRs.next()){
+	    					if(rstRs.getInt(1) > 0){
+	    						String name = rstRs.getString("name");
+	    				    	String phone = rstRs.getString("phone");
+	    				    	rst = new Restaurant(name, phone);   					
+	    				    }
+	    				}
+	    				Review review = new Review(rating, comments, user, rst);
+	    				review.setCreationDate(creationDate);
+	    				reviewList.add(review);
+	    				count += 1;
+	    			}
+	    		}
+    		}
+    	}
+    	catch(SQLException e){
+    		e.printStackTrace();
+    	}
+    	return reviewList;    	
+    }
     public ResultSet getQueryResultSet(String query){
 		ResultSet res = null;
     	try{
@@ -525,6 +625,11 @@ public class DBConnection {
     	}
     	//System.out.println("restaurant suggestions: " + res);
 		return res;
+    }
+    
+    public ResultSet getQueryResult(String table, String field1, String val1, String field2, String val2){
+    	String sqlQ = "Select * from " + table + " Where " + field1 + "='" + val1 + "' and " + field2 + "='" + val2 + "'";
+    	return getQueryResultSet(sqlQ);
     }
     
 }

@@ -253,7 +253,7 @@
     -fx-opacity: .95 !important;
 }
 
-.user-rating.rating > .container > .button{
+.stars-small.rating > .container > .button{
 	-fx-padding: 12 12 !important;
 	-fx-opacity: .7;
 }
@@ -263,6 +263,10 @@
 	-fx-opacity: .7;
 }
 
+.overall-rating.rating > .container > .button.strong{
+	-fx-background-color: #FFD700;
+	-fx-opacity: .7;
+}
 
 /*
  * Review dialog pane styling for textarea and labels
@@ -296,3 +300,12 @@
     -fx-font-size: 21px !important;
     -fx-font-weight: 800;
 }
+
+
+/*
+ * hypertext custom styling
+ */
+ 
+ .rst-link:hover{
+ 	-fx-cursor: hand;
+ }

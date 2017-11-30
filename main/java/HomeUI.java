@@ -40,9 +40,10 @@ public class HomeUI {
 	    Pane buffer = new Pane();					
 		grid.add(buffer, 2, 0);
 		createSearchOptions();
-		locationSearchField = new AutoCompleteTextField("US state, city, or zipcode.", 270, 44);
+		locationSearchField = new AutoCompleteTextField("US state, city, or zipcode.", 300, 44);
 		locationSearchField.autocomplete(null, mapsApi);
-		restaurantSearchField = new AutoCompleteTextField("of Restaurant...", 350, 44);
+		//restaurantSearchField = new AutoCompleteTextField("of Restaurant...", 420, 44);
+		restaurantSearchField = new AutoCompleteTextField("Restaurant name or keyword.", 420, 44);
 		restaurantSearchField.autocomplete(db, null);
 		searchBtn = new Button("Search");
 		searchBtn.getStyleClass().addAll("main-button", "search-button");
@@ -51,10 +52,8 @@ public class HomeUI {
 				restaurantSearchField.focusedProperty()));
 		//hbox lays out its children in a single row, for formatting
 		HBox searchWrap = new HBox(3);				
-		searchWrap.getChildren().add(searchDropdown);
-		searchWrap.getChildren().add(restaurantSearchField);
-		searchWrap.getChildren().add(locationSearchField);
-		searchWrap.getChildren().add(searchBtn);
+		//searchWrap.getChildren().add(searchDropdown);
+		searchWrap.getChildren().addAll(restaurantSearchField, locationSearchField, searchBtn);
 		
 		return searchWrap;
 	}

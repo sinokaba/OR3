@@ -41,21 +41,23 @@
     document.setMapTypeTerrain = function setMapTypeTerrain() {
         document.map.setMapTypeId(google.maps.MapTypeId.TERRAIN);
     }
- 
-    var marker = new google.maps.Marker({
-      position: latlng,
-      map: document.map
-    });
 
     document.goToLocation = function goToLocation(searchString) {
+        console.log("address " + searchString)
         document.geocoder.geocode( {'address': searchString}, function(results, status) {
           if (status == google.maps.GeocoderStatus.OK) {
+            console.log("location: " + results[0].geometry.location)
+            var marker = new google.maps.Marker({
+              position: results[0].geometry.location,
+              map: document.map
+            })
             document.map.setCenter(results[0].geometry.location);
           } else {
             alert("Geocode was not successful for the following reason: " + status);
           }
         });
     }
+    //document.goToLocation("3636 Horsebarn Hill Road Extension, CT, United States");
   }
 </script>
 </head>

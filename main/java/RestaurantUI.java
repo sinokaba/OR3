@@ -1,5 +1,6 @@
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.controlsfx.control.Rating;
 
@@ -7,6 +8,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Group;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -39,8 +41,6 @@ public class RestaurantUI {
 	private BorderPane layout;
 	private Popup errDialog, confDialog;
 	private Alert reviewDialog;
-	private double rating;
-	private int numRating;
 	
 	public RestaurantUI(DBConnection db, Window win){
 		layout = new BorderPane();
@@ -52,27 +52,60 @@ public class RestaurantUI {
 	}
 	
 	public void buildPage(Restaurant rst, User user, List<Review> reviews){
-        rating = 0;
-        numRating = 0;
 		reviewDialog.setTitle("Review for " + rst.name);
+		double overallRating = rst.getRating();
 		
 		GridPane headerContent = new GridPane();
+		
 		ColumnConstraints mainContent = new ColumnConstraints();
-		mainContent.setPercentWidth(58);
+		mainContent.setPercentWidth(70);
 		ColumnConstraints leftPaneControl = new ColumnConstraints();
-		leftPaneControl.setPercentWidth(41);		
+		leftPaneControl.setPercentWidth(29);		
 		headerContent.getColumnConstraints().addAll(mainContent, leftPaneControl);	
 		
 		Label name = new Label(rst.name);
 		name.getStyleClass().add("h2");
-		
-		VBox restaurantInfo = new VBox(2);
-		Label address = new Label("Address: " + rst.address);
+		headerContent.add(name, 0, 0);
 		Label phone = new Label("Phone: " + rst.getPhone());
-		address.getStyleClass().add("h4");
 		phone.getStyleClass().add("h4");
-		restaurantInfo.getChildren().addAll(address, phone);
+		headerContent.add(phone, 1, 0);
 		
+		GridPane restaurantBody = new GridPane();
+		VBox restaurantInfo = new VBox(2);
+		Label address = new Label("Address: " + rst.getAddress());
+		address.getStyleClass().add("h4");
+		Label hours = new Label("Hours: 9am-10pm");
+		hours.getStyleClass().add("h4");
+		Label priceRange = new Label("Price Range: $" + rst.getPriceRange());
+		priceRange.getStyleClass().add("h4");
+		restaurantInfo.getChildren().addAll(address, hours, priceRange);
+		restaurantBody.add(restaurantInfo, 0, 0);
+		Label restaurantPics = new Label("Pictures");
+		restaurantPics.getStyleClass().add("h3");		
+		restaurantBody.add(restaurantPics, 0, 2);
+		Label restaurantMenu = new Label("Menu");
+		restaurantMenu.getStyleClass().add("h3");
+		restaurantBody.add(restaurantMenu, 5, 2);
+		VBox menuItemCont = new VBox(5);		
+		for(int i = 0; i < 6; i++){
+			Label item = new Label("Item" + String.valueOf(i) + " - $$");
+			item.getStyleClass().add("p");
+			menuItemCont.getChildren().add(item);
+		}
+		restaurantBody.add(menuItemCont, 5, 3);
+		Label restaurantDirections = new Label("Location");
+		restaurantDirections.getStyleClass().add("h3");
+		restaurantBody.add(restaurantDirections, 5, 6);
+		
+		//placeholder images
+		/*
+		VBox picturesContainer = new VBox(10);
+		for(int i = 0; i < 2; i++){
+			Rectangle r = new Rectangle(260, 140);
+			picturesContainer.getChildren().add(r);
+		}
+		restaurantBody.add(picturesContainer, 0, 4, 4, 10);
+		*/
 		HBox reviewButtonCont = new HBox();
 		IconNode postIcon = new IconNode(GoogleMaterialDesignIcons.BORDER_COLOR);
 		postIcon.setIconSize(24);
@@ -81,9 +114,15 @@ public class RestaurantUI {
 		reviewButtonCont.getChildren().add(addReviewBtn);
 		reviewButtonCont.setAlignment(Pos.CENTER);
 		
-		//GridPane sidePane = new GridPane();
-
-		Label reviewsTitle = new Label("Reviews");
+		Rating ratingStars = new Rating();
+		ratingStars.setPartialRating(true);
+		ratingStars.setMax(5);
+		ratingStars.setRating(overallRating);
+		ratingStars.setDisable(true);
+		Label ratingLabel = new Label(String.valueOf(overallRating));
+		ratingLabel.getStyleClass().add("h2");
+		
+		Label reviewsTitle = new Label("Reviews(" + String.valueOf(rst.numReviews) +")");
 		reviewsTitle.getStyleClass().add("h3");
 		
 		ScrollPane reviewsContainer = new ScrollPane();
@@ -91,24 +130,31 @@ public class RestaurantUI {
 		reviewsContainer.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
 		reviewsContainer.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
 		reviewsContainer.getStyleClass().add("scroll-fill");
-		//golden ratio 1040 - 1040*1.618, the review section of the page
+		//golden ratio 1040 - 1040*0.618, the review section of the page
 		reviewsContainer.setPrefWidth(397);
 		Insets topPadding = new Insets(10);
 		reviewsContainer.setPadding(topPadding);
 		
-		headerContent.add(name, 0, 0);
 		BorderPane restaurantContent = new BorderPane();
 		restaurantContent.setTop(headerContent);
-		restaurantContent.setCenter(restaurantInfo);
+		restaurantContent.setCenter(restaurantBody);
 		layout.setCenter(restaurantContent);
 		
 		VBox userReviews = new VBox(12);
 		for(Review review : reviews){
 			Label author = new Label("Author: " + review.getUserName() + " on " + review.getCreationDate());
 			author.getStyleClass().add("p");
+			Group commentContainer = new Group();
+			String userComments = review.getComments();
+			if(userComments.length() >= 100){
+				//Hyperlink more = new Hyperlink("...");
+				//commentContainer.getChildren().add(more);
+				userComments = userComments.substring(0, 100) + "...";
+			}
 			//wordutils wraps around the comment string, and starts a new line if the comment exceeds a certain length
-			Label comments = new Label(WordUtils.wrap(review.getComments(), 42));
+			Label comments = new Label(WordUtils.wrap(userComments, 45));
 			comments.getStyleClass().add("p");
+			commentContainer.getChildren().add(comments);
 			
 			//creating 5 star rating for each user's review
 			final Rating userRating = new Rating();
@@ -116,16 +162,13 @@ public class RestaurantUI {
 			userRating.setMax(5);
 			userRating.setRating(review.getRating());
 			userRating.setDisable(true);
-			userRating.getStyleClass().add("user-rating");
+			userRating.getStyleClass().addAll("stars-small", "user-rating");
 			
 			//keeping track of the number of reviews and their rating
-			rating += review.getRating();
-			numRating += 1;
-
 			//used circle shape as a temporary measure for a user profile picture
 			HBox hGrid = new HBox(10);
 			VBox vGrid = new VBox(2);
-			vGrid.getChildren().addAll(userRating, comments, author);
+			vGrid.getChildren().addAll(userRating, commentContainer, author);
 			Circle profilePic = new Circle(20);
 			hGrid.getChildren().addAll(profilePic, vGrid);
 			
@@ -189,6 +232,7 @@ public class RestaurantUI {
 			    			reviews.clear();
 			    		}
 			    		else{
+			    			rst.removeReview(user, review);
 				    		reviews.remove(review);
 			    		}
 			    		buildPage(rst, user, reviews);
@@ -205,8 +249,9 @@ public class RestaurantUI {
 			    		//review posted by user is validated and added to db
 	        			Double rating = getRating();
 			    		//rst.addRating(rating);
-			    		Review newReview = new Review(rating, commentField.getText(), user, rst);
-			    		db.updateReview(review, newReview);
+			    		Review updatedReview = new Review(rating, commentField.getText(), user, rst);
+			    		db.updateReview(review, updatedReview);
+			    		rst.updateReview(user, review, updatedReview);
 			    		review.setComments(commentField.getText());
 			    		review.setRating(rating);
 				    	commentField.clear();
@@ -228,10 +273,10 @@ public class RestaurantUI {
 	        		if(userAction == ButtonType.OK && !(commentField.getText().trim().length() <= 0 || getRating() == -1)){
 			    		//review posted by user is validated and added to db
 	        			Double rating = getRating();
-			    		rst.addRating(rating);
-			    		Review review = new Review(rating, commentField.getText(), user, rst);
-			    		db.insertReview(review);
-			    		reviews.add(review);
+			    		Review newReview = new Review(rating, commentField.getText(), user, rst);
+			    		rst.addReview(user, newReview);
+			    		db.insertReview(newReview);
+			    		reviews.add(newReview);
 				    	commentField.clear();
 				    	ratingField.setRating(-1);
 				    	//reload page
@@ -245,14 +290,6 @@ public class RestaurantUI {
 	        	}
 	        }		
 		});
-		Rating ratingStars = new Rating();
-		ratingStars.setPartialRating(true);
-		ratingStars.setMax(5);
-		double overallRating = Math.round((rating/numRating)*100.0)/100.0;
-		ratingStars.setRating(overallRating);
-		ratingStars.setDisable(true);
-		Label ratingLabel = new Label(String.valueOf(overallRating));
-		ratingLabel.getStyleClass().add("h2");
 		VBox reviewHeaderCont = new VBox(10);
 		reviewHeaderCont.setPrefWidth(360);
 		reviewHeaderCont.setAlignment(Pos.CENTER);

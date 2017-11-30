@@ -1,6 +1,9 @@
 import java.util.List;
 
+import org.controlsfx.control.Rating;
+
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
@@ -35,13 +38,20 @@ public class SearchResultUI {
 		scroll.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
 		
 		VBox container = new VBox(30);
+		Insets paddingBottom = new Insets(10, 10, 20, 10);
+		container.setPrefWidth(630);
+		container.setPadding(paddingBottom);
 		//container.getStyleClass().add("container");
+		Restaurant firstRst = null;
 		for(String res : searchResults){
 			Restaurant r = db.getRestaurantFromDB(res, null);
+			if(firstRst == null){
+				firstRst = r;
+			}
 			HBox detailsWrapperH = new HBox(15);
 			VBox detailsWrapperV = new VBox(2);
 			Label rstName = new Label(res);
-			rstName.getStyleClass().add("h4");
+			rstName.getStyleClass().addAll("h4", "rst-link");
 			rstName.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			    @Override
 			    public void handle(MouseEvent event) {
@@ -52,34 +62,36 @@ public class SearchResultUI {
 			lbl2.getStyleClass().add("p");
 			Label lbl3 = new Label("Phone: " + r.getPhone());
 			lbl3.getStyleClass().add("p");
-			Label lbl4 = new Label(String.valueOf(r.getRating()) + " stars.");
-			lbl4.getStyleClass().add("p");
-			detailsWrapperV.getChildren().add(rstName);
-			detailsWrapperV.getChildren().add(lbl2);
-			detailsWrapperV.getChildren().add(lbl3);
+			
+			Rating ratingStars = new Rating();
+			ratingStars.setPartialRating(true);
+			ratingStars.setMax(5);
+			ratingStars.setRating(Math.round(r.getRating()*100.0)/100.0);
+			ratingStars.getStyleClass().addAll("stars-small", "overall-rating");
+			ratingStars.setDisable(true);
+			
+			detailsWrapperV.getChildren().addAll(rstName, ratingStars, lbl2, lbl3);
 			Rectangle rec = new Rectangle(70, 70);
-			detailsWrapperH.getChildren().add(rec);
-			detailsWrapperH.getChildren().add(detailsWrapperV);
-			detailsWrapperH.getChildren().add(lbl4);
+			rec.getStyleClass().add("rst-link");
+			rec.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			    @Override
+			    public void handle(MouseEvent event) {
+			        controller.restaurantView(r);
+			    }
+			});
+			detailsWrapperH.getChildren().addAll(rec, detailsWrapperV);
 			detailsWrapperH.setStyle("-fx-border-color: transparent transparent white transparent; "
-							        + "-fx-border-width: 0 0 4 0; "
+							        + "-fx-border-width: 0 0 2 0; "
 							        + "-fx-border-style: dashed solid solid solid;");
 			container.getChildren().add(detailsWrapperH);
 		}
 		VBox mapContainer = new VBox(15);
-		
-		WebView webView = new WebView();
-		WebEngine webEngine = webView.getEngine();
-        final java.net.URL urlGoogleMaps = getClass().getResource("/html/googleMaps.html");
-        webEngine.load(urlGoogleMaps.toExternalForm());
-        webEngine.setJavaScriptEnabled(true);
-		//Image img = new Image(getClass().getResourceAsStream("/images/testMap.png"));
-		//ImageView imgView = new ImageView(img);
-	    //imgView.setFitWidth(360);
-		//imgView.setFitHeight(200);
-		webView.setMaxSize(400, 225);
-	    mapContainer.getChildren().add(webView);
-		layout.setRight(mapContainer);
+		System.out.println("first rst: " + firstRst.getName());
+		if(firstRst != null){
+			GoogleMap map = new GoogleMap(firstRst.getAddress());
+		    mapContainer.getChildren().add(map.getMap());
+			layout.setRight(mapContainer);
+		}
 	    scroll.setContent(container);
 		scroll.getStyleClass().add("scroll-fill");
 		layout.setCenter(scroll);

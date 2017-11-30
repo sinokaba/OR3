@@ -22,28 +22,36 @@ import javafx.scene.text.Text;
 import javafx.stage.Window;
 
 public class LoginUI{
-
 	private CustomTextField usernameField;
 	private PasswordField passwordField;
-	Button loginBtn, backBtn;
 	private GridPane layout;
 	private Alert forgotPwDialog;
 	private CustomTextField emailField;
 	private Popup errDialog;
 	private ValidateForm validator;
+	private int fieldHeight;
+	private int fieldWidth;
 	final Pattern VALID_EMAIL_ADDRESS_REGEX = 
 			Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+	private String tempPassword;
+	Button loginBtn, backBtn;
 	
-	public LoginUI(int width, int height, Window win, ValidateForm validator){
+	public LoginUI(int width, int height, Window window, ValidateForm validator, DBConnection db){
+		this.validator = validator;
+		fieldHeight = height;
+		fieldWidth = width;
+		buildPage(db, window);
+	}
+	
+	public void buildPage(DBConnection db, Window win){
 		EmailGenerator emailGen = new EmailGenerator();
 		PasswordEncryption pwEncrypt = new PasswordEncryption();
-		this.validator = validator;
 		createDialog("Forgot password", "myemail@gmail.com", win);
 		errDialog = new Popup("err", win);
 		Popup confDialog = new Popup("conf", win);
 		//super();
 		layout = new GridPane();
-		FormField form = new FormField(width, height);
+		FormField form = new FormField(fieldWidth, fieldHeight);
 		Label username = form.createLabel("Username:");
 		usernameField = form.createTextField("Enter your unique username.", 16);
 		createFieldLabelPair(layout, usernameField, username, 2);
@@ -62,8 +70,13 @@ public class LoginUI{
 				if(res == ButtonType.OK){
 					String userEmail = emailField.getText().trim(); 
 					if(validator.checkEmail(userEmail, false)){
-						confDialog.createDialog("Verification sent!", "Check your email. A temporary password has been sent!");
-						emailGen.sendMail("ronalds97@hotmail.com", "Your temporary password is: " + pwEncrypt.tempPasswordGenerator() + " <br> from or3 java application.");
+						//confDialog.createDialog("Verification sent!", "Check your email. A temporary password has been sent!");
+						confDialog.createDialog("Verification sent!", "Check your email. Your password has been sent!");
+						//tempPassword = pwEncrypt.tempPasswordGenerator();
+						
+						emailGen.sendMail(userEmail, "This is neither secure nor practical. <br>"
+								+ "Note to self: generate temp password and email that instead. <br> <br>"
+								+ "Anyways your password is: " + db.getUserPassword(userEmail) + " <br> from or3 java application.");
 						confDialog.userConfirmation();
 					}
 				}
@@ -153,8 +166,10 @@ public class LoginUI{
 	}
 	
 	public void clearFields(){
-		usernameField.clear();
-		passwordField.clear();
+		if(usernameField != null && passwordField != null){
+			usernameField.clear();
+			passwordField.clear();			
+		}
 	}
 }
 

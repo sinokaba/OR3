@@ -4,14 +4,30 @@ import java.util.HashMap;
 
 public class Restaurant {
 	String name, phone, address, city, state, zip;
-	double rating = 0;
-	int ratingCount = 0;
-	int restaurantId;
+	private int restaurantId;
+	int numReviews = 0;
+	double totalRating = 0;
+	private int minPrice = 0;
+	private int maxPrice = 0;
 	HashMap<User, Review> reviews = new HashMap<User, Review>();
 
 	public Restaurant(String name, String phone){
 		this.name = name;
 		this.phone = phone;
+	}
+	
+	public void addLocation(String state, String city, String zip){
+		this.state = state;
+		this.city = city;
+		this.zip = zip;
+	}
+	
+	public void setNumReviews(int num){
+		numReviews = num;
+	}
+	
+	public void setTotalRating(double totalRating){
+		this.totalRating = totalRating;
 	}
 	
 	public void setId(int id){
@@ -21,24 +37,40 @@ public class Restaurant {
 	
 	public void setAddress(String address, String zip){
 		this.address = address;
-		this.zip = zip;
+		if(zip != null){
+			this.zip =zip;
+		}
+		//this.zip = zip;
 	}
 	
 	public void addRating(double rating){
-		this.rating += rating;
-		ratingCount += 1;
+		totalRating += rating;
+		numReviews += 1;
 	}
 	
 	public double getRating(){
-		if(ratingCount == 0){
+		if(totalRating == 0){
 			return 0;
 		}
-		DecimalFormat oneDigit = new DecimalFormat("#,##0.0");//format to 1 decimal place
-		return  Double.valueOf(oneDigit.format(rating/ratingCount));
+		//DecimalFormat oneDigit = new DecimalFormat("#,##0.0");//format to 1 decimal place
+		return Math.round((totalRating/numReviews)*100.0)/100.0;
 	}
 	
-	public void setReview(User user, Review review){
+	public void addReview(User user, Review review){
+		numReviews += 1;
+		totalRating += review.getRating();
 		reviews.put(user, review);
+	}
+	
+	public void updateReview(User user, Review old, Review updated){
+		reviews.replace(user, old, updated);
+		totalRating += (-old.getRating() + updated.getRating());
+	}
+	
+	public void removeReview(User user, Review review){
+		reviews.remove(user, review);
+		numReviews -= 1;
+		totalRating -= review.getRating();
 	}
 	
 	public Review getUserReview(User user){
@@ -50,7 +82,16 @@ public class Restaurant {
 	}
 
 	public String getAddress(){
-		return address;
+		return address + " " + city + ", " + state + " " + zip;
+	}
+	
+	public void setPriceRange(int min, int max){
+		minPrice = min;
+		maxPrice = max;
+	}
+	
+	public String getPriceRange(){
+		return String.valueOf(minPrice) + " - " + String.valueOf(maxPrice);
 	}
 	
 	public String getPhone(){

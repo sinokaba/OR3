@@ -54,7 +54,7 @@ public class AutoCompleteTextField extends CustomTextField{
 							suggestions = mapsApi.getPlacesSuggestions(userInput);
 						}
 						else{
-							suggestions = db.getRestaurantSuggestions(userInput, null);
+							suggestions = db.getRestaurantSuggestions(userInput, true);
 						}
 						if(!suggestions.isEmpty()){
 							populatePopup(suggestions);
