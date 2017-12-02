@@ -191,11 +191,10 @@ public class UIController extends Application{
 					byte[] salt = pwEncrypt.getSalt();
             		
 	        		String hashedPw = pwEncrypt.getSecurePassword(pw, salt);
-	        		currentUser = new User(username, hashedPw, userRegPage.getBirthday(), email, zip, 0);
             		
-            		db.insertUser(currentUser, salt);
+            		db.insertUser(new User(username, hashedPw, userRegPage.getBirthday(), email, zip, 0), salt);
             		confirmDialog.showAlert("Thanks for creating an account!", "Successfully created your account!");
-	        		loginUser(currentUser);
+	        		loginView();
 	        	}
 	        }
 	    });

@@ -210,7 +210,7 @@ public class RestaurantUI {
 			
 			if(user != null){
 				//only show certain functions when user is logged in
-				System.out.println("review by: " + review.getUserId() + " user = " + user.getId());
+				System.out.println("review by: " + review.getUserId() + " user = " + user.getId() + " n: " + user.getUsername());
 				if(review.getUserId() == user.getId()){
 					HBox userActionsCont = new HBox(3);
 					userActionsCont.getChildren().addAll(likeReviewBtn, dislikeReviewBtn, favReviewBtn, replyBtn, deleteReviewBtn, editReviewBtn);

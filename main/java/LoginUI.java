@@ -51,6 +51,7 @@ public class LoginUI{
 	
 	public void buildPage(EmailGenerator email, PasswordEncryption pass){
 		createDialog("Forgot password", "myemail@gmail.com", win);
+		createDialog("Enter the temporary code you received.", "Forgot password", "", win);
 		errDialog = new Popup("err", win);
 		Popup confDialog = new Popup("conf", win);
 		//super();
@@ -75,14 +76,15 @@ public class LoginUI{
 					String userEmail = emailField.getText().trim(); 
 					if(validator.checkEmail(userEmail, false)){
 						//confDialog.createDialog("Verification sent!", "Check your email. A temporary password has been sent!");
-						confDialog.createDialog("Verification sent!", "Check your email. Your password has been sent!");
+						confDialog.createDialog("Verification sent!", "Check your email. Your temporary password has been sent!");
 						tempPassword = pass.tempPasswordGenerator();
 						email.sendMail(userEmail, "This is neither secure nor practical. <br>"
 								+ "Note to self: generate temp password and email that instead. <br> <br>"
-								+ "Anyways your password is: " + db.getUserPassword(userEmail) + " <br> from or3 java application.");
+								+ "Anyways your remporary password is: " + tempPassword + " <br> from or3 java application.");
 						confDialog.userConfirmation();
-						if(tempPwDialog.showAndWait().get() == ButtonType.OK){
-							
+						if(tempPwDialog.showAndWait().get() == ButtonType.OK && tempPwField.getText().equals(tempPassword)){
+				        	currentUser = db.getUserFromDB(userEmail);
+				        	con.loginUser(currentUser);
 						};
 						
 					}

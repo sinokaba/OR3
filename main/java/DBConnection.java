@@ -458,6 +458,33 @@ public class DBConnection {
     	}
 		return usr;
     }
+   
+    public User getUserFromDB(String email){
+ 		User usr = null;
+     	try{
+ 			ResultSet rs = statement.executeQuery("Select * from users Where email='" + email + "'");
+ 			if(rs.next()) {
+ 			    if(rs.getInt(1) > 0){
+ 					System.out.println(rs.getInt(1));
+ 			    	System.out.println("transferring data from db to user class.");
+ 			    	String name = rs.getString("username");
+ 			    	String pw = rs.getString("password");
+ 			    	String birthdate = rs.getString("birthdate");
+ 			    	String locId = rs.getString("fk_location");
+ 			    	int privilege = rs.getInt("privilege");
+ 			    	int userId = rs.getInt(1);
+ 			    	usr = new User(name, pw, birthdate, email, locId, privilege);
+ 			    	System.out.println("id from db of user: " + userId);
+ 			    	usr.setId(userId);
+ 			    }
+ 			}
+     	}
+     	catch(SQLException ex){
+     		System.out.println("db error getting user from db line 287.");
+     		ex.printStackTrace();
+     	}
+ 		return usr;
+     }
     
     public byte[] getUserSalt(String username){
     	byte[] salt = null;
