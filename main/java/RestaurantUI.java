@@ -209,7 +209,8 @@ public class RestaurantUI {
 			Hyperlink replyBtn = new Hyperlink("", replyIcon);
 			
 			if(user != null){
-				//only show certain functions when user is logged on
+				//only show certain functions when user is logged in
+				System.out.println("review by: " + review.getUserId() + " user = " + user.getId());
 				if(review.getUserId() == user.getId()){
 					HBox userActionsCont = new HBox(3);
 					userActionsCont.getChildren().addAll(likeReviewBtn, dislikeReviewBtn, favReviewBtn, replyBtn, deleteReviewBtn, editReviewBtn);

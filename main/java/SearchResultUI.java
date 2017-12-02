@@ -19,12 +19,14 @@ import javafx.scene.web.*;
 public class SearchResultUI {
 	private DBConnection db;
 	private UIController controller;
+	private GoogleMap map;
 	BorderPane layout;
 	
 	public SearchResultUI(DBConnection db, UIController ui){
 		layout = new BorderPane();
 		this.db = db;
 		controller = ui;
+		map = new GoogleMap();
 	}
 	public void build(String loc, String kw, List<String> searchResults){
 		Label searchTitle = new Label("Search results for '" + kw + "' at '" + loc + "': ");
@@ -86,9 +88,9 @@ public class SearchResultUI {
 			container.getChildren().add(detailsWrapperH);
 		}
 		VBox mapContainer = new VBox(15);
-		System.out.println("first rst: " + firstRst.getName());
+		//System.out.println("first rst: " + firstRst.getName());
 		if(firstRst != null){
-			GoogleMap map = new GoogleMap(firstRst.getAddress());
+			map.markLocation(firstRst.getAddress());
 		    mapContainer.getChildren().add(map.getMap());
 			layout.setRight(mapContainer);
 		}

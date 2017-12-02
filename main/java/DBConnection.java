@@ -84,7 +84,7 @@ public class DBConnection {
     	return executeQuery(sqlQ);    	
     }
     
-    public void insertUser(User newUser){
+    public void insertUser(User newUser, byte[] salt){
     	java.sql.Date birthday = null;
     	boolean validZipcode = true;
     	String zip = newUser.getZipcode();
@@ -109,13 +109,23 @@ public class DBConnection {
     	}
     	if(validZipcode){
 	    	System.out.println("birthday: " + birthday);
-			String sqlQ = "INSERT INTO users \n"
-						+ " SET username = '" + newUser.getUsername() + "',\n"
-						+ "  email = '" + newUser.getEmail() + "',\n"
-						+ "  birthdate = '" + birthday + "',\n"
-						+ "  privilege = 0,\n" 
-						+ "  password = '" + newUser.getPassword() + "',\n"
-						+ "  fk_location = (SELECT idlocations FROM locations WHERE zipcode = '" + zip + "' LIMIT 1)";	
+			String sqlQ = "INSERT INTO users (username, email, birthdate, privilege, password, salt, fk_location)"
+											+ " values (?, ?, ?, ?, ?, ?, ?)";
+	    	try {
+				PreparedStatement insertUser = connection.prepareStatement(sqlQ);
+				ResultSet rs = getQueryResultSet("(SELECT idlocations FROM locations WHERE zipcode = '" + zip + "' LIMIT 1)");
+				insertUser.setString(1, newUser.getUsername());
+				insertUser.setString(2, newUser.getEmail());
+				insertUser.setString(3, newUser.getBday());
+				insertUser.setInt(4, 0);
+				insertUser.setString(5, newUser.getPassword());
+				insertUser.setBytes(6, salt);
+				insertUser.setInt(7, rs.getInt("idlocations"));
+				System.out.println(insertUser.toString());
+				insertUser.execute();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 			System.out.println(sqlQ);
 			executeQuery(sqlQ, "User: " + newUser.getUsername() + " added");
     	}
@@ -420,11 +430,11 @@ public class DBConnection {
     	return queryRes;
     }
     
-    public User getUserFromDB(String username, String password){
+    public User getUserFromDB(String username, String hashedPassword){
 		User usr = null;
     	try{
-			ResultSet rs = statement.executeQuery("Select * from users Where username='" + username + "' and password='" + password + "'");
-			System.out.println("result of q: 269 " + rs);
+			ResultSet rs = statement.executeQuery("Select * from users Where username='" + username + "' and password='" + hashedPassword + "'");
+			System.out.println("name; " + username + " pw: " + hashedPassword + " result of q: 428 " + rs);
 			if(rs.next()) {
 			    if(rs.getInt(1) > 0){
 					System.out.println(rs.getInt(1));
@@ -447,6 +457,24 @@ public class DBConnection {
     		ex.printStackTrace();
     	}
 		return usr;
+    }
+    
+    public byte[] getUserSalt(String username){
+    	byte[] salt = null;
+    	try{
+    		String sqlQ = "SELECT * FROM users WHERE username = '" + username + "' LIMIT 1";
+    		ResultSet res = getQueryResultSet(sqlQ);
+    		if(res != null){
+    			Blob blob = res.getBlob("salt");
+    			salt = blob.getBytes(1, (int)blob.length());
+    			blob.free();
+    		}
+    	}
+    	catch(SQLException ex){
+    		System.out.println("Something with wrong when getting data from db!");
+    		ex.printStackTrace();
+    	}
+    	return salt;
     }
     
     public Restaurant getRestaurantFromDB(String name, String addrs){

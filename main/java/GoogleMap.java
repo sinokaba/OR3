@@ -11,25 +11,19 @@ public class GoogleMap {
 	private WebView webView;
 	private WebEngine webEngine;
 	
-	public GoogleMap(String initialAddress){
+	public GoogleMap(){
 		webView = new WebView();
 		webEngine = webView.getEngine();
 	    final java.net.URL urlGoogleMaps = getClass().getResource("/html/googleMaps.html");
 	    webEngine.load(urlGoogleMaps.toExternalForm());
 	    webEngine.setJavaScriptEnabled(true);
 		webView.setMaxSize(width, height);
-		markLocation(initialAddress);
+		//markLocation(initialAddress);
 	}
 	
 	public void markLocation(String address){
 		System.out.println("address: " + address);
-		webEngine.getLoadWorker().stateProperty().addListener(new ChangeListener<State>() {
-            public void changed(ObservableValue ov, State oldState, State newState) {
-                if (newState == State.SUCCEEDED) {
-                   webEngine.executeScript("document.goToLocation(\"" + address + "\")");
-                }
-            }
-        });
+    	webEngine.executeScript("document.goToLocation(\"" + address + "\")");
 	}
 	
 	public WebView getMap(){

@@ -8,14 +8,14 @@ public class PasswordEncryption {
 
 	public String getSecurePassword(String password){
 		String securePassword = password;
-		try {
-			byte[] salt = getSalt();
-			securePassword = generateHash(password, salt);
-			System.out.println(verifyPassword(securePassword, password, salt));
-		} catch (NoSuchAlgorithmException | NoSuchProviderException e) {
-			e.printStackTrace();
-		}
+		byte[] salt = getSalt();
+		securePassword = generateHash(password, salt);
+		System.out.println(verifyPassword(securePassword, password, salt));
 		return securePassword;
+	}
+	
+	public String getSecurePassword(String password, byte[] salt){
+		return generateHash(password, salt);
 	}
 	
 	public boolean verifyPassword(String hashedPassword, String password, byte[] salt){
@@ -50,20 +50,26 @@ public class PasswordEncryption {
     }
      
     //Add salt
-    private static byte[] getSalt() throws NoSuchAlgorithmException, NoSuchProviderException
-    {
-        //Always use a SecureRandom generator
-        SecureRandom sr = SecureRandom.getInstance("SHA1PRNG", "SUN");
-        //Create array for salt
-        byte[] salt = new byte[16];
-        //Get a random salt
-        sr.nextBytes(salt);
-        //return salt
+    public static byte[] getSalt(){
+    	byte[] salt = null;
+    	try{
+	        //Always use a SecureRandom generator
+	        SecureRandom sr = SecureRandom.getInstance("SHA1PRNG", "SUN");
+	        //Create array for salt
+        	salt = new byte[16];
+	        //Get a random salt
+	        sr.nextBytes(salt);
+	        //return salt
+    	}
+    	catch(NoSuchAlgorithmException | NoSuchProviderException ex){
+    		System.out.println("Unable to generate salt!");
+    		ex.printStackTrace();
+    	}
         return salt;
     }
     
     public String tempPasswordGenerator(){
-        String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890~`!@#$%^&*";
         StringBuilder tempPassword = new StringBuilder();
         Random rnd = new Random();
         while (tempPassword.length() < 8) { // length of the random string.

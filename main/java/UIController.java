@@ -35,6 +35,8 @@ public class UIController extends Application{
 	private User currentUser;
 	private ValidateForm formValidation;
 	private Popup errDialog, confirmDialog;
+	private PasswordEncryption pwEncrypt;
+	private EmailGenerator emailGen;
 	
 	private final int FIELD_WIDTH = 258;
 	private final int FIELD_HEIGHT = 38;
@@ -49,13 +51,15 @@ public class UIController extends Application{
 		
 		mapsApi = new GoogleMapsService("AIzaSyCP-qr7umfKFSrmnbOB-cl-djIhD5p1mJ8");
 		db = new DBConnection(mapsApi);		
+		pwEncrypt = new PasswordEncryption();
+		emailGen = new EmailGenerator();
 		
 		errDialog = new Popup("err", currentScene.getWindow());
 		formValidation = new ValidateForm(db, errDialog);
 		confirmDialog = new Popup("conf", currentScene.getWindow());
 		
 		rstPage = new RestaurantUI(db, currentScene.getWindow());
-		loginPage = new LoginUI(FIELD_WIDTH, FIELD_HEIGHT, currentScene.getWindow(), formValidation, db);
+		loginPage = new LoginUI(FIELD_WIDTH, FIELD_HEIGHT, currentScene.getWindow(), formValidation, db, this);
 		homePage = new HomeUI(false, db, mapsApi);
 		userRegPage = new UserRegistrationUI(FIELD_WIDTH, FIELD_HEIGHT);
 		searchResultPage = new SearchResultUI(db, UIController.this);
@@ -163,31 +167,10 @@ public class UIController extends Application{
 	}
 	
 	public void loginView(){
+		loginPage.buildPage(emailGen, pwEncrypt);
 		primaryStage.setTitle("Login to your account - OR3");
 		root.setCenter(loginPage.getLayout());
 		loginPage.backBtn.setOnAction(e -> homeView());	
-		loginPage.loginBtn.setOnAction(new EventHandler<ActionEvent>() {
-	        @Override
-	        public void handle(ActionEvent e) {
-	        	String enteredUsername = loginPage.getUsernameEntered();
-	        	String enteredPassword = loginPage.getPasswordEntered();
-	        	//refactor this later
-	        	if(enteredUsername.trim().length() <= 0 || enteredPassword.trim().length() <= 0){
-	        		errDialog.showAlert("Error form.", "Please fill out all the fields.");
-	        	}
-	        	else{
-		        	currentUser = db.getUserFromDB(enteredUsername, enteredPassword);
-		        	if(currentUser != null){
-			        	loginPage.clearFields();
-		        		loginUser(currentUser);
-		        	}
-		        	else{
-		        		System.out.println(currentUser + " " + enteredUsername);
-		        		errDialog.showAlert("Error form.", "User not found with that password.");	        		
-		        	}
-	        	}
-	        }
-	    });
 	}
 	
 	public void userRegView(){
@@ -204,8 +187,13 @@ public class UIController extends Application{
 	        	String pwV = userRegPage.getPasswordV();
 	        	String zip = userRegPage.getZipcode();
 	        	if(formValidation.validUserRegistration(pw, pwV, username, email, zip, userRegPage.layout)){
-            		currentUser = new User(username, pw, userRegPage.getBirthday(), email, zip, 0);
-            		db.insertUser(currentUser);
+            		@SuppressWarnings("static-access")
+					byte[] salt = pwEncrypt.getSalt();
+            		
+	        		String hashedPw = pwEncrypt.getSecurePassword(pw, salt);
+	        		currentUser = new User(username, hashedPw, userRegPage.getBirthday(), email, zip, 0);
+            		
+            		db.insertUser(currentUser, salt);
             		confirmDialog.showAlert("Thanks for creating an account!", "Successfully created your account!");
 	        		loginUser(currentUser);
 	        	}
@@ -265,9 +253,10 @@ public class UIController extends Application{
 	}
 	
 	public void loginUser(User user){
+		currentUser = user;
 		user.loggedIn();
 		String userCreds = user.getUsername();
-		if(currentUser.getPrivilege() == 1){
+		if(user.getPrivilege() == 1){
 			userCreds = user.getUsername() + "(Admin)";
 		}
 		nav.userLogin(userCreds);

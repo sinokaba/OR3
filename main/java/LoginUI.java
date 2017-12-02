@@ -22,11 +22,10 @@ import javafx.scene.text.Text;
 import javafx.stage.Window;
 
 public class LoginUI{
-	private CustomTextField usernameField;
+	private CustomTextField usernameField, emailField, tempPwField;
 	private PasswordField passwordField;
 	private GridPane layout;
-	private Alert forgotPwDialog;
-	private CustomTextField emailField;
+	private Alert forgotPwDialog, tempPwDialog;
 	private Popup errDialog;
 	private ValidateForm validator;
 	private int fieldHeight;
@@ -34,18 +33,23 @@ public class LoginUI{
 	final Pattern VALID_EMAIL_ADDRESS_REGEX = 
 			Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
 	private String tempPassword;
+	private Window win;
+	private DBConnection db;
+	private User currentUser;
+	private UIController con;
 	Button loginBtn, backBtn;
 	
-	public LoginUI(int width, int height, Window window, ValidateForm validator, DBConnection db){
+	public LoginUI(int width, int height, Window window, ValidateForm validator, DBConnection db, UIController con){
 		this.validator = validator;
 		fieldHeight = height;
 		fieldWidth = width;
-		buildPage(db, window);
+		win = window;
+		this.db = db;
+		this.con = con;
+		//buildPage(db, window);
 	}
 	
-	public void buildPage(DBConnection db, Window win){
-		EmailGenerator emailGen = new EmailGenerator();
-		PasswordEncryption pwEncrypt = new PasswordEncryption();
+	public void buildPage(EmailGenerator email, PasswordEncryption pass){
 		createDialog("Forgot password", "myemail@gmail.com", win);
 		errDialog = new Popup("err", win);
 		Popup confDialog = new Popup("conf", win);
@@ -72,12 +76,15 @@ public class LoginUI{
 					if(validator.checkEmail(userEmail, false)){
 						//confDialog.createDialog("Verification sent!", "Check your email. A temporary password has been sent!");
 						confDialog.createDialog("Verification sent!", "Check your email. Your password has been sent!");
-						//tempPassword = pwEncrypt.tempPasswordGenerator();
-						
-						emailGen.sendMail(userEmail, "This is neither secure nor practical. <br>"
+						tempPassword = pass.tempPasswordGenerator();
+						email.sendMail(userEmail, "This is neither secure nor practical. <br>"
 								+ "Note to self: generate temp password and email that instead. <br> <br>"
 								+ "Anyways your password is: " + db.getUserPassword(userEmail) + " <br> from or3 java application.");
 						confDialog.userConfirmation();
+						if(tempPwDialog.showAndWait().get() == ButtonType.OK){
+							
+						};
+						
 					}
 				}
 				emailField.clear();
@@ -95,6 +102,37 @@ public class LoginUI{
 				usernameField.focusedProperty()
 				));
 		
+		loginBtn.setOnAction(new EventHandler<ActionEvent>() {
+	        @Override
+	        public void handle(ActionEvent e) {
+	        	String enteredUsername = getUsernameEntered();
+	        	String enteredPassword = getPasswordEntered();
+	        	//refactor this later
+	        	if(enteredUsername.trim().length() <= 0 || enteredPassword.trim().length() <= 0){
+	        		errDialog.showAlert("Error form.", "Please fill out all the fields.");
+	        	}
+	        	else{
+	        		if(db.rowExists("users", "username", enteredUsername)){
+		        		byte[] salt = db.getUserSalt(enteredUsername);
+		        		System.out.println("controller 182 salt: " + salt);
+		        		String hashedPassword = pass.getSecurePassword(enteredPassword, salt);
+		        		//get user hashed password from db and compare
+			        	currentUser = db.getUserFromDB(enteredUsername, hashedPassword);
+			        	if(currentUser != null){
+				        	clearFields();
+			        		con.loginUser(currentUser);
+			        	}
+			        	else{
+			        		System.out.println(currentUser + " " + enteredUsername);
+			        		errDialog.showAlert("Error form.", "User not found with that password.");	        		
+			        	}
+	        		}
+	        		else{
+	        			errDialog.showAlert("Error form.", "User not found with that password.");	     
+	        		}
+	        	}
+	        }
+	    });
 		backBtn = new Button("Back");
 		backBtn.getStyleClass().add("main-button");
 		HBox hbBackBtn = new HBox(10);
@@ -154,6 +192,24 @@ public class LoginUI{
 		);
 	}
 	
+	public void createDialog(String headerTxt, String title, String placeholder, Window win){
+		tempPwDialog = new Alert(Alert.AlertType.CONFIRMATION);
+		tempPwDialog.setTitle("Forgot password.");
+		tempPwDialog.initOwner(win);
+		tempPwDialog.setHeaderText(headerTxt);
+		DialogPane tempPw = tempPwDialog.getDialogPane();
+		tempPw.setGraphic(null);
+		
+		tempPwField = new CustomTextField(placeholder, 40, 250);
+		
+		HBox contentContainer = new HBox(15);
+		GridPane.setVgrow(tempPwField, Priority.ALWAYS);
+		GridPane.setHgrow(tempPwField, Priority.ALWAYS);
+		contentContainer.getChildren().addAll(new Label("Code: "), tempPwField);
+		tempPw.setContent(contentContainer);
+	
+	}
+	
 	public GridPane getLayout(){
 		return layout;
 	}
@@ -171,5 +227,9 @@ public class LoginUI{
 			passwordField.clear();			
 		}
 	}
-}
+	
+	public User getUser(){
+		return currentUser;
+	}
 
+}
