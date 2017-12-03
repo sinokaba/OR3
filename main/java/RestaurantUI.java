@@ -231,6 +231,7 @@ public class RestaurantUI {
 			        	db.deleteReview(review);
 			    		if(reviews.size() == 1){
 			    			reviews.clear();
+				    		rst.resetReviews();
 			    		}
 			    		else{
 			    			rst.removeReview(user, review);
@@ -274,6 +275,9 @@ public class RestaurantUI {
 	        		if(userAction == ButtonType.OK && !(commentField.getText().trim().length() <= 0 || getRating() == -1)){
 			    		//review posted by user is validated and added to db
 	        			Double rating = getRating();
+	        			if(rating > 5.0){
+	        				rating = 5.0;
+	        			}
 			    		Review newReview = new Review(rating, commentField.getText(), user, rst);
 			    		rst.addReview(user, newReview);
 			    		db.insertReview(newReview);

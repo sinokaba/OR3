@@ -28,7 +28,9 @@
  
     document.zoomOut = function zoomOut() {
         var zoomLevel = document.map.getZoom();
-        if (zoomLevel > 0) document.map.setZoom(zoomLevel - 1);
+        if(zoomLevel > 0){
+          document.map.setZoom(zoomLevel - 1);
+        }
     }
  
     document.setMapTypeRoad = function setMapTypeRoad() {
@@ -48,14 +50,14 @@
         console.log("address " + searchString)
         document.geocoder.geocode( {'address': searchString}, function(results, status) {
           if (status == google.maps.GeocoderStatus.OK) {
-            document.removeAllMarkers();
+            focusMarker(searchString);
             console.log("location: " + results[0].geometry.location)
             if(!addedLocations.includes(searchString)){
               var marker = new google.maps.Marker({
                 position: results[0].geometry.location,
                 map: document.map,
                 title: searchString,
-                icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                icon: "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
               })
               var infowindow = new google.maps.InfoWindow({
                 content: '<div><strong>' + rstName + '</strong><br>' + searchString + '</div>'
@@ -64,14 +66,31 @@
                 infowindow.open(document.map, marker);
               });
               document.map.setCenter(results[0].geometry.location);
+              document.map.setZoom(16);
               markers.push(marker);
               addedLocations.push(searchString)
             }
+            else{
+              //markers[addedLocations.indexOf(searchString)].setIcon("http://maps.google.com/mapfiles/ms/icons/red-dot.png")
+              document.map.setCenter(results[0].geometry.location);
+            }
           } else {
-            alert("Geocode was not successful for the following reason: " + status);
+            console.log("Geocode was not successful for the following reason: " + status);
           }
         });
     }
+
+    function focusMarker(loc){
+      for (var i = 0; i < markers.length; i++) {
+        if(markers[i].title == loc){
+            markers[i].setIcon("http://maps.google.com/mapfiles/ms/icons/red-dot.png");
+        }
+        else{
+            markers[i].setIcon("http://maps.google.com/mapfiles/ms/icons/blue-dot.png");          
+        }
+      }
+    }
+
     document.removeAllMarkers = function removeAllMarkers() {
       addedLocations = [];
       //Loop through all the markers and remove
@@ -80,6 +99,7 @@
       }
       markers = [];
     };
+    document.goToLocation("3636 Horsebarn Hill Road Extension, CT, United States", "Dairy");
     document.goToLocation("3636 Horsebarn Hill Road Extension, CT, United States", "Dairy");
   }
 </script>

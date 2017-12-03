@@ -30,6 +30,11 @@ public class Restaurant {
 		this.totalRating = totalRating;
 	}
 	
+	public void resetReviews(){
+		numReviews = 0;
+		totalRating = 0;
+	}
+	
 	public void setId(int id){
 		System.out.println("setting id of restaurant to: " + id);
 		restaurantId = id;

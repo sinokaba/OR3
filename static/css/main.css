@@ -308,6 +308,7 @@
  
 .rst-link:hover{
 	-fx-cursor: hand;
+	-fx-text-fill: #FFA500;
 }
  
  /*

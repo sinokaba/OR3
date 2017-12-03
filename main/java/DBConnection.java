@@ -537,12 +537,17 @@ public class DBConnection {
 			    		rst.addLocation(locInfoRs.getString("state"), locInfoRs.getString("city"), locInfoRs.getString("zipcode"));
 			    	}
 			    	String numReviewsQ = "SELECT COUNT(*) FROM reviews WHERE fk_restaurant = " + rstId;
-			    	String totalReviewsRatingQ = "SELECT SUM(overall_rating) AS total FROM reviews WHERE fk_restaurant = " + rstId;
 			    	ResultSet numReviewRs = getQueryResultSet(numReviewsQ);
 			    	if(numReviewRs != null && numReviewRs.getInt(1) > 0){
 			    			rst.setNumReviews(numReviewRs.getInt(1));
+					    	String totalReviewsRatingQ = "SELECT SUM(overall_rating) AS total FROM reviews WHERE fk_restaurant = " + rstId;
 			    			ResultSet totalReviewRatingRs = getQueryResultSet(totalReviewsRatingQ);
-			    			rst.setTotalRating(totalReviewRatingRs.getDouble(1));
+			    			if(totalReviewRatingRs != null){
+			    				rst.setTotalRating(totalReviewRatingRs.getDouble(1));
+			    			}
+			    			else{
+			    				rst.setTotalRating(0);
+			    			}
 			    	}
 			    }
 			}
@@ -605,35 +610,36 @@ public class DBConnection {
     	List<Review> reviewList = new ArrayList<Review>();
     	System.out.println("getting user reviews" );
     	try{
-    		String query = "SELECT * FROM reviews WHERE fk_user = (SELECT iduser FROM users WHERE username = '" + user.getUsername() + "')";
+    		String query = "SELECT * FROM reviews WHERE fk_user = (SELECT iduser FROM users WHERE username = ?)";
     		System.out.println(query);
-    		ResultSet rs = getQueryResultSet(query);
+    		PreparedStatement stm = connection.prepareStatement(query);
+    		stm.setString(1, user.getUsername());
+    		ResultSet rs = stm.executeQuery();
     		int count = 0;
-    		if(rs != null){
-	    		while(rs.next() && count <= 10){
-	    			if(rs.getInt(1) > 0){
-	    				Date creationDate = rs.getDate("creation_date");
-	    				String comments = rs.getString("comments");
-	    				double rating = rs.getDouble("overall_rating");
-	    				int rstId = rs.getInt("fk_restaurant");
-	    				String rstQuery = "SELECT * FROM restaurants WHERE idrestaurant = " + rstId;
-	    				System.out.println(rstQuery);
-	    				ResultSet rstRs = statement.executeQuery(rstQuery);
-	    				Restaurant rst = null;
-	    				if(rstRs.next()){
-	    					if(rstRs.getInt(1) > 0){
-	    						String name = rstRs.getString("name");
-	    				    	String phone = rstRs.getString("phone");
-	    				    	rst = new Restaurant(name, phone);   					
-	    				    }
-	    				}
-	    				Review review = new Review(rating, comments, user, rst);
-	    				review.setCreationDate(creationDate);
-	    				reviewList.add(review);
-	    				count += 1;
-	    			}
-	    		}
+    		while(rs.next() && count <= 10){
+    			if(rs.getInt(1) > 0){
+    				Date creationDate = rs.getDate("creation_date");
+    				String comments = rs.getString("comments");
+    				double rating = rs.getDouble("overall_rating");
+    				int rstId = rs.getInt("fk_restaurant");
+    				String rstQuery = "SELECT * FROM restaurants WHERE idrestaurant = " + rstId;
+    				System.out.println(rstQuery);
+    				ResultSet rstRs = statement.executeQuery(rstQuery);
+    				Restaurant rst = null;
+    				if(rstRs.next()){
+    					if(rstRs.getInt(1) > 0){
+    						String name = rstRs.getString("name");
+    				    	String phone = rstRs.getString("phone");
+    				    	rst = new Restaurant(name, phone);   					
+    				    }
+    				}
+    				Review review = new Review(rating, comments, user, rst);
+    				review.setCreationDate(creationDate);
+    				reviewList.add(review);
+    				count += 1;
+    			}
     		}
+		
     	}
     	catch(SQLException e){
     		e.printStackTrace();
