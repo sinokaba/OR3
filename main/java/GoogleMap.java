@@ -6,8 +6,8 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 
 public class GoogleMap {
-	private int width = 400;
-	private int height = 225;
+	private int width = 410;
+	private int height = 230;
 	private WebView webView;
 	private WebEngine webEngine;
 	
@@ -21,9 +21,13 @@ public class GoogleMap {
 		//markLocation(initialAddress);
 	}
 	
-	public void markLocation(String address){
+	public void markLocation(String address, String name){
 		System.out.println("address: " + address);
-    	webEngine.executeScript("document.goToLocation(\"" + address + "\")");
+    	webEngine.executeScript("document.goToLocation(\"" + address + "\", \"" + name + "\")");
+	}
+	
+	public void removeMarkers(){
+    	webEngine.executeScript("document.removeAllMarkers()");
 	}
 	
 	public WebView getMap(){

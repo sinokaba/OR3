@@ -45,7 +45,7 @@ public class UserAccountUI {
 	public void buildStage(User user){
 		VBox leftPanelCont = new VBox(10);
 		Label mainTitle = new Label(user.getUsername());
-		mainTitle.getStyleClass().add("h2");
+		mainTitle.getStyleClass().add("h1");
 		Label reviewsTitle = new Label("Your Reviews");
 		reviewsTitle.getStyleClass().add("h4");
 		leftPanelCont.getChildren().addAll(mainTitle, reviewsTitle);

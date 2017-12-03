@@ -18,8 +18,8 @@ public class AutoCompleteTextField extends CustomTextField{
 	private int width, height;
 	private int maxEntries = 5;
 	
-	public AutoCompleteTextField(String ph, int w, int h){
-		super(ph, h, w);
+	public AutoCompleteTextField(String placeholder, int w, int h){
+		super(placeholder, h, w);
 		width = w;
 		height = h;
 		suggestionsPopup = new ContextMenu();
@@ -34,7 +34,7 @@ public class AutoCompleteTextField extends CustomTextField{
 		});
 	}
 	
-	public void autocomplete(DBConnection db, GoogleMapsService mapsApi){
+	public void autocomplete(String restriction, DBConnection db, GoogleMapsService mapsApi){
 		textProperty().addListener(new ChangeListener<String>(){
 			@Override
 			public void changed(ObservableValue<? extends String> observableValue, String oldStr, String newStr){
@@ -51,7 +51,7 @@ public class AutoCompleteTextField extends CustomTextField{
 						List<String> suggestions = null;
 						System.out.println(mapsApi);
 						if(mapsApi != null){
-							suggestions = mapsApi.getPlacesSuggestions(userInput);
+							suggestions = mapsApi.getPlacesSuggestions(userInput, restriction);
 						}
 						else{
 							suggestions = db.getRestaurantSuggestions(userInput, true);

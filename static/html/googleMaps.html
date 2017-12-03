@@ -6,6 +6,8 @@
 <script type="text/javascript">
   function initialize() {
     var latlng = new google.maps.LatLng(37.39822, -121.9643936);
+    var markers = [];
+    var addedLocations = [];
     var myOptions = {
       zoom: 14,
       center: latlng,
@@ -42,22 +44,43 @@
         document.map.setMapTypeId(google.maps.MapTypeId.TERRAIN);
     }
 
-    document.goToLocation = function goToLocation(searchString) {
+    document.goToLocation = function goToLocation(searchString, rstName) {
         console.log("address " + searchString)
         document.geocoder.geocode( {'address': searchString}, function(results, status) {
           if (status == google.maps.GeocoderStatus.OK) {
+            document.removeAllMarkers();
             console.log("location: " + results[0].geometry.location)
-            var marker = new google.maps.Marker({
-              position: results[0].geometry.location,
-              map: document.map
-            })
-            document.map.setCenter(results[0].geometry.location);
+            if(!addedLocations.includes(searchString)){
+              var marker = new google.maps.Marker({
+                position: results[0].geometry.location,
+                map: document.map,
+                title: searchString,
+                icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+              })
+              var infowindow = new google.maps.InfoWindow({
+                content: '<div><strong>' + rstName + '</strong><br>' + searchString + '</div>'
+              });
+              marker.addListener('click', function() {
+                infowindow.open(document.map, marker);
+              });
+              document.map.setCenter(results[0].geometry.location);
+              markers.push(marker);
+              addedLocations.push(searchString)
+            }
           } else {
             alert("Geocode was not successful for the following reason: " + status);
           }
         });
     }
-    //document.goToLocation("3636 Horsebarn Hill Road Extension, CT, United States");
+    document.removeAllMarkers = function removeAllMarkers() {
+      addedLocations = [];
+      //Loop through all the markers and remove
+      for (var i = 0; i < markers.length; i++) {
+          markers[i].setMap(null);
+      }
+      markers = [];
+    };
+    document.goToLocation("3636 Horsebarn Hill Road Extension, CT, United States", "Dairy");
   }
 </script>
 </head>

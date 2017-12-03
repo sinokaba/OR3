@@ -306,6 +306,26 @@
  * hypertext custom styling
  */
  
- .rst-link:hover{
- 	-fx-cursor: hand;
- }
+.rst-link:hover{
+	-fx-cursor: hand;
+}
+ 
+ /*
+  * list view style
+  */
+
+.search-results.list-view{
+	-fx-background-color: #46627f;
+}
+
+.search-results.list-view .list-cell{
+	-fx-background-color: #46627f;
+	-fx-fill: #ffffff !important;
+	-fx-border-color: #46627f;
+	-fx-border-width: 0 0 2 0; 
+	-fx-border-color: white;
+}
+
+.search-results.list-view .list-cell:selected{
+	-fx-background-color: #3498db;
+}

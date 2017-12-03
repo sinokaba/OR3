@@ -29,7 +29,7 @@ public class RestaurantRegUI {
 		
 		Label address = form.createLabel("Address:");
 		addressField = new AutoCompleteTextField("Enter street address.", fieldW, fieldH);
-		addressField.autocomplete(null, mapsApi);
+		addressField.autocomplete("address", null, mapsApi);
 		createFieldLabelPair(layout, addressField, address, 2);
 		
 		Label zipcode = form.createLabel("Zipcode:");

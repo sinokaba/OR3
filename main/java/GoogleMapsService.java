@@ -16,9 +16,11 @@ import com.google.maps.PlacesApi;
 import com.google.maps.QueryAutocompleteRequest;
 import com.google.maps.errors.ApiException;
 import com.google.maps.model.AutocompletePrediction;
+import com.google.maps.model.ComponentFilter;
 import com.google.maps.model.DirectionsResult;
 import com.google.maps.model.DistanceMatrix;
 import com.google.maps.model.GeocodingResult;
+import com.google.maps.model.PlaceAutocompleteType;
 
 public class GoogleMapsService {
 	GeoApiContext geoApi;
@@ -28,13 +30,22 @@ public class GoogleMapsService {
 		geoApi = new GeoApiContext.Builder().apiKey(apiKey).build();
 	}
 	
-	public List<String> getPlacesSuggestions(String keyword){
+	public List<String> getPlacesSuggestions(String keyword, String restriction){
 		List<String> results = new ArrayList<String>();
 		//List<CustomMenuItem> results = new LinkedList<>();
 		int maxSuggestions = 4;
 		if(keyword.trim().length() >= 2){
 			System.out.println("k: " + keyword);
-			PlaceAutocompleteRequest places = PlacesApi.placeAutocomplete(geoApi, keyword);
+			PlaceAutocompleteRequest places = null;
+			if(restriction == null){
+				places = PlacesApi.placeAutocomplete(geoApi, keyword).components(ComponentFilter.country("US"));								
+			}
+			else if(restriction.equals("cities")){
+				places = PlacesApi.placeAutocomplete(geoApi, keyword).type(PlaceAutocompleteType.CITIES).components(ComponentFilter.country("US"));
+			}
+			else if(restriction.equals("address")){
+				places = PlacesApi.placeAutocomplete(geoApi, keyword).type(PlaceAutocompleteType.ADDRESS).components(ComponentFilter.country("US"));				
+			}
 			AutocompletePrediction[] placesOptions = places.awaitIgnoreError();
 			if(placesOptions.length < 5){
 				maxSuggestions = placesOptions.length;

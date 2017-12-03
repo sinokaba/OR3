@@ -2,9 +2,12 @@ import java.util.List;
 
 import org.controlsfx.control.Rating;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.image.Image;
@@ -39,11 +42,9 @@ public class SearchResultUI {
 		scroll.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
 		scroll.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
 		
-		VBox container = new VBox(30);
-		Insets paddingBottom = new Insets(10, 10, 20, 10);
-		container.setPrefWidth(630);
-		container.setPadding(paddingBottom);
-		//container.getStyleClass().add("container");
+		ListView<HBox> searchRes = new ListView<HBox>();
+		searchRes.setPrefSize(630, 500);
+		searchRes.getStyleClass().add("search-results");
 		Restaurant firstRst = null;
 		for(String res : searchResults){
 			Restaurant r = db.getRestaurantFromDB(res, null);
@@ -60,10 +61,10 @@ public class SearchResultUI {
 			        controller.restaurantView(r);
 			    }
 			});
-			Label lbl2 = new Label("Address: " + r.getAddress());
-			lbl2.getStyleClass().add("p");
-			Label lbl3 = new Label("Phone: " + r.getPhone());
-			lbl3.getStyleClass().add("p");
+			Label address = new Label("Address: " + r.getAddress());
+			address.getStyleClass().add("p");
+			Label phone = new Label("Phone: " + r.getPhone());
+			phone.getStyleClass().add("p");
 			
 			Rating ratingStars = new Rating();
 			ratingStars.setPartialRating(true);
@@ -72,7 +73,7 @@ public class SearchResultUI {
 			ratingStars.getStyleClass().addAll("stars-small", "overall-rating");
 			ratingStars.setDisable(true);
 			
-			detailsWrapperV.getChildren().addAll(rstName, ratingStars, lbl2, lbl3);
+			detailsWrapperV.getChildren().addAll(rstName, ratingStars, address, phone);
 			Rectangle rec = new Rectangle(70, 70);
 			rec.getStyleClass().add("rst-link");
 			rec.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -82,19 +83,28 @@ public class SearchResultUI {
 			    }
 			});
 			detailsWrapperH.getChildren().addAll(rec, detailsWrapperV);
-			detailsWrapperH.setStyle("-fx-border-color: transparent transparent white transparent; "
-							        + "-fx-border-width: 0 0 2 0; "
-							        + "-fx-border-style: dashed solid solid solid;");
-			container.getChildren().add(detailsWrapperH);
+			searchRes.getItems().add(detailsWrapperH);
 		}
 		VBox mapContainer = new VBox(15);
 		//System.out.println("first rst: " + firstRst.getName());
 		if(firstRst != null){
-			map.markLocation(firstRst.getAddress());
+			map.removeMarkers();
+			map.markLocation(firstRst.getAddress(), firstRst.getName());
 		    mapContainer.getChildren().add(map.getMap());
 			layout.setRight(mapContainer);
 		}
-	    scroll.setContent(container);
+		
+		searchRes.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<HBox>(){
+		    @Override
+		    public void changed(ObservableValue<? extends HBox> observable, HBox oldValue, HBox newValue){
+		    	String address = ((Label)((VBox)newValue.getChildren().get(1)).getChildren().get(2)).getText();
+		    	String name = ((Label)((VBox)newValue.getChildren().get(1)).getChildren().get(0)).getText();
+		    	System.out.println("Selected item: " + address);
+		        map.markLocation(address, name);
+		    }
+		});
+		
+	    scroll.setContent(searchRes);
 		scroll.getStyleClass().add("scroll-fill");
 		layout.setCenter(scroll);
 	}

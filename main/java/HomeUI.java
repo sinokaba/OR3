@@ -40,11 +40,11 @@ public class HomeUI {
 	    Pane buffer = new Pane();					
 		grid.add(buffer, 2, 0);
 		createSearchOptions();
-		locationSearchField = new AutoCompleteTextField("US state, city, or zipcode.", 300, 44);
-		locationSearchField.autocomplete(null, mapsApi);
+		locationSearchField = new AutoCompleteTextField("US state or city :).", 300, 44);
+		locationSearchField.autocomplete("cities", null, mapsApi);
 		//restaurantSearchField = new AutoCompleteTextField("of Restaurant...", 420, 44);
 		restaurantSearchField = new AutoCompleteTextField("Restaurant name or keyword.", 420, 44);
-		restaurantSearchField.autocomplete(db, null);
+		restaurantSearchField.autocomplete(null, db, null);
 		searchBtn = new Button("Search");
 		searchBtn.getStyleClass().addAll("main-button", "search-button");
 		searchBtn.defaultButtonProperty().bind(Bindings.or(
