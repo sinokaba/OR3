@@ -64,7 +64,7 @@ public class UIController extends Application{
 		userRegPage = new UserRegistrationUI(FIELD_WIDTH, FIELD_HEIGHT);
 		searchResultPage = new SearchResultUI(db, UIController.this);
 		rstRegPage = new RestaurantRegUI(mapsApi, FIELD_WIDTH, FIELD_HEIGHT);
-		userPage = new UserAccountUI(db, currentScene.getWindow(), confirmDialog);
+		userPage = new UserAccountUI(db, currentScene.getWindow(), confirmDialog, this);
 	}
 	public static void main(String[] args) {
 		launch(args);
@@ -192,7 +192,7 @@ public class UIController extends Application{
             		
 	        		String hashedPw = pwEncrypt.getSecurePassword(pw, salt);
             		
-            		db.insertUser(new User(username, hashedPw, userRegPage.getBirthday(), email, zip, 0), salt);
+            		db.insertUser(new User(username, hashedPw, userRegPage.getBirthday(), email, zip), salt);
             		confirmDialog.showAlert("Thanks for creating an account!", "Successfully created your account!");
 	        		loginView();
 	        	}

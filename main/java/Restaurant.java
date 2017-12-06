@@ -1,5 +1,6 @@
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Restaurant {
@@ -9,11 +10,13 @@ public class Restaurant {
 	double totalRating = 0;
 	private int minPrice = 0;
 	private int maxPrice = 0;
+	private ArrayList<String> tags;
 	HashMap<User, Review> reviews = new HashMap<User, Review>();
 
 	public Restaurant(String name, String phone){
 		this.name = name;
 		this.phone = phone;
+		tags = new ArrayList<String>();
 	}
 	
 	public void addLocation(String state, String city, String zip){
@@ -113,6 +116,16 @@ public class Restaurant {
 	public int getId(){
 		System.out.println("rst id: " + restaurantId);
 		return restaurantId;
+	}
+	
+	public void addTag(String tag){
+		if(tags.size() < 3){
+			tags.add(tag);
+		}
+	}
+	
+	public ArrayList<String> getTags(){
+		return tags;
 	}
 	
 	@Override

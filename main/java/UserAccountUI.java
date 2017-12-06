@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.WordUtils;
@@ -15,8 +16,10 @@ import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -33,22 +36,40 @@ public class UserAccountUI {
 	private DBConnection db;
 	private Popup confirm;
 	private Window win;
+	private UIController ctrl;
 	Button deleteAccount;
 	
-	public UserAccountUI(DBConnection db, Window win, Popup conf){
+	public UserAccountUI(DBConnection db, Window win, Popup conf, UIController control){
 		layout = new BorderPane();
 		this.db = db;
 		confirm = conf;
 		this.win = win;
+		ctrl = control;
 	}
 	
 	public void buildStage(User user){
+		List<Review> reviewList = db.getUserReviews(user);
+		
+		int numRst = 0;
+		double avgRating = 0;
+		double highestRating = 0;
+		double lowestRating = 100;
+		
 		VBox leftPanelCont = new VBox(10);
-		Label mainTitle = new Label(user.getUsername());
-		mainTitle.getStyleClass().add("h1");
-		Label reviewsTitle = new Label("Your Reviews");
-		reviewsTitle.getStyleClass().add("h4");
-		leftPanelCont.getChildren().addAll(mainTitle, reviewsTitle);
+		GridPane reviewContHeader = new GridPane();
+		ColumnConstraints left = new ColumnConstraints();
+		left.setPercentWidth(48);
+		ColumnConstraints right = new ColumnConstraints();
+		right.setPercentWidth(48);
+		reviewContHeader.getColumnConstraints().addAll(left, right);
+		reviewContHeader.setPrefWidth(590);
+		reviewContHeader.setStyle("-fx-border-width: 0 0 2 0;-fx-border-color: white;");
+		
+		Label reviewsTitleLbl = new Label("Your Reviews");
+		reviewsTitleLbl.getStyleClass().add("h2");
+		
+		leftPanelCont.getChildren().addAll(reviewContHeader, reviewsTitleLbl);
+		
 		ScrollPane userReviews = new ScrollPane();
 		userReviews.setStyle("-fx-background-color: #34495e !important");
 		userReviews.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
@@ -61,13 +82,29 @@ public class UserAccountUI {
 		userReviews.setContent(leftPanelCont);
 		layout.setLeft(userReviews);
 		
-		List<Review> reviewList = db.getUserReviews(user);
 		VBox userReviewsList = new VBox(6);
+		ArrayList<String> rstAdded = new ArrayList<String>();
 		if(reviewList != null){
 			for(Review review : reviewList){
+				if(!rstAdded.contains(review.getRestaurantName())){
+					rstAdded.add(review.getRestaurantName());
+					numRst += 1;
+				}
+				if(review.getRating() > highestRating){
+					highestRating = review.getRating();
+				}
+				if(review.getRating() < lowestRating){
+					lowestRating = review.getRating();
+				}
 				Label rstName = new Label(review.getRestaurantName());
-				rstName.getStyleClass().add("h4");
-				Label author = new Label("Author: " + review.getUserName() + " on " + review.getCreationDate());
+				rstName.setOnMouseClicked(new EventHandler<MouseEvent>(){
+					@Override
+					public void handle(MouseEvent e){
+						ctrl.restaurantView(db.getRestaurantFromDB(review.getRestaurantName(), null));
+					}
+				});
+				rstName.getStyleClass().addAll("h4", "rst-link");
+				Label author = new Label("On " + review.getCreationDate());
 				author.getStyleClass().add("p");
 				Group commentContainer = new Group();
 				String userComments = review.getComments();
@@ -84,10 +121,11 @@ public class UserAccountUI {
 				//creating 5 star rating for each user's review
 				final Rating userRating = new Rating();
 				userRating.setPartialRating(true);
-				userRating.setMax(5);
 				userRating.setRating(review.getRating());
 				userRating.setDisable(true);
 				userRating.getStyleClass().addAll("stars-small", "user-rating");
+				
+				avgRating += review.getRating();
 				
 				//keeping track of the number of reviews and their rating
 				//used circle shape as a temporary measure for a user profile picture
@@ -101,14 +139,39 @@ public class UserAccountUI {
 		}
 		leftPanelCont.getChildren().add(userReviewsList);
 		
+		avgRating = Math.round((avgRating/reviewList.size())*100.0)/100.0;
+		highestRating = Math.round((highestRating)*100.0)/100.0;
+		
+		Label reviewCountLbl = new Label("Total Reviews: " + reviewList.size());
+		reviewCountLbl.getStyleClass().add("h4");
+		Label numRstLbl = new Label("Total Restaurants Reviewed: " + numRst);
+		numRstLbl.getStyleClass().add("h4");
+		Label avgRatingLbl = new Label("Average Rating: " + avgRating);
+		avgRatingLbl.getStyleClass().add("h4");
+		if(lowestRating == 100){
+			lowestRating = 0;
+		}
+		Label lowestRatingLbl = new Label("Lowest review rating: " + lowestRating);
+		lowestRatingLbl.getStyleClass().add("h4");
+		Label highestRatingLbl = new Label("Highest Rating: " + highestRating);
+		highestRatingLbl.getStyleClass().add("h4");
+		
+		reviewContHeader.add(reviewCountLbl, 0, 0);
+		reviewContHeader.add(numRstLbl, 1, 0);
+		reviewContHeader.add(avgRatingLbl, 0, 1);
+		reviewContHeader.add(highestRatingLbl, 1, 1);
 		
 		VBox rightPane = new VBox(20);
+		
+		Label mainTitle = new Label(user.getUsername());
+		mainTitle.getStyleClass().add("h1");
 		deleteAccount = new Button("Delete Account");
 		deleteAccount.getStyleClass().addAll("main-button", "search-button");
 		Button deleteRst = new Button("Delete Restaurant");
 		deleteRst.getStyleClass().addAll("main-button", "search-button");
 		Button deleteUser = new Button("Delete User");
-		rightPane.getChildren().add(deleteAccount);
+		rightPane.getChildren().addAll(mainTitle, deleteAccount);
+		
 		if(user.getPrivilege() == 1){
 			rightPane.getChildren().addAll(deleteRst, deleteUser);
 		}

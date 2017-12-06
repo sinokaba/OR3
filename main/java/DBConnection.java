@@ -159,6 +159,11 @@ public class DBConnection {
     	return password; 
     }
     
+    public void updateUserPassword(String email, String newPassword){
+    	String sqlQ = "UPDATE users SET password = '" + newPassword + "' WHERE email = '" + email + "'";
+    	executeQuery(sqlQ, "Successfully updated password for: " + email);
+    }
+    
     public List<String> getRestaurantSuggestions(String keyword, boolean autocomplete){
     	List<String> suggestions = new ArrayList<String>();
     	int maxCount = 10;
@@ -247,23 +252,6 @@ public class DBConnection {
     	return suggestions;    	
     }
     
-    public ResultSet getQueryResultReviews(User user, Restaurant restaurant){
-		ResultSet rs = null;
-		try {
-			String getUserIdQ = "SELECT iduser FROM users WHERE username = '" + user.getUsername() + "'";
-			ResultSet rUser = getQueryResultSet(getUserIdQ);
-			int userId = rUser.getInt(1);
-			String getRstIdQ = "SELECT idrestaurant FROM restaurants WHERE name = '" + restaurant.getName() + "'";
-			ResultSet rRst = getQueryResultSet(getRstIdQ);
-			int rstId = rRst.getInt(1);
-	    	String sqlQ = "Select * from reviews Where fk_user = " + userId + " and fk_restaurant = " + rstId + ";";
-	    	rs = getQueryResultSet(sqlQ);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return rs;
-    }
-    
 	/**
 	* This method creates an sql query for inserting a new restaurant in the db
 	* 	 
@@ -330,7 +318,8 @@ public class DBConnection {
     }
     
     public void deleteReview(Review review){
-    	String sqlQ = "DELETE FROM reviews WHERE comments = '" + review.getComments() + "' AND fk_user = " + review.getUserId();
+    	String comments = review.getComments().replace("'", "\\'");
+    	String sqlQ = "DELETE FROM reviews WHERE comments = '" + comments + "' AND fk_user = " + review.getUserId();
     	executeQuery(sqlQ, "Deleted review by " + review.getUserId());
     }
     
@@ -395,41 +384,6 @@ public class DBConnection {
         }
     }
     
-	/**
-	* This method executes the query it is given
-	* 	 
-	* @param takes two arguments, the query as a string, and the message associated with the query(determined by user)
-	* @return no return value
-	*/    
-    public void executeQuery(String query, String queryMessage){
-    	try{
-    		System.out.println("query: " + query);
-    		statement.executeUpdate(query);
-    		System.out.println(queryMessage + " successfully.");
-    	}
-    	catch(SQLException ex){
-    		System.out.println("SQl exception erro: " + ex);
-    	}      	
-    }
-
-    public boolean executeQuery(String query){
-    	boolean queryRes = false;
-    	try{
-    		//System.out.println(statements.executeUpdate(query));
-    		ResultSet rs = statement.executeQuery(query);
-    		System.out.println("result of q: " + rs);
-    		if(rs.next()) {
-    		    if(rs.getInt(1) > 0){
-    		    	queryRes = true;
-    		    }
-    		}
-    	}
-    	catch(SQLException ex){
-    		System.out.println("SQl exception erro: " + ex);
-    	}      	
-    	return queryRes;
-    }
-    
     public User getUserFromDB(String username, String hashedPassword){
 		User usr = null;
     	try{
@@ -446,7 +400,12 @@ public class DBConnection {
 			    	String locId = rs.getString("fk_location");
 			    	int privilege = rs.getInt("privilege");
 			    	int userId = rs.getInt(1);
-			    	usr = new User(name, pw, birthdate, email, locId, privilege);
+			    	if(privilege == 0){
+			    		usr = new User(name, pw, birthdate, email, locId);
+			    	}
+			    	else{
+			    		usr = new Admin(name, pw, birthdate, email, locId);
+			    	}
 			    	System.out.println("id from db of user: " + userId);
 			    	usr.setId(userId);
 			    }
@@ -473,7 +432,12 @@ public class DBConnection {
  			    	String locId = rs.getString("fk_location");
  			    	int privilege = rs.getInt("privilege");
  			    	int userId = rs.getInt(1);
- 			    	usr = new User(name, pw, birthdate, email, locId, privilege);
+ 			    	if(privilege == 0){
+ 			    		usr = new User(name, pw, birthdate, email, locId);
+ 			    	}
+ 			    	else{
+ 			    		usr = new Admin(name, pw, birthdate, email, locId);
+ 			    	}
  			    	System.out.println("id from db of user: " + userId);
  			    	usr.setId(userId);
  			    }
@@ -486,10 +450,16 @@ public class DBConnection {
  		return usr;
      }
     
-    public byte[] getUserSalt(String username){
+    public byte[] getUserSalt(String username, String email){
     	byte[] salt = null;
     	try{
-    		String sqlQ = "SELECT * FROM users WHERE username = '" + username + "' LIMIT 1";
+    		String sqlQ;
+    		if(username != null){
+    			sqlQ = "SELECT * FROM users WHERE username = '" + username + "' LIMIT 1";
+    		}
+    		else{
+    			sqlQ = "SELECT * FROM users WHERE email = '" + email + "' LIMIT 1";   			
+    		}
     		ResultSet res = getQueryResultSet(sqlQ);
     		if(res != null){
     			Blob blob = res.getBlob("salt");
@@ -549,6 +519,13 @@ public class DBConnection {
 			    				rst.setTotalRating(0);
 			    			}
 			    	}
+			    	
+			    	ResultSet tagRs = getQueryResultSet("SELECT * FROM tags WHERE fk_restaurant =" + rstId);
+			    	if(tagRs != null){
+			    		while(tagRs.next()){
+			    			rst.addTag(tagRs.getString("type"));
+			    		}
+			    	}
 			    }
 			}
     	}
@@ -588,8 +565,12 @@ public class DBConnection {
     				    	String email = userRs.getString("email");
     				    	String locId = userRs.getString("fk_location");
     				    	int privilege = userRs.getInt("privilege");
-    				    	usr = new User(name, pw, birthdate, email, locId, privilege);
-    				    	//System.out.println("id from db of user: " + userId);
+    	 			    	if(privilege == 0){
+    	 			    		usr = new User(name, pw, birthdate, email, locId);
+    	 			    	}
+    	 			    	else{
+    	 			    		usr = new Admin(name, pw, birthdate, email, locId);
+    	 			    	}    				    	//System.out.println("id from db of user: " + userId);
     				    	usr.setId(userId);    					
     				    }
     				}
@@ -688,9 +669,62 @@ public class DBConnection {
 		return res;
     }
     
+    
+    public ResultSet getQueryResultReviews(User user, Restaurant restaurant){
+		ResultSet rs = null;
+		try {
+			String getUserIdQ = "SELECT iduser FROM users WHERE username = '" + user.getUsername() + "'";
+			ResultSet rUser = getQueryResultSet(getUserIdQ);
+			int userId = rUser.getInt(1);
+			String getRstIdQ = "SELECT idrestaurant FROM restaurants WHERE name = '" + restaurant.getName() + "'";
+			ResultSet rRst = getQueryResultSet(getRstIdQ);
+			int rstId = rRst.getInt(1);
+	    	String sqlQ = "Select * from reviews Where fk_user = " + userId + " and fk_restaurant = " + rstId + ";";
+	    	rs = getQueryResultSet(sqlQ);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return rs;
+    }
+    
     public ResultSet getQueryResult(String table, String field1, String val1, String field2, String val2){
     	String sqlQ = "Select * from " + table + " Where " + field1 + "='" + val1 + "' and " + field2 + "='" + val2 + "'";
     	return getQueryResultSet(sqlQ);
+    }
+    
+	/**
+	* This method executes the query it is given
+	* 	 
+	* @param takes two arguments, the query as a string, and the message associated with the query(determined by user)
+	* @return no return value
+	*/    
+    public void executeQuery(String query, String queryMessage){
+    	try{
+    		System.out.println("query: " + query);
+    		statement.executeUpdate(query);
+    		System.out.println(queryMessage + " successfully.");
+    	}
+    	catch(SQLException ex){
+    		System.out.println("SQl exception erro: " + ex);
+    	}      	
+    }
+
+    public boolean executeQuery(String query){
+    	boolean queryRes = false;
+    	try{
+    		//System.out.println(statements.executeUpdate(query));
+    		ResultSet rs = statement.executeQuery(query);
+    		System.out.println("result of q: " + rs);
+    		if(rs.next()) {
+    		    if(rs.getInt(1) > 0){
+    		    	queryRes = true;
+    		    }
+    		}
+    	}
+    	catch(SQLException ex){
+    		System.out.println("SQl exception erro: " + ex);
+    	}      	
+    	return queryRes;
     }
     
 }

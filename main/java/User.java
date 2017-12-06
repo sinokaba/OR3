@@ -7,7 +7,7 @@ public class User {
 	*/
 	private String name, password, email, zipcode, birthday;
 	private String status = "offline";
-	private int age, privilege, userId;
+	private int age, userId;
 	private HashMap tempPassword;
 	private HashMap<Long, Review> reviews = new HashMap<Long, Review>();
 
@@ -17,11 +17,10 @@ public class User {
 	* @param takes 4 inputs, 3 string variables name, pw, birthdate, and a boolean value that specifies admin privileges
 	* @return no return value
 	*/
-	public User(String username, String pw, String birthdate, String email, String zipcode, int privilege){
+	public User(String username, String pw, String birthdate, String email, String zipcode){
 		this.name = username;
 		this.email = email;
 		this.password = pw;
-		this.privilege = privilege;
 		this.zipcode = zipcode;
 		this.birthday = birthdate; 
 	}
@@ -112,7 +111,7 @@ public class User {
 	}
 	
 	public int getPrivilege(){
-		return privilege;
+		return 0;
 	}
 	
 	public String getStatus(){

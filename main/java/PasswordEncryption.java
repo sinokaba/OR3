@@ -69,10 +69,10 @@ public class PasswordEncryption {
     }
     
     public String tempPasswordGenerator(){
-        String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890~`!@#$%^&*";
+        String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         StringBuilder tempPassword = new StringBuilder();
         Random rnd = new Random();
-        while (tempPassword.length() < 8) { // length of the random string.
+        while (tempPassword.length() < 12) { // length of the random string.
             int index = rnd.nextInt(chars.length());
             tempPassword.append(chars.charAt(index));
         }

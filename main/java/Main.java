@@ -10,7 +10,6 @@ public class Main{
 		//PasswordEncryption encryption = new PasswordEncryption();
 		//System.out.println("pw = 'hello world', hashed = " + encryption.getSecurePassword("hello world"));
 		javafx.application.Application.launch(UIController.class);
-		
 	}
 
 }

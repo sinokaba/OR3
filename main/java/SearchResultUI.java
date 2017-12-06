@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 import org.controlsfx.control.Rating;
@@ -21,14 +22,14 @@ import javafx.scene.web.*;
 
 public class SearchResultUI {
 	private DBConnection db;
-	private UIController controller;
+	private UIController ctrl;
 	private GoogleMap map;
 	BorderPane layout;
 	
 	public SearchResultUI(DBConnection db, UIController ui){
 		layout = new BorderPane();
 		this.db = db;
-		controller = ui;
+		ctrl = ui;
 		map = new GoogleMap();
 	}
 	public void build(String loc, String kw, List<String> searchResults){
@@ -46,19 +47,28 @@ public class SearchResultUI {
 		searchRes.setPrefSize(630, 500);
 		searchRes.getStyleClass().add("search-results");
 		Restaurant firstRst = null;
-		for(String res : searchResults){
-			Restaurant r = db.getRestaurantFromDB(res, null);
+		for(String rst : searchResults){
+			Restaurant r = db.getRestaurantFromDB(rst, null);
 			if(firstRst == null){
 				firstRst = r;
 			}
+			
+			HBox tagsWrapper = new HBox(8);
+			ArrayList<String> tags = r.getTags();
+			for(int i = 0; i < tags.size(); i++){
+				Label tag = new Label(tags.get(i) + " | ");
+				tag.getStyleClass().add("h5");
+				tagsWrapper.getChildren().add(tag);
+			}
+			
 			HBox detailsWrapperH = new HBox(15);
 			VBox detailsWrapperV = new VBox(2);
-			Label rstName = new Label(res);
+			Label rstName = new Label(rst);
 			rstName.getStyleClass().addAll("h4", "rst-link");
 			rstName.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			    @Override
 			    public void handle(MouseEvent event) {
-			        controller.restaurantView(r);
+			        ctrl.restaurantView(r);
 			    }
 			});
 			Label address = new Label("Address: " + r.getAddress());
@@ -73,13 +83,13 @@ public class SearchResultUI {
 			ratingStars.getStyleClass().addAll("stars-small", "overall-rating");
 			ratingStars.setDisable(true);
 			
-			detailsWrapperV.getChildren().addAll(rstName, ratingStars, address, phone);
-			Rectangle rec = new Rectangle(70, 70);
+			detailsWrapperV.getChildren().addAll(rstName, ratingStars, address, phone, tagsWrapper);
+			Rectangle rec = new Rectangle(85, 85);
 			rec.getStyleClass().add("rst-link");
 			rec.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			    @Override
 			    public void handle(MouseEvent event) {
-			        controller.restaurantView(r);
+			        ctrl.restaurantView(r);
 			    }
 			});
 			detailsWrapperH.getChildren().addAll(rec, detailsWrapperV);
