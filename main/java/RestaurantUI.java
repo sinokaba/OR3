@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -41,10 +42,13 @@ public class RestaurantUI {
 	private BorderPane layout;
 	private Popup errDialog, confDialog;
 	private Alert reviewDialog;
+	private GoogleMap map;
+	private List<Review> reviews;
 	
-	public RestaurantUI(DBConnection db, Window win){
+	public RestaurantUI(DBConnection db, Window win, GoogleMap map){
 		layout = new BorderPane();
 		this.db = db;
+		this.map = map;
 		errDialog = new Popup("err", win);
 		confDialog = new Popup("conf", win);
 		createReviewDialog("Post your review.", "Your comments.", win);
@@ -52,8 +56,10 @@ public class RestaurantUI {
 	}
 	
 	public void buildPage(Restaurant rst, User user, List<Review> reviews){
-		reviewDialog.setTitle("Review for " + rst.name);
+		this.reviews = reviews;
 		double overallRating = rst.getRating();
+
+		reviewDialog.setTitle("Review for " + rst.name);
 		
 		GridPane headerContent = new GridPane();
 		
@@ -67,35 +73,61 @@ public class RestaurantUI {
 		name.getStyleClass().add("h2");
 		headerContent.add(name, 0, 0);
 		Label phone = new Label("Phone: " + rst.getPhone());
-		phone.getStyleClass().add("h4");
+		phone.getStyleClass().add("h5");
 		headerContent.add(phone, 1, 0);
 		
 		GridPane restaurantBody = new GridPane();
 		VBox restaurantInfo = new VBox(2);
+
 		Label address = new Label("Address: " + rst.getAddress());
-		address.getStyleClass().add("h4");
+		address.getStyleClass().add("h5");
+		
+		Label stateCity = new Label(rst.getLocLevels());
+		stateCity.getStyleClass().add("h5");
+		
 		Label hours = new Label("Hours: 9am-10pm");
-		hours.getStyleClass().add("h4");
+		hours.getStyleClass().add("h5");
 		Label priceRange = new Label("Price Range: $" + rst.getPriceRange());
-		priceRange.getStyleClass().add("h4");
-		restaurantInfo.getChildren().addAll(address, hours, priceRange);
+		priceRange.getStyleClass().add("h5");
+		
+		ArrayList<String> tags = rst.getTags();
+		HBox tagCont = new HBox(7);
+		for(int i = 0; i < tags.size(); i++){
+			Label tag = new Label(tags.get(i) + "| ");
+			tag.getStyleClass().add("h4");
+			tagCont.getChildren().add(tag);
+		}
+		
+		restaurantInfo.getChildren().addAll(tagCont, address, stateCity, hours, priceRange);
 		restaurantBody.add(restaurantInfo, 0, 0);
+	
+		/*
 		Label restaurantPics = new Label("Pictures");
 		restaurantPics.getStyleClass().add("h3");		
-		restaurantBody.add(restaurantPics, 0, 2);
+		restaurantBody.add(restaurantPics, 0, 1);
 		Label restaurantMenu = new Label("Menu");
 		restaurantMenu.getStyleClass().add("h3");
-		restaurantBody.add(restaurantMenu, 5, 2);
+		restaurantBody.add(restaurantMenu, 5, 1);
+		
 		VBox menuItemCont = new VBox(5);		
 		for(int i = 0; i < 6; i++){
 			Label item = new Label("Item" + String.valueOf(i) + " - $$");
 			item.getStyleClass().add("p");
 			menuItemCont.getChildren().add(item);
 		}
-		restaurantBody.add(menuItemCont, 5, 3);
+		
+		restaurantBody.add(menuItemCont, 5, 2);
+		*/
+		VBox rstLocContainer = new VBox(10);
 		Label restaurantDirections = new Label("Location");
 		restaurantDirections.getStyleClass().add("h3");
-		restaurantBody.add(restaurantDirections, 5, 6);
+		
+		map.removeMarkers();
+		map.markLocation(rst.getAddress(), rst.getName());
+		
+		rstLocContainer.getChildren().addAll(restaurantDirections, map.getMap());
+		
+		restaurantBody.add(rstLocContainer, 0, 2);
 		
 		//placeholder images
 		/*
@@ -114,11 +146,7 @@ public class RestaurantUI {
 		reviewButtonCont.getChildren().add(addReviewBtn);
 		reviewButtonCont.setAlignment(Pos.CENTER);
 		
-		Rating ratingStars = new Rating();
-		ratingStars.setPartialRating(true);
-		ratingStars.setMax(5);
-		ratingStars.setRating(overallRating);
-		ratingStars.setDisable(true);
+		Rating ratingStars = createStarRating("large", true, overallRating);
 		Label ratingLabel = new Label(String.valueOf(overallRating));
 		ratingLabel.getStyleClass().add("h2");
 		
@@ -142,131 +170,9 @@ public class RestaurantUI {
 		
 		VBox userReviews = new VBox(12);
 		for(Review review : reviews){
-			Label author = new Label("Author: " + review.getUserName() + " on " + review.getCreationDate());
-			author.getStyleClass().add("p");
-			Group commentContainer = new Group();
-			String userComments = review.getComments();
-			if(userComments.length() >= 100){
-				//Hyperlink more = new Hyperlink("...");
-				//commentContainer.getChildren().add(more);
-				userComments = userComments.substring(0, 100) + "...";
-			}
-			//wordutils wraps around the comment string, and starts a new line if the comment exceeds a certain length
-			Label comments = new Label(WordUtils.wrap(userComments, 45));
-			comments.getStyleClass().add("p");
-			commentContainer.getChildren().add(comments);
-			
-			//creating 5 star rating for each user's review
-			final Rating userRating = new Rating();
-			userRating.setPartialRating(true);
-			userRating.setMax(5);
-			userRating.setRating(review.getRating());
-			userRating.setDisable(true);
-			userRating.getStyleClass().addAll("stars-small", "user-rating");
-			
-			//keeping track of the number of reviews and their rating
-			//used circle shape as a temporary measure for a user profile picture
-			HBox hGrid = new HBox(10);
-			VBox vGrid = new VBox(2);
-			vGrid.getChildren().addAll(userRating, commentContainer, author);
-			Circle profilePic = new Circle(20);
-			hGrid.getChildren().addAll(profilePic, vGrid);
-			
-			//All the icons used for each review
-			IconNode likeIcon = new IconNode(GoogleMaterialDesignIcons.THUMB_UP);
-	        likeIcon.setIconSize(16);
-	        likeIcon.setFill(Color.WHITE);
-	        Hyperlink likeReviewBtn = new Hyperlink("", likeIcon);
-	        
-	        IconNode dislikeIcon = new IconNode(GoogleMaterialDesignIcons.THUMB_DOWN);
-	        dislikeIcon.setIconSize(16);
-	        dislikeIcon.setFill(Color.WHITE);
-	        Hyperlink dislikeReviewBtn = new Hyperlink("", dislikeIcon);
-	        
-	        IconNode deleteIcon = new IconNode(GoogleMaterialDesignIcons.DELETE_FOREVER);
-	        deleteIcon.setIconSize(20);
-	        deleteIcon.setFill(Color.WHITE);
-	        Hyperlink deleteReviewBtn = new Hyperlink("", deleteIcon);
-			
-			IconNode editIcon = new IconNode(GoogleMaterialDesignIcons.EDIT);
-			editIcon.setIconSize(20);
-			editIcon.setFill(Color.WHITE);
-			Hyperlink editReviewBtn = new Hyperlink("", editIcon);
-
-			IconNode reportIcon = new IconNode(GoogleMaterialDesignIcons.FLAG);
-			reportIcon.setIconSize(20);
-			reportIcon.setFill(Color.WHITE);
-			Hyperlink reportReviewBtn = new Hyperlink("", reportIcon);
-			
-			IconNode favIcon = new IconNode(GoogleMaterialDesignIcons.FAVORITE);
-			favIcon.setIconSize(20);
-			favIcon.setFill(Color.WHITE);
-			Hyperlink favReviewBtn = new Hyperlink("", favIcon);
-			
-			IconNode replyIcon = new IconNode(GoogleMaterialDesignIcons.REPLY);
-			replyIcon.setIconSize(20);
-			replyIcon.setFill(Color.WHITE);
-			Hyperlink replyBtn = new Hyperlink("", replyIcon);
-			
-			if(user != null){
-				//only show certain functions when user is logged in
-				System.out.println("review by: " + review.getUserId() + " user = " + user.getId() + " n: " + user.getUsername());
-				if(review.getUserId() == user.getId()){
-					HBox userActionsCont = new HBox(3);
-					userActionsCont.getChildren().addAll(likeReviewBtn, dislikeReviewBtn, favReviewBtn, replyBtn, deleteReviewBtn, editReviewBtn);
-					vGrid.getChildren().add(userActionsCont);
-				}
-				else{
-					HBox userActionsCont = new HBox(3);
-					userActionsCont.getChildren().addAll(likeReviewBtn, dislikeReviewBtn, favReviewBtn, replyBtn, reportReviewBtn);
-					vGrid.getChildren().add(userActionsCont);
-				}
-			}
-			deleteReviewBtn.setOnAction(new EventHandler<ActionEvent>() {
-		        @Override
-		        public void handle(ActionEvent e) {
-		        	//popup dialog created to asks for confirmation whenever user deletes a review
-		        	confDialog.createDialog("Delete review.", "Are you sure you want to delete this review? It cannot be restored once deleted.");
-		    		if(confDialog.userConfirmation().get() == ButtonType.OK){
-			        	db.deleteReview(review);
-			    		if(reviews.size() == 1){
-			    			reviews.clear();
-				    		rst.resetReviews();
-			    		}
-			    		else{
-			    			rst.removeReview(user, review);
-				    		reviews.remove(review);
-			    		}
-			    		buildPage(rst, user, reviews);
-		    		}
-		        }		
-			});
-			editReviewBtn.setOnAction(new EventHandler<ActionEvent>() {
-				@Override
-				public void handle(ActionEvent e){
-					commentField.setText(review.getComments());
-					ratingField.setRating(review.getRating());
-					ButtonType userAction = reviewDialog.showAndWait().get();
-	        		if(userAction == ButtonType.OK && !(commentField.getText().trim().length() <= 0 || getRating() == -1)){
-			    		//review posted by user is validated and added to db
-	        			Double rating = getRating();
-			    		//rst.addRating(rating);
-			    		Review updatedReview = new Review(rating, commentField.getText(), user, rst);
-			    		db.updateReview(review, updatedReview);
-			    		rst.updateReview(user, review, updatedReview);
-			    		review.setComments(commentField.getText());
-			    		review.setRating(rating);
-				    	commentField.clear();
-				    	ratingField.setRating(-1);
-				    	//reload page
-			    		buildPage(rst, user, reviews);
-	        		}
-			    	commentField.clear();
-			    	ratingField.setRating(-1);
-				}
-			});
-			userReviews.getChildren().add(hGrid);
+			userReviews.getChildren().add(createUserReview(review, user, rst));
 		}
+		
 		addReviewBtn.setOnAction(new EventHandler<ActionEvent>() {
 	        @Override
 	        public void handle(ActionEvent e) {
@@ -321,8 +227,7 @@ public class RestaurantUI {
 		commentField.setPromptText("Your comments.");
 		commentField.setEditable(true);
 		commentField.setWrapText(true);
-		commentField.setMaxWidth(480);
-		commentField.setMaxHeight(270);
+		commentField.setMaxSize(480, 270);
 
 		ratingField.setPartialRating(true);
 		ratingField.setMax(5);
@@ -345,6 +250,140 @@ public class RestaurantUI {
 		        }
 		    }
 		);
+	}
+	
+	public HBox createUserReview(Review userReview, User currentUser, Restaurant rst){
+		Label author = new Label("Author: " + userReview.getUserName() + " on " + userReview.getCreationDate());
+		author.getStyleClass().add("p");
+		Group commentContainer = new Group();
+		String userComments = userReview.getComments();
+		if(userComments.length() >= 100){
+			//Hyperlink more = new Hyperlink("...");
+			//commentContainer.getChildren().add(more);
+			userComments = userComments.substring(0, 100) + "...";
+		}
+		//wordutils wraps around the comment string, and starts a new line if the comment exceeds a certain length
+		Label comments = new Label(WordUtils.wrap(userComments, 45));
+		comments.getStyleClass().add("p");
+		commentContainer.getChildren().add(comments);
+		
+		//creating 5 star rating for each user's review
+		final Rating userRating = createStarRating("small", true, userReview.getRating());
+		
+		//keeping track of the number of reviews and their rating
+		//used circle shape as a temporary measure for a user profile picture
+		HBox hGrid = new HBox(10);
+		VBox vGrid = new VBox(2);
+		vGrid.getChildren().addAll(userRating, commentContainer, author);
+		Circle profilePic = new Circle(20);
+		hGrid.getChildren().addAll(profilePic, vGrid);
+		
+		//All the icons used for each review
+		IconNode likeIcon = new IconNode(GoogleMaterialDesignIcons.THUMB_UP);
+        likeIcon.setIconSize(16);
+        likeIcon.setFill(Color.WHITE);
+        Hyperlink likeReviewBtn = new Hyperlink("", likeIcon);
+        
+        IconNode dislikeIcon = new IconNode(GoogleMaterialDesignIcons.THUMB_DOWN);
+        dislikeIcon.setIconSize(16);
+        dislikeIcon.setFill(Color.WHITE);
+        Hyperlink dislikeReviewBtn = new Hyperlink("", dislikeIcon);
+        
+        IconNode deleteIcon = new IconNode(GoogleMaterialDesignIcons.DELETE_FOREVER);
+        deleteIcon.setIconSize(20);
+        deleteIcon.setFill(Color.WHITE);
+        Hyperlink deleteReviewBtn = new Hyperlink("", deleteIcon);
+		
+		IconNode editIcon = new IconNode(GoogleMaterialDesignIcons.EDIT);
+		editIcon.setIconSize(20);
+		editIcon.setFill(Color.WHITE);
+		Hyperlink editReviewBtn = new Hyperlink("", editIcon);
+
+		IconNode reportIcon = new IconNode(GoogleMaterialDesignIcons.FLAG);
+		reportIcon.setIconSize(20);
+		reportIcon.setFill(Color.WHITE);
+		Hyperlink reportReviewBtn = new Hyperlink("", reportIcon);
+		
+		IconNode favIcon = new IconNode(GoogleMaterialDesignIcons.FAVORITE);
+		favIcon.setIconSize(20);
+		favIcon.setFill(Color.WHITE);
+		Hyperlink favReviewBtn = new Hyperlink("", favIcon);
+		
+		IconNode replyIcon = new IconNode(GoogleMaterialDesignIcons.REPLY);
+		replyIcon.setIconSize(20);
+		replyIcon.setFill(Color.WHITE);
+		Hyperlink replyBtn = new Hyperlink("", replyIcon);
+		
+		if(currentUser != null){
+			//only show certain functions when user is logged in
+			//System.out.println("review by: " + review.getUserId() + " user = " + user.getId() + " n: " + user.getUsername());
+			if(userReview.getUserId() == currentUser.getId()){
+				HBox userActionsCont = new HBox(3);
+				userActionsCont.getChildren().addAll(likeReviewBtn, dislikeReviewBtn, favReviewBtn, replyBtn, deleteReviewBtn, editReviewBtn);
+				vGrid.getChildren().add(userActionsCont);
+			}
+			else{
+				HBox userActionsCont = new HBox(3);
+				userActionsCont.getChildren().addAll(likeReviewBtn, dislikeReviewBtn, favReviewBtn, replyBtn, reportReviewBtn);
+				vGrid.getChildren().add(userActionsCont);
+			}
+		}
+		deleteReviewBtn.setOnAction(new EventHandler<ActionEvent>() {
+	        @Override
+	        public void handle(ActionEvent e) {
+	        	//popup dialog created to asks for confirmation whenever user deletes a review
+	        	confDialog.createDialog("Delete review.", "Are you sure you want to delete this review? It cannot be restored once deleted.");
+	    		if(confDialog.userConfirmation().get() == ButtonType.OK){
+		        	db.deleteReview(userReview);
+		    		if(reviews.size() == 1){
+		    			reviews.clear();
+			    		rst.resetReviews();
+		    		}
+		    		else{
+		    			rst.removeReview(currentUser, userReview);
+			    		reviews.remove(userReview);
+		    		}
+		    		buildPage(rst, currentUser, reviews);
+	    		}
+	        }		
+		});
+		editReviewBtn.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e){
+				commentField.setText(userReview.getComments());
+				ratingField.setRating(userReview.getRating());
+				ButtonType userAction = reviewDialog.showAndWait().get();
+        		if(userAction == ButtonType.OK && !(commentField.getText().trim().length() <= 0 || getRating() == -1)){
+		    		//review posted by user is validated and added to db
+        			Double rating = getRating();
+		    		//rst.addRating(rating);
+		    		Review updatedReview = new Review(rating, commentField.getText(), currentUser, rst);
+		    		db.updateReview(userReview, updatedReview);
+		    		rst.updateReview(currentUser, userReview, updatedReview);
+		    		userReview.setComments(commentField.getText());
+		    		userReview.setRating(rating);
+			    	commentField.clear();
+			    	ratingField.setRating(-1);
+			    	//reload page
+		    		buildPage(rst, currentUser, reviews);
+        		}
+		    	commentField.clear();
+		    	ratingField.setRating(-1);
+			}
+		});
+		return hGrid;
+	}
+	
+	public Rating createStarRating(String size, boolean disabled, double initVal){
+		final Rating rating = new Rating();
+		rating.setPartialRating(true);
+		rating.setMax(5);
+		rating.setRating(initVal);
+		rating.setDisable(disabled);
+		if(size.equals("small")){
+			rating.getStyleClass().addAll("stars-small", "user-rating");
+		}
+		return rating;
 	}
 	
 	public double getRating(){

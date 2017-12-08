@@ -6,8 +6,8 @@ public class Admin extends User{
 	* @param takes 2 paramaeters, both of the type string, which are the name and password of the user
 	* @return no return value
 	*/
-	public Admin(String name, String pw, String birthdate, String email, String zipcode){
-		super(name, pw, birthdate, email, zipcode);
+	public Admin(String name, String pw, String birthdate, String email){
+		super(name, pw, birthdate, email);
 	}
 	
 	@Override

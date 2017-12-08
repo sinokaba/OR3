@@ -79,7 +79,7 @@ public class ValidateForm {
 	}
 	
 	public boolean checkEmail(String email, boolean newUser){
-    	if(!validEmail(email)){
+    	if(email.length() <= 0 || !validEmail(email)){
     		err.showAlert("Form Error!", "Email address: " + email + ", is invalid.");;
     	    return false;
     	}

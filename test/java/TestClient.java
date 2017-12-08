@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import org.junit.Test;
 
 public class TestClient {
-	User user = new User("rs10", "123", "1997-01-26", "rs@gmail.com", "06268");
+	User user = new User("rs10", "123", "1997-01-26", "rs@gmail.com");
 	GoogleMapsService mapsAPI = new GoogleMapsService("AIzaSyCP-qr7umfKFSrmnbOB-cl-djIhD5p1mJ8");
 	DBConnection db = new DBConnection(mapsAPI);
 	Restaurant restaurant = new Restaurant("Monkey Kazoo","911");
@@ -94,7 +94,7 @@ public class TestClient {
 		Review review2 = new Review(5, "good i guess", user, restaurant);
 		//System.out.println("user id: " +review2.getUserId() + " vs. " + user2.getId() + " rst id: " + review2.getRestaurantId() + " vs. " + restaurant2.getId());
 		db.insertReview(review2);
-		ResultSet reviewFromDB = db.getQueryResultReviews(user, restaurant);
+		ResultSet reviewFromDB = db.getUserRstReview(user, restaurant);
 		System.out.print("comments? " + reviewFromDB.getString("comments"));
 		assertEquals(review2.getComments(), reviewFromDB.getString("comments"));
 		assertEquals(review2.getRating(), reviewFromDB.getDouble("overall_rating"), .1);

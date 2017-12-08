@@ -5,7 +5,7 @@ import javafx.scene.control.TextFormatter;
 public class CustomTextField extends TextField{
 	
 	public CustomTextField(String placeholder, double height, double width){
-		super ();
+		super();
 		super.setPromptText(placeholder);
 		System.out.println("place holder text: " + placeholder);
 		super.setPrefSize(width, height);

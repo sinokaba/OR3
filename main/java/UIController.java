@@ -31,7 +31,8 @@ public class UIController extends Application{
 	
 	private DBConnection db;
 	private GoogleMapsService mapsApi;
-	private Restaurant currentRstrnt;
+	private GoogleMap map;
+	private Restaurant currentRst;
 	private User currentUser;
 	private ValidateForm formValidation;
 	private Popup errDialog, confirmDialog;
@@ -50,6 +51,7 @@ public class UIController extends Application{
 		root.setTop(nav.createWindowMenu());
 		
 		mapsApi = new GoogleMapsService("AIzaSyCP-qr7umfKFSrmnbOB-cl-djIhD5p1mJ8");
+		map = new GoogleMap();
 		db = new DBConnection(mapsApi);		
 		pwEncrypt = new PasswordEncryption();
 		emailGen = new EmailGenerator();
@@ -58,11 +60,11 @@ public class UIController extends Application{
 		formValidation = new ValidateForm(db, errDialog);
 		confirmDialog = new Popup("conf", currentScene.getWindow());
 		
-		rstPage = new RestaurantUI(db, currentScene.getWindow());
+		rstPage = new RestaurantUI(db, currentScene.getWindow(), map);
 		loginPage = new LoginUI(FIELD_WIDTH, FIELD_HEIGHT, currentScene.getWindow(), formValidation, db, this);
 		homePage = new HomeUI(false, db, mapsApi);
 		userRegPage = new UserRegistrationUI(FIELD_WIDTH, FIELD_HEIGHT);
-		searchResultPage = new SearchResultUI(db, UIController.this);
+		searchResultPage = new SearchResultUI(db, this, map);
 		rstRegPage = new RestaurantRegUI(mapsApi, FIELD_WIDTH, FIELD_HEIGHT);
 		userPage = new UserAccountUI(db, currentScene.getWindow(), confirmDialog, this);
 	}
@@ -139,8 +141,8 @@ public class UIController extends Application{
 						//if(homePage.searchDropdown.getSelectionModel().getSelectedItem().equals("Name")){
 			    		Restaurant dbQueryRes = db.getRestaurantFromDB(searchTerm, specifiedLoc);
 						if(dbQueryRes != null){
-							currentRstrnt = dbQueryRes;
-				    		restaurantView(currentRstrnt);
+							currentRst = dbQueryRes;
+				    		restaurantView(currentRst);
 						}
 						else{
 							List<String> searchRes = new ArrayList<String>();
@@ -191,8 +193,9 @@ public class UIController extends Application{
 					byte[] salt = pwEncrypt.getSalt();
             		
 	        		String hashedPw = pwEncrypt.getSecurePassword(pw, salt);
-            		
-            		db.insertUser(new User(username, hashedPw, userRegPage.getBirthday(), email, zip), salt);
+            		User newUser = new User(username, hashedPw, userRegPage.getBirthday(), email);
+            		newUser.setLocation(null, null, zip);
+            		db.insertUser(newUser, salt);
             		confirmDialog.showAlert("Thanks for creating an account!", "Successfully created your account!");
 	        		loginView();
 	        	}
@@ -230,10 +233,10 @@ public class UIController extends Application{
 	        	String addrs = rstRegPage.addressField.getText();
 	        	String zip = rstRegPage.zipcodeField.getText();
 	    		if(formValidation.validRestaurantReg(name, addrs, zip, phone, rstRegPage.layout)){
-	    			currentRstrnt = new Restaurant(name, phone);
-	    			currentRstrnt.setAddress(addrs, zip);
-	    			db.insertRestaurant(currentRstrnt);
-	    			restaurantView(currentRstrnt);
+	    			currentRst = new Restaurant(name, phone);
+	    			currentRst.setAddress(addrs, zip);
+	    			db.insertRestaurant(currentRst);
+	    			restaurantView(currentRst);
 	    			rstRegPage.clearFields();
 	    			confirmDialog.showAlert("Success!", "Restaurant " + name + " added successfully!");
 	    		}

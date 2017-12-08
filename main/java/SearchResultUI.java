@@ -26,11 +26,11 @@ public class SearchResultUI {
 	private GoogleMap map;
 	BorderPane layout;
 	
-	public SearchResultUI(DBConnection db, UIController ui){
+	public SearchResultUI(DBConnection db, UIController ui, GoogleMap map){
 		layout = new BorderPane();
 		this.db = db;
 		ctrl = ui;
-		map = new GoogleMap();
+		this.map = map;
 	}
 	public void build(String loc, String kw, List<String> searchResults){
 		Label searchTitle = new Label("Search results for '" + kw + "' at '" + loc + "': ");
@@ -53,16 +53,16 @@ public class SearchResultUI {
 				firstRst = r;
 			}
 			
-			HBox tagsWrapper = new HBox(8);
+			HBox tagsContainer = new HBox(8);
 			ArrayList<String> tags = r.getTags();
 			for(int i = 0; i < tags.size(); i++){
 				Label tag = new Label(tags.get(i) + " | ");
 				tag.getStyleClass().add("h5");
-				tagsWrapper.getChildren().add(tag);
+				tagsContainer.getChildren().add(tag);
 			}
 			
-			HBox detailsWrapperH = new HBox(15);
-			VBox detailsWrapperV = new VBox(2);
+			HBox detailsContainerH = new HBox(15);
+			VBox detailsContainerV = new VBox(2);
 			Label rstName = new Label(rst);
 			rstName.getStyleClass().addAll("h4", "rst-link");
 			rstName.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -83,7 +83,7 @@ public class SearchResultUI {
 			ratingStars.getStyleClass().addAll("stars-small", "overall-rating");
 			ratingStars.setDisable(true);
 			
-			detailsWrapperV.getChildren().addAll(rstName, ratingStars, address, phone, tagsWrapper);
+			detailsContainerV.getChildren().addAll(rstName, ratingStars, address, phone, tagsContainer);
 			Rectangle rec = new Rectangle(85, 85);
 			rec.getStyleClass().add("rst-link");
 			rec.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -92,8 +92,8 @@ public class SearchResultUI {
 			        ctrl.restaurantView(r);
 			    }
 			});
-			detailsWrapperH.getChildren().addAll(rec, detailsWrapperV);
-			searchRes.getItems().add(detailsWrapperH);
+			detailsContainerH.getChildren().addAll(rec, detailsContainerV);
+			searchRes.getItems().add(detailsContainerH);
 		}
 		VBox mapContainer = new VBox(15);
 		//System.out.println("first rst: " + firstRst.getName());

@@ -1,11 +1,12 @@
 
+import java.sql.Date;
 import java.util.HashMap;
 
 public class User {
 	/**
 	* Variables associated with this class declared
 	*/
-	private String name, password, email, zipcode, birthday;
+	private String name, password, email, zipcode, birthday, city, state, joinDate;
 	private String status = "offline";
 	private int age, userId;
 	private HashMap tempPassword;
@@ -17,11 +18,10 @@ public class User {
 	* @param takes 4 inputs, 3 string variables name, pw, birthdate, and a boolean value that specifies admin privileges
 	* @return no return value
 	*/
-	public User(String username, String pw, String birthdate, String email, String zipcode){
+	public User(String username, String pw, String birthdate, String email){
 		this.name = username;
 		this.email = email;
 		this.password = pw;
-		this.zipcode = zipcode;
 		this.birthday = birthdate; 
 	}
 	
@@ -30,10 +30,31 @@ public class User {
 		userId = id;
 	}
 	
-	public void setTempPassword(String temp){
+	public void setTempCode(String temp){
 		tempPassword.put(temp, System.currentTimeMillis()/1000);
 	}
 	
+	public void setLocation(String city, String state, String zipcode){
+		this.city = city;
+		this.state = state;
+		this.zipcode = zipcode;
+	}
+	
+	public String getState(){
+		return state;
+	}
+	
+	public String getCity(){
+		return city;
+	}
+	
+	public void setJoinDate(String date){
+		joinDate = date;
+	}
+	
+	public String getJoinDate(){
+		return joinDate;
+	}
 	/**
 	* This method prints the current information of user, mainly for testing purposes
 	*

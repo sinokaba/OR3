@@ -1,7 +1,5 @@
 import java.util.regex.Pattern;
 
-import javax.mail.MessagingException;
-
 import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -22,42 +20,37 @@ import javafx.scene.text.Text;
 import javafx.stage.Window;
 
 public class LoginUI{
-	private CustomTextField usernameField, emailField, tempPwField, newPwField, newPwVerifyField;
-	private PasswordField passwordField;
+	private CustomTextField usernameField, emailField, tempCodeField;
+	private PasswordField passwordField, newPwField, newPwVerifyField;
 	private GridPane layout;
-	private Alert forgotPwDialog, tempPwDialog, newPwDialog;
-	private Popup errDialog;
+	private Alert forgotPwDlg, tempCodeDlg, newPwDlg;
+	private Popup errDialog, confDialog;
 	private ValidateForm validator;
-	private int fieldHeight;
-	private int fieldWidth;
+	private FormField form;
 	final Pattern VALID_EMAIL_ADDRESS_REGEX = 
 			Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
-	private String tempPassword;
+	private String tempCode;
 	private Window win;
 	private DBConnection db;
 	private User currentUser;
-	private UIController con;
+	private UIController ctrl;
 	Button loginBtn, backBtn;
 	
-	public LoginUI(int width, int height, Window window, ValidateForm validator, DBConnection db, UIController con){
-		this.validator = validator;
-		fieldHeight = height;
-		fieldWidth = width;
+	public LoginUI(int width, int height, Window window, ValidateForm validator, DBConnection db, UIController ui){
 		win = window;
+		ctrl = ui;
+		this.validator = validator;		
 		this.db = db;
-		this.con = con;
-		//buildPage(db, window);
+		form = new FormField(width, height);
+		createDialogs();
 	}
 	
 	public void buildPage(EmailGenerator email, PasswordEncryption pass){
-		createEmailDialog("Forgot password", "myemail@gmail.com", win);
-		createTempCodeDialog("Enter the temporary code you received.", "Forgot password", "", win);
-		createNewPwDialog("Create new password.", "Forgot password", win);
-		errDialog = new Popup("err", win);
-		Popup confDialog = new Popup("conf", win);
-		//super();
 		layout = new GridPane();
-		FormField form = new FormField(fieldWidth, fieldHeight);
+		layout.setAlignment(Pos.CENTER);
+		layout.setHgap(10);
+		layout.setVgap(10);
+		
 		Label username = form.createLabel("Username:");
 		usernameField = form.createTextField("Enter your unique username.", 16);
 		createFieldLabelPair(layout, usernameField, username, 2);
@@ -72,33 +65,31 @@ public class LoginUI{
 		forgotPw.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e){
-				ButtonType enterEmailBtn = forgotPwDialog.showAndWait().get();
+				ButtonType enterEmailBtn = forgotPwDlg.showAndWait().get();
 				if(enterEmailBtn == ButtonType.OK){
 					String userEmail = emailField.getText().trim(); 
 					if(validator.checkEmail(userEmail, false)){
 						//confDialog.createDialog("Verification sent!", "Check your email. A temporary password has been sent!");
 						confDialog.createDialog("Verification sent!", "Check your email. Your temporary password has been sent!");
-						tempPassword = pass.tempPasswordGenerator();
+						tempCode = pass.tempPasswordGenerator();
 						email.sendMail(userEmail, "This is neither secure nor practical. <br>"
-								+ "Note to self: generate temp password and email that instead. <br> <br>"
-								+ "Anyways your remporary password is: " + tempPassword + " <br> from or3 java application.");
+								+ "Your temporary code is: " + tempCode + " <br> from or3 java application. <br>"
+								+ "Ignore this email if you don't know whatever this is about.");
 						confDialog.userConfirmation();
-						if(tempPwDialog.showAndWait().get() == ButtonType.OK && tempPwField.getText().trim().equals(tempPassword)){
-				        	currentUser = db.getUserFromDB(userEmail);
-				        	ButtonType newPwBtn = newPwDialog.showAndWait().get();	
+						if(tempCodeDlg.showAndWait().get() == ButtonType.OK && tempCodeField.getText().trim().equals(tempCode)){
+				        	ButtonType newPwBtn = newPwDlg.showAndWait().get();	
 				        	if(newPwBtn == ButtonType.OK){
 				        		String pw = newPwField.getText();
 				        		String hashedPw = pass.getSecurePassword(pw, db.getUserSalt(null, userEmail));
 			        			db.updateUserPassword(userEmail, hashedPw);
 			        			confDialog.showAlert("Updated Password!", "Your new password has been set!");
-			        			
 				        	}
-							tempPwField.clear();
+							tempCodeField.clear();
 				        	//con.loginUser(currentUser);
 						}
 						else{
 							errDialog.showAlert("Failed to log in", "The code you entered did not match the code sent to your email, access denied.");
-							tempPwField.clear();
+							tempCodeField.clear();
 						}
 						
 					}
@@ -138,7 +129,7 @@ public class LoginUI{
 			        	currentUser = db.getUserFromDB(enteredUsername, hashedPassword);
 			        	if(currentUser != null){
 				        	clearFields();
-			        		con.loginUser(currentUser);
+			        		ctrl.loginUser(currentUser);
 			        	}
 			        	else{
 			        		System.out.println(currentUser + " " + enteredUsername);
@@ -165,39 +156,41 @@ public class LoginUI{
 		final Text actionTarget = new Text();
 		actionTarget.setStyle("-fx-font-size: 13pt");
 		layout.add(actionTarget, 1, 9, 7, 1);
-		layout.setAlignment(Pos.CENTER);
-		layout.setHgap(10);
-		layout.setVgap(10);
     }
 	
-	public void createFieldLabelPair(GridPane grid, CustomTextField field, Label lbl, int row){		
-		grid.add(lbl, 0, row);
-		grid.add(field, 1, row);
+	public void createDialogs(){
+		errDialog = new Popup("err", win);
+		confDialog = new Popup("conf", win);
+		
+		createEmailDialog("Forgot password", "myemail@gmail.com");
+		createTempCodeDialog("Enter the temporary code you received.", "Forgot password");
+		createNewPwDialog("Create new password.");
 	}
 	
-	public void createFieldLabelPair(GridPane grid, PasswordField field, Label lbl, int row){
-		grid.add(lbl, 0, row);
-		grid.add(field, 1, row);			
+	public Alert createDialog(String headerText, HBox content){
+		Alert dialog = new Alert(Alert.AlertType.CONFIRMATION);
+		dialog.setTitle("Forgot Password.");
+		dialog.initOwner(win);
+		dialog.setHeaderText(headerText);
+		
+		DialogPane dialogPane = dialog.getDialogPane();
+		dialogPane.setGraphic(null);
+		dialogPane.setContent(content);
+
+		return dialog;
 	}
 	
-	public void createEmailDialog(String title, String placeholder, Window win){
-		forgotPwDialog = new Alert(Alert.AlertType.CONFIRMATION);
-		forgotPwDialog.setTitle("Forgot password.");
-		forgotPwDialog.initOwner(win);
-		forgotPwDialog.setHeaderText("Enter the email associated with your account.");
-		DialogPane emailDialog = forgotPwDialog.getDialogPane();
-		emailDialog.setGraphic(null);
-		
-		emailField = new CustomTextField(placeholder, 40, 250);
-		
-		HBox contentContainer = new HBox(15);
+	public void createEmailDialog(String headerText, String fieldPlaceholder){
+		emailField = new CustomTextField(fieldPlaceholder, 40, 250);
+		HBox emailDlgContainer = new HBox(15);
 		GridPane.setVgrow(emailField, Priority.ALWAYS);
 		GridPane.setHgrow(emailField, Priority.ALWAYS);
-		contentContainer.getChildren().addAll(new Label("Email: "), emailField);
-		emailDialog.setContent(contentContainer);
+		emailDlgContainer.getChildren().addAll(new Label("Email: "), emailField);
+		
+		forgotPwDlg = createDialog(headerText, emailDlgContainer);
 		
 		//button filter which checks if all the fields have been filled
-		final Button btnOk = (Button)emailDialog.lookupButton(ButtonType.OK);
+		final Button btnOk = (Button)forgotPwDlg.getDialogPane().lookupButton(ButtonType.OK);
 		btnOk.addEventFilter(ActionEvent.ACTION, event -> {
 				String userEmail = emailField.getText().trim();
 		        if(userEmail.length() <= 0 || !validator.checkEmail(userEmail, false)){
@@ -214,41 +207,28 @@ public class LoginUI{
 		);
 	}
 	
-	public void createTempCodeDialog(String headerTxt, String title, String placeholder, Window win){
-		tempPwDialog = new Alert(Alert.AlertType.CONFIRMATION);
-		tempPwDialog.setTitle("Forgot password.");
-		tempPwDialog.initOwner(win);
-		tempPwDialog.setHeaderText(headerTxt);
-		DialogPane tempPw = tempPwDialog.getDialogPane();
-		tempPw.setGraphic(null);
+	public void createTempCodeDialog(String headerText, String placeholder){
+		tempCodeField = new CustomTextField(placeholder, 40, 250);
+		HBox tempCodeContainer = new HBox(15);
+		GridPane.setVgrow(tempCodeField, Priority.ALWAYS);
+		GridPane.setHgrow(tempCodeField, Priority.ALWAYS);
+		tempCodeContainer.getChildren().addAll(new Label("Code: "), tempCodeField);
 		
-		tempPwField = new CustomTextField(placeholder, 40, 250);
-		
-		HBox contentContainer = new HBox(15);
-		GridPane.setVgrow(tempPwField, Priority.ALWAYS);
-		GridPane.setHgrow(tempPwField, Priority.ALWAYS);
-		contentContainer.getChildren().addAll(new Label("Code: "), tempPwField);
-		tempPw.setContent(contentContainer);
+		tempCodeDlg = createDialog(headerText, tempCodeContainer);
 	}
 	
-	public void createNewPwDialog(String headerTxt, String title, Window win){
-		newPwDialog = new Alert(Alert.AlertType.CONFIRMATION);
-		newPwDialog.setTitle("Forgot password.");
-		newPwDialog.initOwner(win);
-		newPwDialog.setHeaderText(headerTxt);
-		DialogPane newPw = newPwDialog.getDialogPane();
-		newPw.setGraphic(null);
-		
-		newPwField = new CustomTextField("Your new password", 40, 250);
-		newPwVerifyField = new CustomTextField("Reenter password", 40, 250);
+	public void createNewPwDialog(String headerText){
+		newPwField = form.createPasswordField("New Password");
+		newPwVerifyField = form.createPasswordField("Reenter password");
 
-		HBox contentContainer = new HBox(15);
-		GridPane.setVgrow(tempPwField, Priority.ALWAYS);
-		GridPane.setHgrow(tempPwField, Priority.ALWAYS);
-		contentContainer.getChildren().addAll(new Label("New Password: "), newPwField, newPwVerifyField);
-		newPw.setContent(contentContainer);
+		HBox newPwContainer = new HBox(15);
+		GridPane.setVgrow(tempCodeField, Priority.ALWAYS);
+		GridPane.setHgrow(tempCodeField, Priority.ALWAYS);
+		newPwContainer.getChildren().addAll(new Label("New Password: "), newPwField, newPwVerifyField);
+
+		newPwDlg = createDialog(headerText, newPwContainer);
 		
-		final Button btnOk = (Button)newPw.lookupButton(ButtonType.OK);
+		final Button btnOk = (Button)newPwDlg.getDialogPane().lookupButton(ButtonType.OK);
 		btnOk.addEventFilter(ActionEvent.ACTION, event -> {
 	    		if(!validator.checkPassword(newPwField.getText(), newPwVerifyField.getText())){
 	    			event.consume();
@@ -257,15 +237,14 @@ public class LoginUI{
 		);
 	}
 	
-	public GridPane getLayout(){
-		return layout;
-	}
-	public String getUsernameEntered(){
-		return usernameField.getText();
+	public void createFieldLabelPair(GridPane grid, CustomTextField field, Label lbl, int row){		
+		grid.add(lbl, 0, row);
+		grid.add(field, 1, row);
 	}
 	
-	public String getPasswordEntered(){
-		return passwordField.getText();
+	public void createFieldLabelPair(GridPane grid, PasswordField field, Label lbl, int row){
+		grid.add(lbl, 0, row);
+		grid.add(field, 1, row);			
 	}
 	
 	public void clearFields(){
@@ -279,4 +258,15 @@ public class LoginUI{
 		return currentUser;
 	}
 
+	public GridPane getLayout(){
+		return layout;
+	}
+	
+	public String getUsernameEntered(){
+		return usernameField.getText();
+	}
+	
+	public String getPasswordEntered(){
+		return passwordField.getText();
+	}
 }

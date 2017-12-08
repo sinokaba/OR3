@@ -55,22 +55,7 @@ public class DBConnection {
     		System.out.println("Something went wrong with sql! Error message: " + ex);    		
     	}
     }
- 
-	/**
-	* This method creates an sql query for inserting a new user in the db
-	* 	 
-	* @param takes 3 input arguments, the name of the user, their associated password, and their birthdate
-	* @return no return value
-	*/    
-    
-    public void insertLocation(String zipcode, String[] location){
-    	String sqlQ = "INSERT INTO locations \n"
-				+ " (country, state, city, zipcode) "
-    			+ " values ('"+location[2] +"', '" + location[1] + "', '" + location[0] + "', '" + zipcode + "')";
-    	System.out.println("location q: " + sqlQ);
-    	executeQuery(sqlQ, "Added location infor for " + zipcode);
-    }
-    
+   
     public boolean rowExists(String tableName, String arg, String input){
     	String sqlQ = "SELECT EXISTS(SELECT 1 FROM " + tableName + " WHERE " + arg + " = '"+input+"')";
     	System.out.println("Checking if " + input + " already in table " + tableName);
@@ -84,6 +69,84 @@ public class DBConnection {
     	return executeQuery(sqlQ);    	
     }
     
+	/**
+	* This method drops the specified table from the database
+	* 	 
+	* @param takes one argument of type string, the name of the table to remove
+	* @return no return value
+	*/    
+    public void removeTable(String tableName){
+    	executeQuery("drop table if exists " + tableName, "Dropped table " + tableName);
+    }
+    
+	/**
+	* This method removes all data currently in the table
+	* 	 
+	* @param takes 1 input argument, the name of the table to clear the data from
+	* @return no return value
+	*/    
+    public void clearTable(String tableName){
+    	String disableFK = "SET FOREIGN_KEY_CHECKS=0;";
+    	String clearTable = "TRUNCATE " + tableName + ";";
+    	String enableFK = "SET FOREIGN_KEY_CHECKS=1;";
+    	executeQuery(disableFK, "disabled foreign keys");
+    	executeQuery(clearTable, "Cleared table " + tableName);
+    	executeQuery(enableFK, "enabled foreign keys");
+    }
+    
+	/**
+	* This method prints all the data along with their fields in the specified table
+	* 	 
+	* @param takes 1 input, the table name as a string
+	* @return no return value
+	*/    
+    public void printTableData(String tableName){
+        try{
+        		ResultSet rs = statement.executeQuery("select * from " + tableName);
+        		String[] keys = {"username", "password", "email"};
+        		if(tableName.contains("restaurant")){
+        			keys[0] = "name";
+        			keys[1] = "address";
+        			keys[2] = "phone";	
+        		}
+        		else if(tableName.contains("locations")){
+        			keys[0] = "state";
+        			keys[1] = "city";
+        			keys[2] = "country";        			
+        		}
+            	//List<User> personList = new ArrayList<>();
+                while (rs.next()) {
+                    String val1 = rs.getString(keys[0]);
+                    String val2 = rs.getString(keys[1]);
+                    String val3 = rs.getString(keys[2]);
+                    System.out.println(val1 + ", " + val2 + ", " + val3);
+                    //User person = new User(firstName, lastName, email);
+                    //personList.add(person);
+                }
+            }
+        catch(SQLException e){
+        	System.out.println("Error occured, can't print table " + tableName);
+        	e.getStackTrace();
+        }
+    }
+    
+    /*
+     * Table related quuery calls
+     */
+    
+    // Query to insert a new location to the locations table
+    public void insertLocation(String zipcode, String[] location){
+    	String sqlQ = "INSERT INTO locations \n"
+				+ " (country, state, city, zipcode) "
+    			+ " values ('"+location[2] +"', '" + location[1] + "', '" + location[0] + "', '" + zipcode + "')";
+    	System.out.println("location q: " + sqlQ);
+    	executeQuery(sqlQ, "Added location infor for " + zipcode);
+    }
+    
+    /*
+     * All user table related query calls
+     * insert, delete, update, get 
+     */
     public void insertUser(User newUser, byte[] salt){
     	java.sql.Date birthday = null;
     	boolean validZipcode = true;
@@ -143,9 +206,7 @@ public class DBConnection {
     	String sqlQ = "DELETE FROM users WHERE username= '" + username + "'";
     	executeQuery(sqlQ, "Deleted " + username + " successfully.");    	
     }
-    /*
-     * VERY VERY UNSAFE, only for testing purposes. Will remove later
-     */
+
     public String getUserPassword(String email){
     	String passwordQ = "SELECT * FROM users WHERE email = '" + email + "'";
     	ResultSet userPassword = getQueryResultSet(passwordQ);
@@ -159,9 +220,113 @@ public class DBConnection {
     	return password; 
     }
     
+    public byte[] getUserSalt(String username, String email){
+    	byte[] salt = null;
+    	try{
+    		String sqlQ;
+    		if(username != null){
+    			sqlQ = "SELECT * FROM users WHERE username = '" + username + "' LIMIT 1";
+    		}
+    		else{
+    			sqlQ = "SELECT * FROM users WHERE email = '" + email + "' LIMIT 1";   			
+    		}
+    		ResultSet rs = getQueryResultSet(sqlQ);
+    		if(rs != null){
+    			Blob blob = rs.getBlob("salt");
+    			salt = blob.getBytes(1, (int)blob.length());
+    			blob.free();
+    		}
+    	}
+    	catch(SQLException ex){
+    		System.out.println("Something with wrong when getting data from db!");
+    		ex.printStackTrace();
+    	}
+    	return salt;
+    }
+    
     public void updateUserPassword(String email, String newPassword){
     	String sqlQ = "UPDATE users SET password = '" + newPassword + "' WHERE email = '" + email + "'";
     	executeQuery(sqlQ, "Successfully updated password for: " + email);
+    }
+    
+    public User getUserFromDB(String username, String hashedPassword){
+		User usr = null;
+    	try{
+			ResultSet rs = statement.executeQuery("Select * from users Where username='" + username + "' and password='" + hashedPassword + "'");
+			System.out.println("name; " + username + " pw: " + hashedPassword + " result of q: 428 " + rs);
+			if(rs.next()) {
+			    if(rs.getInt(1) > 0){
+					System.out.println(rs.getInt(1));
+			    	System.out.println("transferring data from db to user class.");
+			    	String name = rs.getString("username");
+			    	String pw = rs.getString("password");
+			    	String birthdate = rs.getString("birthdate");
+			    	String email = rs.getString("email");
+ 			    	if(rs.getInt("privilege") == 0){
+ 			    		usr = new User(name, pw, birthdate, email);
+ 			    	}
+ 			    	else{
+ 			    		usr = new Admin(name, pw, birthdate, email);
+ 			    	}
+ 			    	usr.setJoinDate(rs.getString("creation_date"));
+ 			    	usr.setId(rs.getInt(1));
+ 			    	int locId = rs.getInt("fk_location");
+ 			    	rs.close();
+ 			    	
+ 			    	ResultSet locInfoRs = statement.executeQuery("SELECT * FROM locations WHERE idlocations = " + locId);
+			    	String zipcode = null;
+			    	String state = null;
+			    	String city = null;
+			    	if(locInfoRs != null && locInfoRs.next()){
+			    		zipcode = locInfoRs.getString("zipcode");
+			    		state = locInfoRs.getString("state");
+			    		city = locInfoRs.getString("city");
+			    	} 			    	
+ 			    	usr.setLocation(city, state, zipcode);
+			    }
+			}
+    	}
+    	catch(SQLException ex){
+    		System.out.println("db error getting user from db line 287.");
+    		ex.printStackTrace();
+    	}
+		return usr;
+    }
+    
+    /*
+     * 
+     * Restaurant related queries
+     */
+	/**
+	* This method creates an sql query for inserting a new restaurant in the db
+	* 	 
+	* @param takes 2 input arguments, the name of the restaurant, and their address
+	* More fields will soon be added, just testing right now
+	* @return no return value
+	*/    
+    public void insertRestaurant(Restaurant restaurant){
+    	boolean validZip = true;
+    	String zip = restaurant.zip;
+    	if(!rowExists("locations", "zipcode", zip)){
+    		String loc[] = mapsAPI.getLocation(zip);
+    		if(loc[0] != null){
+    			insertLocation(zip, loc);
+    		}
+    		else{
+    			validZip = false;
+    		}
+    	}
+    	if(validZip){
+    		String safeAddress = restaurant.address.split(",")[0].replace("'", "''");
+    		String safeName = restaurant.name.replace("'", "''");
+    		String sqlQ = "INSERT INTO restaurants \n"
+					+ " SET name = '" + safeName + "',\n"
+					+ "  address = '" + safeAddress + "', \n"
+					+ "  phone = '" + restaurant.phone + "',\n"
+					+ "  fk_location = (SELECT idlocations FROM locations WHERE zipcode = '" + zip + "' LIMIT 1)";	
+    		System.out.println(sqlQ);
+			executeQuery(sqlQ, "User: " + restaurant.name + " added");
+    	}
     }
     
     public List<String> getRestaurantSuggestions(String keyword, boolean autocomplete){
@@ -182,11 +347,11 @@ public class DBConnection {
 			PreparedStatement pStatement = connection.prepareStatement(sqlStatement);
 			pStatement.setString(1, "%" + keyword + "%");
 			System.out.println(pStatement);
-        	ResultSet res = pStatement.executeQuery();
-			while(res.next() && count < maxCount) {
-			    if(res.getInt(1) > 0){
-					System.out.println(res.getInt(1));
-					suggestions.add(res.getString("name"));
+        	ResultSet rs = pStatement.executeQuery();
+			while(rs.next() && count < maxCount) {
+			    if(rs.getInt(1) > 0){
+					System.out.println(rs.getInt(1));
+					suggestions.add(rs.getString("name"));
 					count += 1;
 			    }
 			}
@@ -225,11 +390,11 @@ public class DBConnection {
 				PreparedStatement pStatement = connection.prepareStatement(sqlStatement);
 				pStatement.setString(1, "%" + keyword + "%");
 				System.out.println(pStatement);
-	        	ResultSet res = pStatement.executeQuery();
-				while(res.next() && count < maxCount) {
-				    if(res.getInt(1) > 0){
-						System.out.println(res.getString("name"));
-						suggestions.add(res.getString("name"));
+	        	ResultSet rs = pStatement.executeQuery();
+				while(rs.next() && count < maxCount) {
+				    if(rs.getInt(1) > 0){
+						System.out.println(rs.getString("name"));
+						suggestions.add(rs.getString("name"));
 						count += 1;
 				    }
 				}
@@ -237,11 +402,11 @@ public class DBConnection {
 			else{
 		    	PreparedStatement pStatement = connection.prepareStatement("SELECT * FROM restaurants WHERE restaurants.fk_location IN (" + locStatement + ")");
 		    	System.out.println(pStatement);
-	        	ResultSet res = pStatement.executeQuery();
-				while(res.next() && count < maxCount) {
-				    if(res.getInt(1) > 0){
-						System.out.println(res.getString("name"));
-						suggestions.add(res.getString("name"));
+	        	ResultSet rs = pStatement.executeQuery();
+				while(rs.next() && count < maxCount) {
+				    if(rs.getInt(1) > 0){
+						System.out.println(rs.getString("name"));
+						suggestions.add(rs.getString("name"));
 						count += 1;
 				    }
 				}
@@ -250,228 +415,6 @@ public class DBConnection {
 			e.printStackTrace();
 		}
     	return suggestions;    	
-    }
-    
-	/**
-	* This method creates an sql query for inserting a new restaurant in the db
-	* 	 
-	* @param takes 2 input arguments, the name of the restaurant, and their address
-	* More fields will soon be added, just testing right now
-	* @return no return value
-	*/    
-    public void insertRestaurant(Restaurant restaurant){
-    	boolean validZip = true;
-    	String zip = restaurant.zip;
-    	if(!rowExists("locations", "zipcode", zip)){
-    		String loc[] = mapsAPI.getLocation(zip);
-    		if(loc[0] != null){
-    			insertLocation(zip, loc);
-    		}
-    		else{
-    			validZip = false;
-    		}
-    	}
-    	if(validZip){
-    		String safeAddress = restaurant.address.split(",")[0].replace("'", "''");
-    		String safeName = restaurant.name.replace("'", "''");
-    		String sqlQ = "INSERT INTO restaurants \n"
-					+ " SET name = '" + safeName + "',\n"
-					+ "  address = '" + safeAddress + "', \n"
-					+ "  phone = '" + restaurant.phone + "',\n"
-					+ "  fk_location = (SELECT idlocations FROM locations WHERE zipcode = '" + zip + "')";	
-    		System.out.println(sqlQ);
-			executeQuery(sqlQ, "User: " + restaurant.name + " added");
-    	}
-    }
-    
-	/**
-	* This method creates an sql query for inserting a new review in the db
-	* 	 
-	* @param takes 4 input, the restaurant associated with the review, the user that created the review
-	* the rating they gave, and their comments
-	* 
-	* @return no return value
-	*/    
-    public void insertReview(Review review){
-    	String restaurantName = review.getRestaurantName().replace("'", "\\'");
-    	executeQuery("SELECT FROM restaurants WHERE name = '" + restaurantName + "' AND idrestaurant = " + review.getRestaurantId());
-    	System.out.println("restaurant name: " + restaurantName);
-    	String comments = review.getComments().replace("'", "\\'");
-		String sqlQ = "INSERT INTO reviews \n"
-				+ " SET overall_rating = '" + review.getRating() + "',\n"
-				+ "  comments = '" + comments + "', \n"
-				+ "  fk_user = (SELECT iduser FROM users WHERE username = '" + review.getUserName() + "'), \n"	
-				+ "  fk_restaurant = (SELECT idrestaurant FROM restaurants WHERE name = '" + restaurantName + "')";	
-		System.out.println(sqlQ);
-		
-    	executeQuery(sqlQ, "Review for: " + review.getRestaurantName() + " by: " + review.getUserName() + " added");
-    }
-    
-    public void updateReview(Review oldReview, Review newReview){
-    	String comments = newReview.getComments().replace("'", "\\'");
-    	int userId = newReview.getUserId();
-    	int rstId = newReview.getRestaurantId();
-    	String sqlQ = "UPDATE reviews SET comments='" + comments + "', overall_rating='" + newReview.getRating() + "' WHERE \n"
-				+ " fk_user = " + userId + " AND fk_restaurant = " + rstId + " AND comments = '" + oldReview.getComments() + "'";	
-    	System.out.println(sqlQ);
-    	executeQuery(sqlQ, "Updating review for: " + newReview.getRestaurantName() + " by: " + newReview.getUserName());
-    }
-    
-    public void deleteReview(Review review){
-    	String comments = review.getComments().replace("'", "\\'");
-    	String sqlQ = "DELETE FROM reviews WHERE comments = '" + comments + "' AND fk_user = " + review.getUserId();
-    	executeQuery(sqlQ, "Deleted review by " + review.getUserId());
-    }
-    
-	/**
-	* This method drops the specified table from the database
-	* 	 
-	* @param takes one argument of type string, the name of the table to remove
-	* @return no return value
-	*/    
-    public void removeTable(String tableName){
-    	executeQuery("drop table if exists " + tableName, "Dropped table " + tableName);
-    }
-    
-	/**
-	* This method removes all data currently in the table
-	* 	 
-	* @param takes 1 input argument, the name of the table to clear the data from
-	* @return no return value
-	*/    
-    public void clearTable(String tableName){
-    	String disableFK = "SET FOREIGN_KEY_CHECKS=0;";
-    	String clearTable = "TRUNCATE " + tableName + ";";
-    	String enableFK = "SET FOREIGN_KEY_CHECKS=1;";
-    	executeQuery(disableFK, "disabled foreign keys");
-    	executeQuery(clearTable, "Cleared table " + tableName);
-    	executeQuery(enableFK, "enabled foreign keys");
-    }
-    
-	/**
-	* This method prints all the data along with their fields in the specified table
-	* 	 
-	* @param takes 1 input, the table name as a string
-	* @return no return value
-	*/    
-    public void printTableData(String tableName){
-        try{
-        		ResultSet res = statement.executeQuery("select * from " + tableName);
-        		String[] keys = {"username", "password", "email"};
-        		if(tableName.contains("restaurant")){
-        			keys[0] = "name";
-        			keys[1] = "address";
-        			keys[2] = "phone";	
-        		}
-        		else if(tableName.contains("locations")){
-        			keys[0] = "state";
-        			keys[1] = "city";
-        			keys[2] = "country";        			
-        		}
-            	//List<User> personList = new ArrayList<>();
-                while (res.next()) {
-                    String val1 = res.getString(keys[0]);
-                    String val2 = res.getString(keys[1]);
-                    String val3 = res.getString(keys[2]);
-                    System.out.println(val1 + ", " + val2 + ", " + val3);
-                    //User person = new User(firstName, lastName, email);
-                    //personList.add(person);
-                }
-            }
-        catch(SQLException e){
-        	System.out.println("Error occured, can't print table " + tableName);
-        	e.getStackTrace();
-        }
-    }
-    
-    public User getUserFromDB(String username, String hashedPassword){
-		User usr = null;
-    	try{
-			ResultSet rs = statement.executeQuery("Select * from users Where username='" + username + "' and password='" + hashedPassword + "'");
-			System.out.println("name; " + username + " pw: " + hashedPassword + " result of q: 428 " + rs);
-			if(rs.next()) {
-			    if(rs.getInt(1) > 0){
-					System.out.println(rs.getInt(1));
-			    	System.out.println("transferring data from db to user class.");
-			    	String name = rs.getString("username");
-			    	String pw = rs.getString("password");
-			    	String birthdate = rs.getString("birthdate");
-			    	String email = rs.getString("email");
-			    	String locId = rs.getString("fk_location");
-			    	int privilege = rs.getInt("privilege");
-			    	int userId = rs.getInt(1);
-			    	if(privilege == 0){
-			    		usr = new User(name, pw, birthdate, email, locId);
-			    	}
-			    	else{
-			    		usr = new Admin(name, pw, birthdate, email, locId);
-			    	}
-			    	System.out.println("id from db of user: " + userId);
-			    	usr.setId(userId);
-			    }
-			}
-    	}
-    	catch(SQLException ex){
-    		System.out.println("db error getting user from db line 287.");
-    		ex.printStackTrace();
-    	}
-		return usr;
-    }
-   
-    public User getUserFromDB(String email){
- 		User usr = null;
-     	try{
- 			ResultSet rs = statement.executeQuery("Select * from users Where email='" + email + "'");
- 			if(rs.next()) {
- 			    if(rs.getInt(1) > 0){
- 					System.out.println(rs.getInt(1));
- 			    	System.out.println("transferring data from db to user class.");
- 			    	String name = rs.getString("username");
- 			    	String pw = rs.getString("password");
- 			    	String birthdate = rs.getString("birthdate");
- 			    	String locId = rs.getString("fk_location");
- 			    	int privilege = rs.getInt("privilege");
- 			    	int userId = rs.getInt(1);
- 			    	if(privilege == 0){
- 			    		usr = new User(name, pw, birthdate, email, locId);
- 			    	}
- 			    	else{
- 			    		usr = new Admin(name, pw, birthdate, email, locId);
- 			    	}
- 			    	System.out.println("id from db of user: " + userId);
- 			    	usr.setId(userId);
- 			    }
- 			}
-     	}
-     	catch(SQLException ex){
-     		System.out.println("db error getting user from db line 287.");
-     		ex.printStackTrace();
-     	}
- 		return usr;
-     }
-    
-    public byte[] getUserSalt(String username, String email){
-    	byte[] salt = null;
-    	try{
-    		String sqlQ;
-    		if(username != null){
-    			sqlQ = "SELECT * FROM users WHERE username = '" + username + "' LIMIT 1";
-    		}
-    		else{
-    			sqlQ = "SELECT * FROM users WHERE email = '" + email + "' LIMIT 1";   			
-    		}
-    		ResultSet res = getQueryResultSet(sqlQ);
-    		if(res != null){
-    			Blob blob = res.getBlob("salt");
-    			salt = blob.getBytes(1, (int)blob.length());
-    			blob.free();
-    		}
-    	}
-    	catch(SQLException ex){
-    		System.out.println("Something with wrong when getting data from db!");
-    		ex.printStackTrace();
-    	}
-    	return salt;
     }
     
     public Restaurant getRestaurantFromDB(String name, String addrs){
@@ -536,6 +479,49 @@ public class DBConnection {
 		return rst;
     }
     
+    /*
+     * 
+     * Review table related queries
+     */
+	/**
+	* This method creates an sql query for inserting a new review in the db
+	* 	 
+	* @param takes 4 input, the restaurant associated with the review, the user that created the review
+	* the rating they gave, and their comments
+	* 
+	* @return no return value
+	*/    
+    public void insertReview(Review review){
+    	String restaurantName = review.getRestaurantName().replace("'", "\\'");
+    	executeQuery("SELECT FROM restaurants WHERE name = '" + restaurantName + "' AND idrestaurant = " + review.getRestaurantId());
+    	System.out.println("restaurant name: " + restaurantName);
+    	String comments = review.getComments().replace("'", "\\'");
+		String sqlQ = "INSERT INTO reviews \n"
+				+ " SET overall_rating = '" + review.getRating() + "',\n"
+				+ "  comments = '" + comments + "', \n"
+				+ "  fk_user = (SELECT iduser FROM users WHERE username = '" + review.getUserName() + "'), \n"	
+				+ "  fk_restaurant = (SELECT idrestaurant FROM restaurants WHERE name = '" + restaurantName + "')";	
+		System.out.println(sqlQ);
+		
+    	executeQuery(sqlQ, "Review for: " + review.getRestaurantName() + " by: " + review.getUserName() + " added");
+    }
+    
+    public void updateReview(Review oldReview, Review newReview){
+    	String comments = newReview.getComments().replace("'", "\\'");
+    	int userId = newReview.getUserId();
+    	int rstId = newReview.getRestaurantId();
+    	String sqlQ = "UPDATE reviews SET comments='" + comments + "', overall_rating='" + newReview.getRating() + "' WHERE \n"
+				+ " fk_user = " + userId + " AND fk_restaurant = " + rstId + " AND comments = '" + oldReview.getComments() + "'";	
+    	System.out.println(sqlQ);
+    	executeQuery(sqlQ, "Updating review for: " + newReview.getRestaurantName() + " by: " + newReview.getUserName());
+    }
+    
+    public void deleteReview(Review review){
+    	String comments = review.getComments().replace("'", "\\'");
+    	String sqlQ = "DELETE FROM reviews WHERE comments = '" + comments + "' AND fk_user = " + review.getUserId();
+    	executeQuery(sqlQ, "Deleted review by " + review.getUserId());
+    }
+    
     public List<Review> getRestaurantReviewsFromDB(Restaurant restaurant){
     	List<Review> reviewList = new ArrayList<Review>();
     	String restaurantName = restaurant.getName().replace("'", "\'");
@@ -563,13 +549,12 @@ public class DBConnection {
     				    	String pw = userRs.getString("password");
     				    	String birthdate = userRs.getString("birthdate");
     				    	String email = userRs.getString("email");
-    				    	String locId = userRs.getString("fk_location");
     				    	int privilege = userRs.getInt("privilege");
     	 			    	if(privilege == 0){
-    	 			    		usr = new User(name, pw, birthdate, email, locId);
+    	 			    		usr = new User(name, pw, birthdate, email);
     	 			    	}
     	 			    	else{
-    	 			    		usr = new Admin(name, pw, birthdate, email, locId);
+    	 			    		usr = new Admin(name, pw, birthdate, email);
     	 			    	}    				    	//System.out.println("id from db of user: " + userId);
     				    	usr.setId(userId);    					
     				    }
@@ -627,22 +612,24 @@ public class DBConnection {
     	}
     	return reviewList;    	
     }
+    
+    
     public ResultSet getQueryResultSet(String query){
-		ResultSet res = null;
+		ResultSet rs = null;
     	try{
-			ResultSet rs = statement.executeQuery(query);
+			ResultSet result = statement.executeQuery(query);
 			System.out.println("result of q: " + rs);
-			if(rs.next()) {
-				System.out.println(rs.getInt(1));
-			    if(rs.getInt(1) > 0){
-			    	res = rs;
+			if(result.next()) {
+				System.out.println(result.getInt(1));
+			    if(result.getInt(1) > 0){
+			    	rs = result;
 			    }
 			}
     	}
     	catch(SQLException ex){
     		ex.printStackTrace();
     	}
-		return res;
+		return rs;
     }
     
     public List<String> getQueryResultList(String query){
@@ -669,16 +656,15 @@ public class DBConnection {
 		return res;
     }
     
-    
-    public ResultSet getQueryResultReviews(User user, Restaurant restaurant){
+    public ResultSet getUserRstReview(User user, Restaurant restaurant){
 		ResultSet rs = null;
 		try {
 			String getUserIdQ = "SELECT iduser FROM users WHERE username = '" + user.getUsername() + "'";
-			ResultSet rUser = getQueryResultSet(getUserIdQ);
-			int userId = rUser.getInt(1);
+			ResultSet userRs = getQueryResultSet(getUserIdQ);
+			int userId = userRs.getInt(1);
 			String getRstIdQ = "SELECT idrestaurant FROM restaurants WHERE name = '" + restaurant.getName() + "'";
-			ResultSet rRst = getQueryResultSet(getRstIdQ);
-			int rstId = rRst.getInt(1);
+			ResultSet rstRs = getQueryResultSet(getRstIdQ);
+			int rstId = rstRs.getInt(1);
 	    	String sqlQ = "Select * from reviews Where fk_user = " + userId + " and fk_restaurant = " + rstId + ";";
 	    	rs = getQueryResultSet(sqlQ);
 		} catch (SQLException e) {

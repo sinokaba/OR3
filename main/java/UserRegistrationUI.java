@@ -25,7 +25,6 @@ public class UserRegistrationUI {
 		layout = new GridPane();
 		
 		FormField form = new FormField(fieldW, fieldH);
-		
 		Label titlePage = new Label("Create your account!");
 		titlePage.getStyleClass().add("h3");
 		layout.add(titlePage, 1, 0);
@@ -51,16 +50,16 @@ public class UserRegistrationUI {
 		zipcodeField = form.createTextField("Enter your 5 digit zipcode.", 5);
 		createFieldLabelPair(layout, zipcodeField, zipcode, 5);
 		
-		HBox birthdayWrapper = new HBox(10);
+		HBox birthdayContainer = new HBox(10);
 		Label bday = form.createLabel("Birthday:");
 		layout.add(bday, 0, 6);
 		month = new DropdownMenu("Month", 9, null, 1, 12, true);
 		day = new DropdownMenu("Day", 9, null, 1, 31, true);
 		year = new DropdownMenu("Year", 9, null, 1920, 2017, false);
-		birthdayWrapper.getChildren().add(month);
-		birthdayWrapper.getChildren().add(day);
-		birthdayWrapper.getChildren().add(year);
-		layout.add(birthdayWrapper, 1, 6);
+		birthdayContainer.getChildren().add(month);
+		birthdayContainer.getChildren().add(day);
+		birthdayContainer.getChildren().add(year);
+		layout.add(birthdayContainer, 1, 6);
 		
 		registerBtn = new Button("Sign up!");
 		registerBtn.getStyleClass().add("main-button");

@@ -163,14 +163,29 @@ public class UserAccountUI {
 		
 		VBox rightPane = new VBox(20);
 		
-		Label mainTitle = new Label(user.getUsername());
-		mainTitle.getStyleClass().add("h1");
+		Label mainTitleLbl = new Label(user.getUsername());
+		mainTitleLbl.getStyleClass().add("h1");
+		
+		Label birthDateLbl = new Label("Birthdate: " + user.getBday());
+		birthDateLbl.getStyleClass().add("h4");
+		Label emailLbl = new Label("Email: "+ user.getEmail());
+		emailLbl.getStyleClass().add("h4");
+		Label joinDateLbl = new Label("Join date: " + user.getJoinDate());
+		joinDateLbl.getStyleClass().add("h4");
+		
+		HBox locCont = new HBox(10);
+		Label stateLbl = new Label("State: " + user.getState());
+		stateLbl.getStyleClass().add("h4");
+		Label cityLbl = new Label("City: " + user.getCity());
+		cityLbl.getStyleClass().add("h4");
+		locCont.getChildren().addAll(stateLbl, cityLbl);
+		
 		deleteAccount = new Button("Delete Account");
 		deleteAccount.getStyleClass().addAll("main-button", "search-button");
 		Button deleteRst = new Button("Delete Restaurant");
 		deleteRst.getStyleClass().addAll("main-button", "search-button");
 		Button deleteUser = new Button("Delete User");
-		rightPane.getChildren().addAll(mainTitle, deleteAccount);
+		rightPane.getChildren().addAll(mainTitleLbl, emailLbl, birthDateLbl, joinDateLbl, locCont, deleteAccount);
 		
 		if(user.getPrivilege() == 1){
 			rightPane.getChildren().addAll(deleteRst, deleteUser);

@@ -90,7 +90,11 @@ public class Restaurant {
 	}
 
 	public String getAddress(){
-		return address + " " + city + ", " + state + " " + zip;
+		return address;
+	}
+	
+	public String getLocLevels(){
+		return city + ", " + state + " " + zip;
 	}
 	
 	public void setPriceRange(int min, int max){
